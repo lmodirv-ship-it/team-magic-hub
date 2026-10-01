@@ -59,19 +59,17 @@ function BridgeManager() {
     const link = document.createElement("a"); link.href = href; link.download = "nawat-bridge-config.json"; link.click(); URL.revokeObjectURL(href);
     setNotice("تم تصدير الإعدادات دون كلمة السر");
   };
-  const uploadConfig = async (file?: File) => {
+  const uploadConfig = (file?: File) => {
     if (!file) return;
-    try { const next = importBridgeConfig(await file.text()); setConfig(next); setNotice("تم استيراد الإعدادات وحفظها"); }
-    catch (error) { setNotice(error instanceof Error ? error.message : "تعذّر استيراد الملف"); }
-    finally { if (fileRef.current) fileRef.current.value = ""; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try { const next = importBridgeConfig(String(reader.result ?? "")); setConfig(next); setNotice("تم استيراد الإعدادات وحفظها"); }
+      catch (error) { setNotice(error instanceof Error ? error.message : "تعذّر استيراد الملف"); }
+      finally { if (fileRef.current) fileRef.current.value = ""; }
+    };
+    reader.onerror = () => setNotice("تعذّر قراءة الملف");
+    reader.readAsText(file);
   };
-  useEffect(() => {
-    const input = fileRef.current;
-    if (!input) return;
-    const onFile = () => { void uploadConfig(input.files?.[0]); };
-    input.addEventListener("change", onFile);
-    return () => input.removeEventListener("change", onFile);
-  });
   const resultText = (target: "lan" | "public") => {
     const result = checks[target]; if (!result) return "لم يُفحص"; if (result === "wait") return "جارٍ الفحص…";
     return `${result.detail}${result.latencyMs ? ` · ${result.latencyMs}ms` : ""}`;
@@ -90,7 +88,7 @@ function BridgeManager() {
         </div>)}
       </div>
       <label className="grid gap-1 text-xs font-medium">كلمة سر الشبكة العامة<Input type="password" value={token} onChange={(event) => setToken(event.target.value)} onBlur={() => saveRelayToken(token)} dir="ltr" className="h-8" autoComplete="off" /><span className="font-normal text-muted-foreground">محفوظة على هذا الجهاز فقط ولا تدخل في ملف التصدير.</span></label>
-      <div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={downloadConfig}><Download className="size-3.5" />تصدير الإعدادات</Button><label className="relative inline-flex h-8 cursor-pointer items-center gap-1.5 overflow-hidden rounded-md border border-input px-3 text-xs"><Upload className="size-3.5" />استيراد الإعدادات<input ref={fileRef} type="file" accept="application/json,.json" aria-label="اختيار ملف إعدادات الجسر" className="absolute inset-0 cursor-pointer opacity-0" /></label>{notice && <span role="status" className="text-[11px] text-muted-foreground">{notice}</span>}</div>
+      <div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={downloadConfig}><Download className="size-3.5" />تصدير الإعدادات</Button><label className="relative inline-flex h-8 cursor-pointer items-center gap-1.5 overflow-hidden rounded-md border border-input px-3 text-xs"><Upload className="size-3.5" />استيراد الإعدادات<input ref={fileRef} type="file" accept="application/json,.json" aria-label="اختيار ملف إعدادات الجسر" className="absolute inset-0 cursor-pointer opacity-0" onChange={(event) => uploadConfig(event.currentTarget.files?.[0])} /></label>{notice && <span role="status" className="text-[11px] text-muted-foreground">{notice}</span>}</div>
     </div>
   );
 }
