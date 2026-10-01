@@ -1,0 +1,402 @@
+/**
+ * Indexer Worker — خدمة الفهرسة (Background)
+ *
+ *  - يمشي على شجرة المشروع
+ *  - يقسّم الملفات
+ *  - يولّد embeddings
+ *  - يخزنها في VectorStore
+ *  - يوفّر HTTP API للتقدم
+ *
+ *  المنفذ: 8793
+ */
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+const { VectorStore } = require('../src/vectorStore');
+const { chunkFile } = require('../src/chunker');
+const { embedBatch, checkEmbedder } = require('../src/embedder');
+const { FileWatcher } = require('../src/watcher');
+const { sha1, isTextFile, isSkippedDir } = require('../src/utils');
+
+// logger مبسّط
+const log = (level, msg, meta) => {
+  const t = new Date().toISOString();
+  const line = `[${t}] [${level}] [indexer] ${msg}${meta ? ' ' + JSON.stringify(meta) : ''}`;
+  console.log(line);
+};
+const logger = {
+  info: (m, x) => log('INFO', m, x),
+  warn: (m, x) => log('WARN', m, x),
+  error: (m, x) => log('ERROR', m, x),
+  debug: () => {},
+};
+
+const CORE = process.env.CORE_URL || 'http://127.0.0.1:8790';
+const ROOT = process.env.INDEX_ROOT || 'F:/nawat';
+const PORT = parseInt(process.env.INDEXER_PORT || '8793', 10);
+const HOST = process.env.INDEXER_HOST || '127.0.0.1';
+const WATCH = process.env.WATCH_ENABLED === 'true';
+
+/* ============ الحالة ============ */
+const state = {
+  status: 'idle',           // idle | running | stopping
+  phase: 'idle',            // scan | read | chunk | embed | store
+  total: 0,
+  done: 0,
+  currentFile: null,
+  startedAt: null,
+  finishedAt: null,
+  lastError: null,
+  stats: {
+    filesScanned: 0,
+    filesIndexed: 0,
+    filesSkipped: 0,
+    filesFailed: 0,
+    chunksCreated: 0,
+    bytesRead: 0,
+  },
+};
+
+const store = new VectorStore();
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+/* ============ الأدوات ============ */
+
+/**
+ * قراءة ملف عبر core-pack
+ */
+async function readViaCore(filePath) {
+  const res = await fetch(`${CORE}/file/read`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: filePath }),
+  });
+  if (!res.ok) throw new Error(`core /file/read فشل: ${res.status}`);
+  const data = await res.json();
+  if (!data.ok) throw new Error(data.error || 'فشل القراءة');
+  return data;
+}
+
+/**
+ * جلب شجرة الملفات من core
+ */
+async function fetchTree(root, depth = 10) {
+  const res = await fetch(`${CORE}/file/tree`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: root, depth }),
+  });
+  if (!res.ok) throw new Error(`core /file/tree فشل: ${res.status}`);
+  return (await res.json()).tree;
+}
+
+/**
+ * يمشي على الشجرة ويجمع الملفات النصية
+ */
+function collectFiles(tree, out = []) {
+  for (const node of tree) {
+    if (node.type === 'dir') {
+      if (isSkippedDir(node.name)) continue;
+      if (node.children) collectFiles(node.children, out);
+    } else {
+      if (isTextFile(node.path)) out.push({ path: node.path, size: node.size || 0 });
+    }
+  }
+  return out;
+}
+
+/**
+ * فهرسة ملف واحد
+ */
+async function indexOneFile(fileInfo) {
+  const { path: filePath, size } = fileInfo;
+
+  const t0 = Date.now();
+
+  // 1) اقرأ
+  const data = await readViaCore(filePath);
+  if (data.binary) return { skipped: true, reason: 'binary' };
+
+  const content = data.content || '';
+  const fileHash = sha1(content);
+
+  // 2) هل نحتاج إعادة فهرسة؟
+  const existing = store.getFile(filePath);
+  if (existing && existing.file_hash === fileHash) {
+    return { skipped: true, reason: 'unchanged', chunks: existing.chunk_count };
+  }
+
+  // 3) قطّع
+  const chunks = chunkFile({
+    path: filePath,
+    content,
+    opts: {
+      chunkSize: parseInt(process.env.CHUNK_SIZE || '600', 10),
+      overlap: parseInt(process.env.CHUNK_OVERLAP || '80', 10),
+      maxChunksPerFile: parseInt(process.env.MAX_CHUNKS_PER_FILE || '50', 10),
+    },
+  });
+
+  if (!chunks.length) return { skipped: true, reason: 'no-chunks' };
+
+  // 4) embeddings
+  const vectors = await embedBatch(chunks.map((c) => c.text), {
+    concurrency: 3,
+    onProgress: (done, total) => {
+      state.currentFile = `${path.basename(filePath)} (${done}/${total})`;
+    },
+  });
+
+  // 5) خزّن
+  store.upsertFile({
+    path: filePath,
+    fileHash,
+    size,
+    chunks,
+    vectors,
+  });
+
+  return {
+    skipped: false,
+    chunks: chunks.length,
+    ms: Date.now() - t0,
+  };
+}
+
+/**
+ * الفهرسة الكاملة
+ */
+async function runFullIndex({ reset = false } = {}) {
+  if (state.status === 'running') {
+    logger.warn('فهرسة جارية بالفعل');
+    return;
+  }
+
+  state.status = 'running';
+  state.phase = 'scan';
+  state.startedAt = Date.now();
+  state.done = 0;
+  state.total = 0;
+  state.lastError = null;
+  state.stats = {
+    filesScanned: 0, filesIndexed: 0, filesSkipped: 0,
+    filesFailed: 0, chunksCreated: 0, bytesRead: 0,
+  };
+
+  try {
+    if (reset) {
+      logger.warn('إعادة تعيين الفهرس...');
+      store.reset();
+    }
+
+    // 1) اجلب الشجرة
+    logger.info(`مسح شجرة ${ROOT}...`);
+    const tree = await fetchTree(ROOT, 10);
+    const files = collectFiles(tree);
+    state.total = files.length;
+    state.stats.filesScanned = files.length;
+    logger.info(`تم العثور على ${files.length} ملف نصي`);
+
+    // 2) عالج ملفاً ملفاً (متوازي محدود)
+    state.phase = 'embed';
+    const concurrency = 2;
+    let next = 0;
+
+    async function worker() {
+      while (state.status === 'running') {
+        const i = next++;
+        if (i >= files.length) break;
+        const f = files[i];
+        state.currentFile = f.path;
+
+        try {
+          const r = await indexOneFile(f);
+          if (r.skipped) {
+            state.stats.filesSkipped++;
+          } else {
+            state.stats.filesIndexed++;
+            state.stats.chunksCreated += r.chunks;
+          }
+        } catch (e) {
+          state.stats.filesFailed++;
+          logger.error(`فشل ${f.path}`, { error: e.message });
+        }
+
+        state.done++;
+      }
+    }
+
+    await Promise.all(Array.from({ length: concurrency }, worker));
+
+    state.phase = 'done';
+    state.finishedAt = Date.now();
+    state.status = 'idle';
+    store.setMeta('last_index_at', Date.now());
+    store.setMeta('last_index_duration_ms', state.finishedAt - state.startedAt);
+
+    logger.info('✅ اكتملت الفهرسة', {
+      duration: ((state.finishedAt - state.startedAt) / 1000).toFixed(1) + 's',
+      indexed: state.stats.filesIndexed,
+      skipped: state.stats.filesSkipped,
+      failed: state.stats.filesFailed,
+      chunks: state.stats.chunksCreated,
+    });
+  } catch (e) {
+    state.status = 'idle';
+    state.phase = 'error';
+    state.lastError = e.message;
+    logger.error('فشل الفهرسة', { error: e.message });
+  }
+}
+
+/* ============ Watcher ============ */
+const watcher = WATCH ? new FileWatcher({
+  root: ROOT,
+  logger,
+  onFileChange: async (filePath) => {
+    logger.info(`ملف تغيّر: ${filePath}`);
+    try {
+      const r = await indexOneFile({ path: filePath, size: 0 });
+      logger.info(`أُعيدت فهرسة ${path.basename(filePath)}`, r);
+    } catch (e) {
+      logger.error(`فشل إعادة الفهرسة: ${e.message}`);
+    }
+  },
+  onFileDelete: async (filePath) => {
+    logger.info(`ملف حُذف: ${filePath}`);
+    store.deleteFile(filePath);
+  },
+}) : null;
+
+/* ============ HTTP API ============ */
+
+app.get('/health', (req, res) => {
+  res.json({
+    ok: true,
+    pack: 'search-pack',
+    service: 'indexer',
+    status: state.status,
+    phase: state.phase,
+    chunks: store.countChunks(),
+    files: store.allFiles().length,
+    watcher: !!watcher,
+    uptime: process.uptime(),
+  });
+});
+
+app.get('/index/status', (req, res) => {
+  res.json({
+    ok: true,
+    status: state.status,
+    phase: state.phase,
+    total: state.total,
+    done: state.done,
+    progress: state.total ? Math.round((state.done / state.total) * 100) : 0,
+    currentFile: state.currentFile,
+    startedAt: state.startedAt,
+    finishedAt: state.finishedAt,
+    lastError: state.lastError,
+    stats: state.stats,
+    store: {
+      chunks: store.countChunks(),
+      files: store.allFiles().length,
+    },
+  });
+});
+
+app.post('/index/start', async (req, res) => {
+  const { reset = false } = req.body || {};
+  if (state.status === 'running') {
+    return res.status(409).json({ ok: false, error: 'فهرسة جارية بالفعل' });
+  }
+  // ابدأ في الخلفية
+  setImmediate(() => runFullIndex({ reset }));
+  res.json({ ok: true, message: 'بدأت الفهرسة' });
+});
+
+app.post('/index/stop', (req, res) => {
+  state.status = 'stopping';
+  res.json({ ok: true });
+});
+
+app.post('/index/reset', (req, res) => {
+  if (state.status === 'running') {
+    return res.status(409).json({ ok: false, error: 'أوقف الفهرسة أولاً' });
+  }
+  store.reset();
+  res.json({ ok: true });
+});
+
+app.post('/index/file', async (req, res) => {
+  try {
+    const { path: filePath } = req.body;
+    if (!filePath) return res.status(400).json({ ok: false, error: 'path مطلوب' });
+    const result = await indexOneFile({ path: filePath, size: 0 });
+    res.json({ ok: true, result });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/stats', (req, res) => {
+  const files = store.allFiles();
+  const byExt = {};
+  for (const f of files) {
+    const ext = (f.path.split('.').pop() || '').toLowerCase();
+    byExt[ext] = (byExt[ext] || 0) + 1;
+  }
+  res.json({
+    ok: true,
+    chunks: store.countChunks(),
+    files: files.length,
+    byExtension: byExt,
+    lastIndexAt: store.getMeta('last_index_at'),
+    lastIndexDurationMs: store.getMeta('last_index_duration_ms'),
+  });
+});
+
+/* ============ الإقلاع ============ */
+async function main() {
+  logger.info('═══════════════════════════════════════');
+  logger.info('  NAWAT Search Pack — Indexer         ');
+  logger.info('═══════════════════════════════════════');
+  logger.info(`ROOT: ${ROOT}`);
+  logger.info(`CORE: ${CORE}`);
+
+  // فحص embedder
+  const embed = await checkEmbedder();
+  if (!embed.ok) {
+    logger.error(`❌ Embedder غير جاهز: ${embed.error}`);
+    logger.error('   شغّل: ollama pull nomic-embed-text');
+  } else {
+    logger.info(`✅ Embedder جاهز — dim=${embed.dim}, model=${embed.model}`);
+  }
+
+  // ابدأ watcher
+  if (watcher) watcher.start();
+
+  // إذا طُلب، ابدأ الفهرسة
+  if (process.env.INDEX_ON_START === 'true') {
+    setImmediate(() => runFullIndex({ reset: false }));
+  }
+
+  app.listen(PORT, HOST, () => {
+    logger.info(`✅ جاهز على http://${HOST}:${PORT}`);
+  });
+
+  const shutdown = () => {
+    logger.warn('إيقاف...');
+    if (watcher) watcher.stop();
+    store.close();
+    process.exit(0);
+  };
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+}
+
+main().catch((e) => {
+  logger.error('فشل الإقلاع', { error: e.message });
+  process.exit(1);
+});

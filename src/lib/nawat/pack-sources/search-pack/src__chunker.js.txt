@@ -1,0 +1,153 @@
+/**
+ * Chunker — يقسم الملفات إلى قطع (chunks) ذات معنى
+ *
+ * الاستراتيجية:
+ *  1. للكود: يكتشف حدود الدوال/الأصناف ويعتمدها
+ *  2. للماركداون: يقسم حسب العناوين
+ *  3. للـ JSON: يكتشف مستويات الكائنات
+ *  4. Fallback: تقسيم بالسطور مع overlap
+ */
+const { sha1, fileExt } = require('./utils');
+
+const DEFAULT_OPTS = {
+  chunkSize: 600,       // بالحروف
+  overlap: 80,
+  maxChunksPerFile: 50,
+};
+
+/* ============ Anlizyzer Regex ============ */
+const BOUNDARY_PATTERNS = {
+  js:   /^(?:export\s+)?(?:async\s+)?(?:function|const|let|var|class|method)\s+[\w$]|^\s*(?:async\s+)?[\w$]+\s*\([^)]*\)\s*{/m,
+  ts:   /^(?:export\s+)?(?:async\s+)?(?:function|const|let|var|class|interface|type|enum)\s+[\w$]|^\s*(?:public|private|protected|static|async)?\s*[\w$]+\s*\([^)]*\)\s*[:{]/m,
+  py:   /^(?:def|class|async\s+def)\s+\w+/m,
+  rs:   /^(?:pub\s+)?(?:async\s+)?(?:fn|struct|enum|trait|impl|mod)\s+\w+/m,
+  go:   /^func\s+|^type\s+|^var\s+|^const\s+/m,
+  java: /^(?:public|private|protected|static|\s)*\s*(?:class|interface|enum|void|int|String|boolean)\s+\w+/m,
+  rb:   /^(?:def|class|module)\s+\w+/m,
+  php:  /^(?:public|private|protected|static)?\s*function\s+\w+/m,
+  sh:   /^\w+\s*\(\)\s*{|^function\s+\w+/m,
+  md:   /^#{1,6}\s+/m,
+};
+
+function getBoundaryRegex(ext) {
+  if (BOUNDARY_PATTERNS[ext]) return BOUNDARY_PATTERNS[ext];
+  // fallback: كل سطر يبدأ بـ 4 مسافات أو }
+  return /^(?:}\s*$|[A-Z][\w$]+\s*\(|export\s|def\s|function\s)/m;
+}
+
+/**
+ * يجد مواقع الحدود في النص
+ */
+function findBoundaries(content, ext) {
+  const regex = getBoundaryRegex(ext);
+  const boundaries = [0];
+  let m;
+  const re = new RegExp(regex.source, 'gm');
+  while ((m = re.exec(content)) !== null) {
+    if (m.index > 0) boundaries.push(m.index);
+    if (boundaries.length > 10000) break;
+  }
+  boundaries.push(content.length);
+  return boundaries;
+}
+
+/**
+ * تقسيم ذكي — يحاول الاعتماد على الحدود
+ */
+function smartChunk(content, ext, opts = {}) {
+  const { chunkSize, overlap, maxChunksPerFile } = { ...DEFAULT_OPTS, ...opts };
+
+  // ملفات صغيرة
+  if (content.length <= chunkSize) {
+    return [content];
+  }
+
+  // ابحث عن الحدود
+  const boundaries = findBoundaries(content, ext);
+
+  // إذا كانت الحدود كثيرة جداً (ملف ضخم بلا بنية) — تقسيم ساذج
+  if (boundaries.length > 500) {
+    return naiveChunk(content, chunkSize, overlap, maxChunksPerFile);
+  }
+
+  const chunks = [];
+  let currentStart = 0;
+
+  for (let i = 1; i < boundaries.length; i++) {
+    const candidateEnd = boundaries[i];
+    const size = candidateEnd - currentStart;
+
+    if (size >= chunkSize || i === boundaries.length - 1) {
+      let end = candidateEnd;
+      // لا تتجاوز الحد الأقصى بكتير
+      if (size > chunkSize * 2 && i > 1) {
+        end = boundaries[i - 1];
+      }
+
+      const chunkText = content.slice(currentStart, end);
+      if (chunkText.trim().length > 30) {
+        chunks.push(chunkText);
+      }
+
+      // overlap: ابدأ من نهاية القطعة السابقة
+      currentStart = Math.max(0, end - overlap);
+      if (chunks.length >= maxChunksPerFile) break;
+    }
+  }
+
+  return chunks;
+}
+
+/**
+ * تقسيم ساذج بالسطور (fallback)
+ */
+function naiveChunk(content, chunkSize, overlap, maxChunks) {
+  const chunks = [];
+  const lines = content.split('\n');
+  let buf = [];
+  let bufLen = 0;
+
+  for (const line of lines) {
+    buf.push(line);
+    bufLen += line.length + 1;
+
+    if (bufLen >= chunkSize) {
+      const chunk = buf.join('\n');
+      if (chunk.trim().length > 30) chunks.push(chunk);
+      if (chunks.length >= maxChunks) break;
+
+      // overlap: احتفظ بآخر ~5 أسطر
+      const keep = Math.max(2, Math.ceil(overlap / 40));
+      buf = buf.slice(-keep);
+      bufLen = buf.reduce((a, l) => a + l.length + 1, 0);
+    }
+  }
+
+  if (buf.length && chunks.length < maxChunks) {
+    const chunk = buf.join('\n');
+    if (chunk.trim().length > 30) chunks.push(chunk);
+  }
+
+  return chunks;
+}
+
+/**
+ * الواجهة العامة — يقسم ملفاً ويعيد القطع مع معلوماتها
+ */
+function chunkFile({ path, content, opts }) {
+  const ext = fileExt(path);
+  const pieces = smartChunk(content, ext, opts);
+
+  return pieces.map((text, i) => ({
+    id: `${sha1(path)}-${i}-${sha1(text).slice(0, 8)}`,
+    path,
+    index: i,
+    total: pieces.length,
+    text,
+    ext,
+    charCount: text.length,
+    lineStart: content.slice(0, content.indexOf(text)).split('\n').length,
+  }));
+}
+
+module.exports = { chunkFile, smartChunk, naiveChunk };

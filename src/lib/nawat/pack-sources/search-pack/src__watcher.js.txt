@@ -1,0 +1,83 @@
+/**
+ * Watcher — يراقب الملفات ويعيد فهرستها عند التعديل
+ * - debounce 1.5s
+ * - تجاهل الملفات غير المدعومة
+ */
+const chokidar = require('chokidar');
+const path = require('path');
+const { isTextFile, isSkippedDir, fileExt } = require('./utils');
+
+const DEBOUNCE_MS = 1500;
+
+class FileWatcher {
+  constructor({ root, onFileChange, onFileDelete, logger }) {
+    this.root = root;
+    this.onFileChange = onFileChange;
+    this.onFileDelete = onFileDelete;
+    this.logger = logger;
+    this.watcher = null;
+    this.pending = new Map(); // path → timer
+  }
+
+  start() {
+    if (this.watcher) return;
+
+    this.watcher = chokidar.watch(this.root, {
+      ignored: (p) => {
+        const parts = p.split(/[/\\]/);
+        return parts.some((seg) => isSkippedDir(seg));
+      },
+      persistent: true,
+      ignoreInitial: true,
+      depth: 8,
+      awaitWriteFinish: {
+        stabilityThreshold: 800,
+        pollInterval: 200,
+      },
+    });
+
+    this.watcher.on('add', (p) => this._schedule(p, 'add'));
+    this.watcher.on('change', (p) => this._schedule(p, 'change'));
+    this.watcher.on('unlink', (p) => this._handleDelete(p));
+
+    this.logger?.info(`watcher بدأ على ${this.root}`);
+  }
+
+  stop() {
+    if (this.watcher) {
+      this.watcher.close();
+      this.watcher = null;
+      this.pending.forEach((t) => clearTimeout(t));
+      this.pending.clear();
+      this.logger?.info('watcher توقف');
+    }
+  }
+
+  _schedule(filePath, event) {
+    if (!isTextFile(filePath)) return;
+
+    const existing = this.pending.get(filePath);
+    if (existing) clearTimeout(existing);
+
+    const timer = setTimeout(async () => {
+      this.pending.delete(filePath);
+      try {
+        await this.onFileChange?.(filePath, event);
+      } catch (e) {
+        this.logger?.error(`فشل معالجة ${filePath}`, { error: e.message });
+      }
+    }, DEBOUNCE_MS);
+
+    this.pending.set(filePath, timer);
+  }
+
+  async _handleDelete(filePath) {
+    try {
+      await this.onFileDelete?.(filePath);
+    } catch (e) {
+      this.logger?.error(`فشل حذف ${filePath}`, { error: e.message });
+    }
+  }
+}
+
+module.exports = { FileWatcher };

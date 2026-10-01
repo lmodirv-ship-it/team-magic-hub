@@ -1,0 +1,77 @@
+{
+  "$schema": "https://nawat.dev/schemas/pack-v1.json",
+  "name": "search-pack",
+  "displayName": "NAWAT Search Pack",
+  "version": "1.0.0",
+  "description": "بحث دلالي هجين (Semantic + Keyword) على المشروع مع فهرسة تلقائية",
+  "author": "NAWAT Team",
+  "license": "MIT",
+  "type": "service",
+  "priority": 20,
+
+  "ports": {
+    "search": 8792,
+    "indexer": 8793
+  },
+
+  "depends_on": ["core-pack"],
+
+  "provides": [
+    "search.semantic",
+    "search.hybrid",
+    "search.reindex",
+    "search.status",
+    "context.retrieve"
+  ],
+  "consumes": [
+    "file.read",
+    "file.tree",
+    "metrics.record",
+    "events.bus"
+  ],
+
+  "env": {
+    "CORE_URL": "http://127.0.0.1:8790",
+    "OLLAMA_URL": "http://127.0.0.1:11434",
+    "EMBED_MODEL": "nomic-embed-text:latest",
+    "INDEX_ROOT": "F:/nawat",
+    "CHUNK_SIZE": "600",
+    "CHUNK_OVERLAP": "80",
+    "MAX_CHUNKS_PER_FILE": "50",
+    "INDEX_ON_START": "false",
+    "WATCH_ENABLED": "true"
+  },
+
+  "endpoints": {
+    "health": "/health",
+    "stats": "/stats",
+    "search": {
+      "semantic": "POST /search/semantic",
+      "hybrid": "POST /search/hybrid",
+      "keyword": "POST /search/keyword"
+    },
+    "index": {
+      "status": "GET /index/status",
+      "start": "POST /index/start",
+      "stop": "POST /index/stop",
+      "reset": "POST /index/reset",
+      "file": "POST /index/file"
+    },
+    "context": {
+      "retrieve": "POST /context"
+    }
+  },
+
+  "self_test": {
+    "timeout_ms": 60000,
+    "checks": [
+      "core_reachable",
+      "ollama_reachable",
+      "embed_model_available",
+      "db_writable",
+      "index_small_dir",
+      "semantic_search",
+      "hybrid_search"
+    ]
+  }
+}

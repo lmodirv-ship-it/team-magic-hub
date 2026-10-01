@@ -1,0 +1,211 @@
+/**
+ * VectorStore — تخزين محلي للمتجهات
+ *  - SQLite لـ metadata + vectors (BLOB)
+ *  - Cosine similarity في JS
+ *  - فهارس (indexes) على المسار + الوقت
+ *  - Upsert (تحديث ذكي)
+ */
+const Database = require('better-sqlite3');
+const path = require('path');
+const fs = require('fs');
+
+const DATA_DIR = path.join(__dirname, '..', 'data');
+
+class VectorStore {
+  constructor(dbPath = path.join(DATA_DIR, 'index.db')) {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    this.db = new Database(dbPath);
+    this.db.pragma('journal_mode = WAL');
+    this.db.pragma('synchronous = NORMAL');
+    this._init();
+    this._prepare();
+  }
+
+  _init() {
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS chunks (
+        id          TEXT PRIMARY KEY,
+        path        TEXT NOT NULL,
+        chunk_index INTEGER NOT NULL,
+        text        TEXT NOT NULL,
+        ext         TEXT,
+        char_count  INTEGER,
+        line_start  INTEGER,
+        vec         BLOB NOT NULL,
+        dim         INTEGER NOT NULL,
+        file_hash   TEXT,
+        updated_at  INTEGER NOT NULL
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_path ON chunks(path);
+      CREATE INDEX IF NOT EXISTS idx_ext  ON chunks(ext);
+      CREATE INDEX IF NOT EXISTS idx_time ON chunks(updated_at);
+
+      CREATE TABLE IF NOT EXISTS files (
+        path        TEXT PRIMARY KEY,
+        file_hash   TEXT NOT NULL,
+        chunk_count INTEGER NOT NULL,
+        indexed_at  INTEGER NOT NULL,
+        size        INTEGER
+      );
+
+      CREATE TABLE IF NOT EXISTS meta (
+        key   TEXT PRIMARY KEY,
+        value TEXT
+      );
+    `);
+  }
+
+  _prepare() {
+    this.stmtInsertChunk = this.db.prepare(`
+      INSERT OR REPLACE INTO chunks
+      (id, path, chunk_index, text, ext, char_count, line_start, vec, dim, file_hash, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    this.stmtDeleteByPath = this.db.prepare(`DELETE FROM chunks WHERE path = ?`);
+    this.stmtDeleteFile = this.db.prepare(`DELETE FROM files WHERE path = ?`);
+    this.stmtInsertFile = this.db.prepare(`
+      INSERT OR REPLACE INTO files (path, file_hash, chunk_count, indexed_at, size)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    this.stmtGetFile = this.db.prepare(`SELECT * FROM files WHERE path = ?`);
+    this.stmtAllFiles = this.db.prepare(`SELECT * FROM files ORDER BY path`);
+    this.stmtCountChunks = this.db.prepare(`SELECT COUNT(*) as n FROM chunks`);
+    this.stmtAllChunks = this.db.prepare(`SELECT id, path, text, vec, dim, chunk_index, line_start, ext FROM chunks`);
+    this.stmtChunksByExt = this.db.prepare(`SELECT id, path, text, vec, dim, chunk_index, line_start, ext FROM chunks WHERE ext = ?`);
+  }
+
+  /**
+   * Upsert ملف كامل:
+   *  - احذف chunks القديمة
+   *  - أدرج الجديدة
+   *  - حدّث ملف السجل
+   */
+  upsertFile({ path: filePath, fileHash, size, chunks, vectors }) {
+    const tx = this.db.transaction(() => {
+      this.stmtDeleteByPath.run(filePath);
+
+      const now = Date.now();
+      for (let i = 0; i < chunks.length; i++) {
+        const vec = vectors[i];
+        if (!vec) continue;
+        const c = chunks[i];
+        const buf = Buffer.from(new Float32Array(vec).buffer);
+        this.stmtInsertChunk.run(
+          c.id, filePath, c.index, c.text, c.ext,
+          c.charCount, c.lineStart, buf, vec.length, fileHash, now
+        );
+      }
+
+      this.stmtInsertFile.run(filePath, fileHash, chunks.length, now, size || 0);
+    });
+    tx();
+  }
+
+  deleteFile(filePath) {
+    const tx = this.db.transaction(() => {
+      this.stmtDeleteByPath.run(filePath);
+      this.stmtDeleteFile.run(filePath);
+    });
+    tx();
+  }
+
+  getFile(filePath) {
+    return this.stmtGetFile.get(filePath);
+  }
+
+  allFiles() {
+    return this.stmtAllFiles.all();
+  }
+
+  countChunks() {
+    return this.stmtCountChunks.get().n;
+  }
+
+  /**
+   * بحث التشابه الجيبي (Cosine)
+   */
+  search(queryVec, options = {}) {
+    const {
+      limit = 10,
+      ext = null,
+      excludePaths = [],
+      minScore = 0.2,
+    } = options;
+
+    const qNorm = norm(queryVec);
+    if (qNorm === 0) return [];
+
+    const rows = ext ? this.stmtChunksByExt.all(ext) : this.stmtAllChunks.all();
+    const excludeSet = new Set(excludePaths);
+
+    const scored = [];
+    for (const row of rows) {
+      if (excludeSet.has(row.path)) continue;
+
+      const vec = new Float32Array(
+        row.vec.buffer,
+        row.vec.byteOffset,
+        row.vec.byteLength / 4
+      );
+
+      const score = cosine(qNorm, queryVec, vec);
+      if (score < minScore) continue;
+
+      scored.push({
+        id: row.id,
+        path: row.path,
+        text: row.text,
+        ext: row.ext,
+        chunkIndex: row.chunk_index,
+        lineStart: row.line_start,
+        score,
+      });
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, limit);
+  }
+
+  getMeta(key) {
+    const row = this.db.prepare(`SELECT value FROM meta WHERE key = ?`).get(key);
+    return row ? row.value : null;
+  }
+
+  setMeta(key, value) {
+    this.db.prepare(`INSERT OR REPLACE INTO meta (key, value) VALUES (?, ?)`).run(key, String(value));
+  }
+
+  close() {
+    try { this.db.close(); } catch {}
+  }
+
+  reset() {
+    const tx = this.db.transaction(() => {
+      this.db.exec(`DELETE FROM chunks; DELETE FROM files; DELETE FROM meta;`);
+    });
+    tx();
+  }
+}
+
+/* ============ Math ============ */
+function norm(vec) {
+  let s = 0;
+  for (let i = 0; i < vec.length; i++) s += vec[i] * vec[i];
+  return Math.sqrt(s);
+}
+
+function cosine(normA, a, b) {
+  let dot = 0;
+  const n = Math.min(a.length, b.length);
+  let normB = 0;
+  for (let i = 0; i < n; i++) {
+    dot += a[i] * b[i];
+    normB += b[i] * b[i];
+  }
+  if (normB === 0) return 0;
+  return dot / (normA * Math.sqrt(normB));
+}
+
+module.exports = { VectorStore, cosine };

@@ -1,0 +1,78 @@
+/**
+ * Reranker — يحسّن ترتيب النتائج بناءً على:
+ *  - المطابقة النصية المباشرة
+ *  - قرب المسار من ملفات المشروع
+ *  - حداثة الملف
+ *  - نوع الملف
+ */
+const path = require('path');
+
+const EXT_WEIGHTS = {
+  ts: 1.10, tsx: 1.10, js: 1.08, mjs: 1.08, jsx: 1.08,
+  py: 1.06, rs: 1.06, go: 1.05, java: 1.05,
+  md: 0.98, txt: 0.95, json: 0.92, yml: 0.95, yaml: 0.95,
+  css: 0.90, scss: 0.90, html: 0.88,
+  lock: 0.50, log: 0.30, csv: 0.60,
+};
+
+/**
+ * يحسب keyword matches داخل النص
+ */
+function keywordBoost(text, query) {
+  const q = query.toLowerCase();
+  const t = text.toLowerCase();
+
+  let score = 0;
+
+  // مطابقة كاملة للجملة
+  if (t.includes(q)) score += 0.30;
+
+  // مطابقة الكلمات الفردية
+  const words = q.split(/\s+/).filter((w) => w.length > 2);
+  if (words.length > 0) {
+    let matched = 0;
+    for (const w of words) {
+      if (t.includes(w)) matched++;
+    }
+    score += (matched / words.length) * 0.15;
+  }
+
+  return score;
+}
+
+/**
+ * تقارب المسار
+ */
+function pathBoost(filePath, query) {
+  const name = path.basename(filePath).toLowerCase();
+  const q = query.toLowerCase();
+  const words = q.split(/\s+/).filter((w) => w.length > 2);
+
+  let score = 0;
+  for (const w of words) {
+    if (name.includes(w)) score += 0.10;
+  }
+  return Math.min(score, 0.20);
+}
+
+/**
+ * rerank مجموعة نتائج
+ */
+function rerank(results, { query, limit = 10 } = {}) {
+  const reranked = results.map((r) => {
+    const ext = r.ext || (r.path.split('.').pop() || '').toLowerCase();
+    const extW = EXT_WEIGHTS[ext] ?? 1.0;
+
+    const kw = keywordBoost(r.text, query);
+    const pb = pathBoost(r.path, query);
+
+    const finalScore = (r.score * extW) + kw + pb;
+
+    return { ...r, baseScore: r.score, kwBoost: kw, pathBoost: pb, finalScore };
+  });
+
+  reranked.sort((a, b) => b.finalScore - a.finalScore);
+  return reranked.slice(0, limit);
+}
+
+module.exports = { rerank, keywordBoost, pathBoost };

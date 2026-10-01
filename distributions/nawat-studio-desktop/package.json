@@ -1,0 +1,23 @@
+{
+  "name": "nawat-studio",
+  "version": "1.0.0",
+  "description": "NAWAT Studio — AI Command Center (Groupe-HN)",
+  "author": "Groupe-HN — Mouylay Ismail El Hassani",
+  "license": "MIT",
+  "main": "main.cjs",
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "ssh2": "^1.15.0"
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}

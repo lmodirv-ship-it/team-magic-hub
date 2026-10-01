@@ -1,0 +1,54 @@
+import { Link } from "@tanstack/react-router";
+import { CircleDot, Search, ShieldCheck } from "lucide-react";
+import { ChatStatsWidget } from "@/components/nawat/ChatStatsWidget";
+import { NotificationCenter } from "@/components/nawat/NotificationCenter";
+import { ThemeToggle } from "@/components/nawat/ThemeToggle";
+import { Button } from "@/components/ui/button";
+import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
+
+export function BrandHeader() {
+  return (
+    <header className="flex h-12 shrink-0 items-center border-b border-border bg-rail px-3 shadow-sm">
+      <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label="NAWAT Studio">
+        <img
+          src={logoAsset.url}
+          alt="شعار نواة الرئيسي"
+          className="size-8 shrink-0 rounded-md border border-nawat/40 object-cover"
+        />
+        <div className="min-w-0 leading-tight">
+          <div className="flex items-center gap-2">
+            <strong className="truncate text-sm font-semibold text-foreground">NAWAT Studio</strong>
+            <span className="hidden items-center gap-1 text-[10px] text-success sm:flex">
+              <CircleDot className="size-2.5 signal-pulse" /> متصل ويعمل
+            </span>
+          </div>
+          <p className="truncate text-[10px] text-muted-foreground">
+            Groupe-HN · AI Command Center
+          </p>
+        </div>
+      </Link>
+      <div className="flex-1" />
+      <Button variant="outline" size="sm"
+        onClick={() => window.dispatchEvent(new CustomEvent("nawat:open-search"))}
+        className="me-1 hidden items-center gap-2 rounded-md border border-border px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground sm:flex"
+        aria-label="بحث شامل"
+      >
+        <Search className="size-3.5" />
+        <span>بحث…</span>
+        <kbd className="rounded border border-border px-1 text-[9px]">Ctrl P</kbd>
+      </Button>
+      <div className="hidden md:block">
+        <ChatStatsWidget variant="header" />
+      </div>
+      <NotificationCenter />
+      <ThemeToggle />
+      <div
+        className="flex items-center gap-1.5 text-[10px] text-muted-foreground"
+        title="Groupe-HN"
+      >
+        <ShieldCheck className="size-3.5 text-nawat" />
+        <span className="hidden sm:inline">منظومة محلية آمنة</span>
+      </div>
+    </header>
+  );
+}

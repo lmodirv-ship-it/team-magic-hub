@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111827" />
+    <title>NAWAT Studio — غير متصل</title>
+    <link rel="icon" href="/favicon.png" type="image/png" />
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #111827;
+        color: #e5e7eb;
+        font-family:
+          system-ui,
+          -apple-system,
+          "Segoe UI",
+          sans-serif;
+        padding: 24px;
+      }
+      .card {
+        max-width: 480px;
+        width: 100%;
+        border: 1px solid #1f2a3d;
+        border-radius: 16px;
+        background: #0f1626;
+        padding: 28px;
+        text-align: center;
+      }
+      img {
+        width: 84px;
+        height: 84px;
+        border-radius: 18px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 16px 0 6px;
+      }
+      p {
+        color: #9ca3af;
+        font-size: 14px;
+        line-height: 1.7;
+        margin: 0 0 16px;
+      }
+      ul {
+        text-align: start;
+        color: #cbd5e1;
+        font-size: 14px;
+        line-height: 1.9;
+        padding-inline-start: 20px;
+        margin: 0 0 20px;
+      }
+      button {
+        background: #22d3ee;
+        color: #06212a;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 18px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      small {
+        display: block;
+        margin-top: 18px;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <img src="/pwa-192.png" alt="NAWAT" />
+      <h1>أنت غير متصل بالشبكة</h1>
+      <p>NAWAT Studio يعمل محليًا، لكن هذه الصفحة تحتاج إلى الاتصال. يمكنك الآن:</p>
+      <ul>
+        <li>فتح الملفات المحفوظة مسبقًا في مساحة العمل.</li>
+        <li>تصفح المكتبة والنتائج المخزّنة على جهازك.</li>
+        <li>تشغيل <code>ollama serve</code> لاستئناف المحادثات المحلية.</li>
+        <li>تصدير نسخة ZIP من نتائجك.</li>
+      </ul>
+      <button onclick="location.href='/'">إعادة المحاولة</button>
+      <small>Groupe-HN · Mouylay Ismail El Hassani</small>
+    </div>
+  </body>
+</html>

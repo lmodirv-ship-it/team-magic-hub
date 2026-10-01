@@ -1,0 +1,91 @@
+@echo off
+chcp 65001 >nul
+setlocal EnableDelayedExpansion
+title NAWAT Search Pack
+color 0D
+
+echo.
+echo ╔════════════════════════════════════════════════════╗
+echo ║           NAWAT Search Pack — v1.0.0               ║
+echo ╚════════════════════════════════════════════════════╝
+echo.
+
+REM ──── فحص Core ────
+echo [1/5] فحص Core Pack...
+curl -s -o nul http://127.0.0.1:8790/health 2>nul
+if errorlevel 1 (
+  echo ❌ Core Pack غير متصل!
+  echo    شغّل: ..\core-pack\start.bat
+  pause
+  exit /b 1
+)
+echo ✅ Core متصل
+echo.
+
+REM ──── فحص Ollama ────
+echo [2/5] فحص Ollama...
+curl -s -o nul http://127.0.0.1:11434/api/tags 2>nul
+if errorlevel 1 (
+  echo ❌ Ollama غير متصل!
+  pause
+  exit /b 1
+)
+echo ✅ Ollama متصل
+echo.
+
+REM ──── فحص النموذج ────
+echo [3/5] فحص نموذج التضمين (nomic-embed-text)...
+curl -s http://127.0.0.1:11434/api/tags | findstr /C:"nomic-embed-text" >nul
+if errorlevel 1 (
+  echo ⚠️  النموذج غير مثبت — جاري التثبيت...
+  ollama pull nomic-embed-text
+)
+echo ✅ جاهز
+echo.
+
+REM ──── التبعيات ────
+if not exist "node_modules" (
+  echo [4/5] تثبيت التبعيات...
+  call npm install
+  if errorlevel 1 (
+    echo ❌ فشل التثبيت — تحقق من better-sqlite3
+    pause
+    exit /b 1
+  )
+)
+echo ✅ التبعيات جاهزة
+echo.
+
+REM ──── المنافذ ────
+echo [5/5] تحرير المنافذ 8792, 8793...
+powershell -NoProfile -Command ^
+  "8792,8793 | ForEach-Object { Get-NetTCPConnection -LocalPort $_ -State Listen -EA SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -EA SilentlyContinue } }"
+echo.
+
+REM ──── التشغيل ────
+echo 🚀 تشغيل Indexer...
+start "NAWAT-Search-Indexer" cmd /k "cd /d %~dp0 && node indexer/worker.js"
+timeout /t 3 /nobreak >nul
+
+echo 🚀 تشغيل Search Server...
+start "NAWAT-Search-Server" cmd /k "cd /d %~dp0 && node server/server.js"
+timeout /t 2 /nobreak >nul
+
+echo.
+echo ✅ Search Pack يعمل!
+echo.
+echo   🔍 Search:   http://127.0.0.1:8792
+echo   📇 Indexer:  http://127.0.0.1:8793
+echo.
+
+choice /C YN /M "هل تريد بدء الفهرسة الآن؟ (Y/N)"
+if errorlevel 2 goto :end
+echo.
+echo 📇 بدء الفهرسة (قد يستغرق دقائق حسب حجم المشروع)...
+curl -s -X POST http://127.0.0.1:8792/index/start -H "Content-Type: application/json" -d "{\"reset\":false}"
+echo.
+echo راقب التقدم: http://127.0.0.1:8793/index/status
+
+:end
+echo.
+pause

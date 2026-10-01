@@ -1,0 +1,9 @@
+@echo off
+chcp 65001 >nul
+echo إيقاف Search Pack...
+powershell -NoProfile -Command ^
+  "8792,8793 | ForEach-Object { Get-NetTCPConnection -LocalPort $_ -State Listen -EA SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -EA SilentlyContinue } }"
+taskkill /FI "WINDOWTITLE eq NAWAT-Search-Indexer*" /F >nul 2>&1
+taskkill /FI "WINDOWTITLE eq NAWAT-Search-Server*" /F >nul 2>&1
+echo ✅ تم
+timeout /t 1 /nobreak >nul

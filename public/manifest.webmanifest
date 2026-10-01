@@ -1,0 +1,55 @@
+{
+  "name": "NAWAT Studio — Groupe-HN",
+  "short_name": "NAWAT",
+  "description": "منصة Groupe-HN المحلية لتطوير وإدارة نماذج ووكلاء الذكاء الاصطناعي.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#111827",
+  "theme_color": "#111827",
+  "categories": ["developer", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/pwa-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "NAWAT Chat",
+      "short_name": "Chat",
+      "url": "/workspace",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "الورشة متعددة النماذج",
+      "short_name": "Atelier",
+      "url": "/atelier",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "المكتبة والنتائج",
+      "short_name": "Résultats",
+      "url": "/resultats",
+      "icons": [{ "src": "/pwa-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ]
+}

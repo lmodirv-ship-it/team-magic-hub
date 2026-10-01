@@ -10,33 +10,310 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as ApiKeysRouteImport } from './routes/api-keys'
+import { Route as ArchitectureRouteImport } from './routes/architecture'
+import { Route as AtelierRouteImport } from './routes/atelier'
+import { Route as DatabaseRouteImport } from './routes/database'
+import { Route as MetricsRouteImport } from './routes/metrics'
+import { Route as MobileRouteImport } from './routes/mobile'
+import { Route as ModelsRouteImport } from './routes/models'
+import { Route as PacksRouteImport } from './routes/packs'
+import { Route as PlanRouteImport } from './routes/plan'
+import { Route as PortsRouteImport } from './routes/ports'
+import { Route as ProvidersRouteImport } from './routes/providers'
+import { Route as ResultatsRouteImport } from './routes/resultats'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SpyRouteImport } from './routes/spy'
+import { Route as TasksRouteImport } from './routes/tasks'
+import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as WorkspaceRouteImport } from './routes/workspace'
+import { Route as ApiStatsRouteImport } from './routes/api/stats'
+import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
+import { Route as ApiPublicRelaySplatRouteImport } from './routes/api/public/relay/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiKeysRoute = ApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ArchitectureRoute = ArchitectureRouteImport.update({
+  id: '/architecture',
+  path: '/architecture',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AtelierRoute = AtelierRouteImport.update({
+  id: '/atelier',
+  path: '/atelier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatabaseRoute = DatabaseRouteImport.update({
+  id: '/database',
+  path: '/database',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MetricsRoute = MetricsRouteImport.update({
+  id: '/metrics',
+  path: '/metrics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MobileRoute = MobileRouteImport.update({
+  id: '/mobile',
+  path: '/mobile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModelsRoute = ModelsRouteImport.update({
+  id: '/models',
+  path: '/models',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PacksRoute = PacksRouteImport.update({
+  id: '/packs',
+  path: '/packs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlanRoute = PlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortsRoute = PortsRouteImport.update({
+  id: '/ports',
+  path: '/ports',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProvidersRoute = ProvidersRouteImport.update({
+  id: '/providers',
+  path: '/providers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResultatsRoute = ResultatsRouteImport.update({
+  id: '/resultats',
+  path: '/resultats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SpyRoute = SpyRouteImport.update({
+  id: '/spy',
+  path: '/spy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TasksRoute = TasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsRoute = ToolsRouteImport.update({
+  id: '/tools',
+  path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkspaceRoute = WorkspaceRouteImport.update({
+  id: '/workspace',
+  path: '/workspace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsRoute = ApiStatsRouteImport.update({
+  id: '/api/stats',
+  path: '/api/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
+  id: '/chat/$threadId',
+  path: '/chat/$threadId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicRelaySplatRoute = ApiPublicRelaySplatRouteImport.update({
+  id: '/api/public/relay/$',
+  path: '/api/public/relay/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/architecture': typeof ArchitectureRoute
+  '/atelier': typeof AtelierRoute
+  '/database': typeof DatabaseRoute
+  '/metrics': typeof MetricsRoute
+  '/mobile': typeof MobileRoute
+  '/models': typeof ModelsRoute
+  '/packs': typeof PacksRoute
+  '/plan': typeof PlanRoute
+  '/ports': typeof PortsRoute
+  '/providers': typeof ProvidersRoute
+  '/resultats': typeof ResultatsRoute
+  '/settings': typeof SettingsRoute
+  '/spy': typeof SpyRoute
+  '/tasks': typeof TasksRoute
+  '/tools': typeof ToolsRoute
+  '/workspace': typeof WorkspaceRoute
+  '/api/stats': typeof ApiStatsRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/architecture': typeof ArchitectureRoute
+  '/atelier': typeof AtelierRoute
+  '/database': typeof DatabaseRoute
+  '/metrics': typeof MetricsRoute
+  '/mobile': typeof MobileRoute
+  '/models': typeof ModelsRoute
+  '/packs': typeof PacksRoute
+  '/plan': typeof PlanRoute
+  '/ports': typeof PortsRoute
+  '/providers': typeof ProvidersRoute
+  '/resultats': typeof ResultatsRoute
+  '/settings': typeof SettingsRoute
+  '/spy': typeof SpyRoute
+  '/tasks': typeof TasksRoute
+  '/tools': typeof ToolsRoute
+  '/workspace': typeof WorkspaceRoute
+  '/api/stats': typeof ApiStatsRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
+  '/api-keys': typeof ApiKeysRoute
+  '/architecture': typeof ArchitectureRoute
+  '/atelier': typeof AtelierRoute
+  '/database': typeof DatabaseRoute
+  '/metrics': typeof MetricsRoute
+  '/mobile': typeof MobileRoute
+  '/models': typeof ModelsRoute
+  '/packs': typeof PacksRoute
+  '/plan': typeof PlanRoute
+  '/ports': typeof PortsRoute
+  '/providers': typeof ProvidersRoute
+  '/resultats': typeof ResultatsRoute
+  '/settings': typeof SettingsRoute
+  '/spy': typeof SpyRoute
+  '/tasks': typeof TasksRoute
+  '/tools': typeof ToolsRoute
+  '/workspace': typeof WorkspaceRoute
+  '/api/stats': typeof ApiStatsRoute
+  '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/agents'
+    | '/api-keys'
+    | '/architecture'
+    | '/atelier'
+    | '/database'
+    | '/metrics'
+    | '/mobile'
+    | '/models'
+    | '/packs'
+    | '/plan'
+    | '/ports'
+    | '/providers'
+    | '/resultats'
+    | '/settings'
+    | '/spy'
+    | '/tasks'
+    | '/tools'
+    | '/workspace'
+    | '/api/stats'
+    | '/chat/$threadId'
+    | '/api/public/relay/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/agents'
+    | '/api-keys'
+    | '/architecture'
+    | '/atelier'
+    | '/database'
+    | '/metrics'
+    | '/mobile'
+    | '/models'
+    | '/packs'
+    | '/plan'
+    | '/ports'
+    | '/providers'
+    | '/resultats'
+    | '/settings'
+    | '/spy'
+    | '/tasks'
+    | '/tools'
+    | '/workspace'
+    | '/api/stats'
+    | '/chat/$threadId'
+    | '/api/public/relay/$'
+  id:
+    | '__root__'
+    | '/'
+    | '/agents'
+    | '/api-keys'
+    | '/architecture'
+    | '/atelier'
+    | '/database'
+    | '/metrics'
+    | '/mobile'
+    | '/models'
+    | '/packs'
+    | '/plan'
+    | '/ports'
+    | '/providers'
+    | '/resultats'
+    | '/settings'
+    | '/spy'
+    | '/tasks'
+    | '/tools'
+    | '/workspace'
+    | '/api/stats'
+    | '/chat/$threadId'
+    | '/api/public/relay/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentsRoute: typeof AgentsRoute
+  ApiKeysRoute: typeof ApiKeysRoute
+  ArchitectureRoute: typeof ArchitectureRoute
+  AtelierRoute: typeof AtelierRoute
+  DatabaseRoute: typeof DatabaseRoute
+  MetricsRoute: typeof MetricsRoute
+  MobileRoute: typeof MobileRoute
+  ModelsRoute: typeof ModelsRoute
+  PacksRoute: typeof PacksRoute
+  PlanRoute: typeof PlanRoute
+  PortsRoute: typeof PortsRoute
+  ProvidersRoute: typeof ProvidersRoute
+  ResultatsRoute: typeof ResultatsRoute
+  SettingsRoute: typeof SettingsRoute
+  SpyRoute: typeof SpyRoute
+  TasksRoute: typeof TasksRoute
+  ToolsRoute: typeof ToolsRoute
+  WorkspaceRoute: typeof WorkspaceRoute
+  ApiStatsRoute: typeof ApiStatsRoute
+  ChatThreadIdRoute: typeof ChatThreadIdRoute
+  ApiPublicRelaySplatRoute: typeof ApiPublicRelaySplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +325,179 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api-keys': {
+      id: '/api-keys'
+      path: '/api-keys'
+      fullPath: '/api-keys'
+      preLoaderRoute: typeof ApiKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/architecture': {
+      id: '/architecture'
+      path: '/architecture'
+      fullPath: '/architecture'
+      preLoaderRoute: typeof ArchitectureRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/atelier': {
+      id: '/atelier'
+      path: '/atelier'
+      fullPath: '/atelier'
+      preLoaderRoute: typeof AtelierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/database': {
+      id: '/database'
+      path: '/database'
+      fullPath: '/database'
+      preLoaderRoute: typeof DatabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/metrics': {
+      id: '/metrics'
+      path: '/metrics'
+      fullPath: '/metrics'
+      preLoaderRoute: typeof MetricsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mobile': {
+      id: '/mobile'
+      path: '/mobile'
+      fullPath: '/mobile'
+      preLoaderRoute: typeof MobileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/models': {
+      id: '/models'
+      path: '/models'
+      fullPath: '/models'
+      preLoaderRoute: typeof ModelsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/packs': {
+      id: '/packs'
+      path: '/packs'
+      fullPath: '/packs'
+      preLoaderRoute: typeof PacksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plan': {
+      id: '/plan'
+      path: '/plan'
+      fullPath: '/plan'
+      preLoaderRoute: typeof PlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ports': {
+      id: '/ports'
+      path: '/ports'
+      fullPath: '/ports'
+      preLoaderRoute: typeof PortsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/providers': {
+      id: '/providers'
+      path: '/providers'
+      fullPath: '/providers'
+      preLoaderRoute: typeof ProvidersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resultats': {
+      id: '/resultats'
+      path: '/resultats'
+      fullPath: '/resultats'
+      preLoaderRoute: typeof ResultatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/spy': {
+      id: '/spy'
+      path: '/spy'
+      fullPath: '/spy'
+      preLoaderRoute: typeof SpyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tasks': {
+      id: '/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof TasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools': {
+      id: '/tools'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof ToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workspace': {
+      id: '/workspace'
+      path: '/workspace'
+      fullPath: '/workspace'
+      preLoaderRoute: typeof WorkspaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats': {
+      id: '/api/stats'
+      path: '/api/stats'
+      fullPath: '/api/stats'
+      preLoaderRoute: typeof ApiStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$threadId': {
+      id: '/chat/$threadId'
+      path: '/chat/$threadId'
+      fullPath: '/chat/$threadId'
+      preLoaderRoute: typeof ChatThreadIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/relay/$': {
+      id: '/api/public/relay/$'
+      path: '/api/public/relay/$'
+      fullPath: '/api/public/relay/$'
+      preLoaderRoute: typeof ApiPublicRelaySplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentsRoute: AgentsRoute,
+  ApiKeysRoute: ApiKeysRoute,
+  ArchitectureRoute: ArchitectureRoute,
+  AtelierRoute: AtelierRoute,
+  DatabaseRoute: DatabaseRoute,
+  MetricsRoute: MetricsRoute,
+  MobileRoute: MobileRoute,
+  ModelsRoute: ModelsRoute,
+  PacksRoute: PacksRoute,
+  PlanRoute: PlanRoute,
+  PortsRoute: PortsRoute,
+  ProvidersRoute: ProvidersRoute,
+  ResultatsRoute: ResultatsRoute,
+  SettingsRoute: SettingsRoute,
+  SpyRoute: SpyRoute,
+  TasksRoute: TasksRoute,
+  ToolsRoute: ToolsRoute,
+  WorkspaceRoute: WorkspaceRoute,
+  ApiStatsRoute: ApiStatsRoute,
+  ChatThreadIdRoute: ChatThreadIdRoute,
+  ApiPublicRelaySplatRoute: ApiPublicRelaySplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

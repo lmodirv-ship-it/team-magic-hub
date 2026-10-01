@@ -1,0 +1,148 @@
+/**
+ * Search Pack Server — API البحث
+ * المنفذ: 8792
+ */
+const express = require('express');
+const cors = require('cors');
+const { VectorStore } = require('../src/vectorStore');
+const { SearchEngine } = require('../src/searchEngine');
+const { checkEmbedder } = require('../src/embedder');
+
+const log = (level, msg, meta) => {
+  const t = new Date().toISOString();
+  console.log(`[${t}] [${level}] [search] ${msg}${meta ? ' ' + JSON.stringify(meta) : ''}`);
+};
+const logger = {
+  info: (m, x) => log('INFO', m, x),
+  error: (m, x) => log('ERROR', m, x),
+  warn: (m, x) => log('WARN', m, x),
+  debug: () => {},
+};
+
+const PORT = parseInt(process.env.SEARCH_PORT || '8792', 10);
+const HOST = process.env.SEARCH_HOST || '127.0.0.1';
+const CORE = process.env.CORE_URL || 'http://127.0.0.1:8790';
+
+const store = new VectorStore();
+const engine = new SearchEngine(store);
+const app = express();
+
+app.use(cors());
+app.use(express.json({ limit: '5mb' }));
+
+/* ============ Health ============ */
+app.get('/health', async (req, res) => {
+  const embed = await checkEmbedder().catch((e) => ({ ok: false, error: e.message }));
+  res.json({
+    ok: true,
+    pack: 'search-pack',
+    service: 'search',
+    chunks: store.countChunks(),
+    files: store.allFiles().length,
+    embedder: { ok: embed.ok, model: embed.model, dim: embed.dim },
+    uptime: process.uptime(),
+  });
+});
+
+/* ============ Search Endpoints ============ */
+app.post('/search/semantic', async (req, res) => {
+  const t0 = Date.now();
+  try {
+    const { query, limit = 10, ext = null, minScore = 0.25 } = req.body || {};
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({ ok: false, error: 'query مطلوب (حرفان على الأقل)' });
+    }
+    const result = await engine.semantic({ query, limit, ext, minScore });
+    res.json(result);
+    logger.info('semantic', { query: query.slice(0, 60), count: result.count, ms: result.ms });
+  } catch (e) {
+    logger.error('semantic فشل', { error: e.message });
+    res.status(500).json({ ok: false, error: e.message, ms: Date.now() - t0 });
+  }
+});
+
+app.post('/search/keyword', async (req, res) => {
+  try {
+    const { query, limit = 20, ext = null } = req.body || {};
+    if (!query) return res.status(400).json({ ok: false, error: 'query مطلوب' });
+    const result = await engine.keyword({ query, limit, ext });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.post('/search/hybrid', async (req, res) => {
+  try {
+    const { query, limit = 10, ext = null, minScore = 0.2 } = req.body || {};
+    if (!query) return res.status(400).json({ ok: false, error: 'query مطلوب' });
+    const result = await engine.hybrid({ query, limit, ext, minScore });
+    res.json(result);
+    logger.info('hybrid', { query: query.slice(0, 60), count: result.count, ms: result.ms });
+  } catch (e) {
+    logger.error('hybrid فشل', { error: e.message });
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/* ============ Context Retrieval (RAG) ============ */
+app.post('/context', async (req, res) => {
+  try {
+    const { query, topK = 5, maxCharsPerChunk = 1200 } = req.body || {};
+    if (!query) return res.status(400).json({ ok: false, error: 'query مطلوب' });
+    const result = await engine.retrieveContext({ query, topK, maxCharsPerChunk });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+/* ============ Stats ============ */
+app.get('/stats', (req, res) => {
+  const files = store.allFiles();
+  const byExt = {};
+  for (const f of files) {
+    const ext = (f.path.split('.').pop() || '').toLowerCase();
+    byExt[ext] = (byExt[ext] || 0) + 1;
+  }
+  res.json({
+    ok: true,
+    chunks: store.countChunks(),
+    files: files.length,
+    byExtension: byExt,
+    lastIndexAt: store.getMeta('last_index_at'),
+  });
+});
+
+/* ============ Proxy for indexer ============ */
+app.use('/index', async (req, res) => {
+  const url = `http://127.0.0.1:8793/index${req.url === '/' ? '' : req.url}`;
+  try {
+    const r = await fetch(url, {
+      method: req.method,
+      headers: { 'Content-Type': 'application/json' },
+      body: req.method === 'POST' ? JSON.stringify(req.body) : undefined,
+    });
+    const data = await r.json();
+    res.status(r.status).json(data);
+  } catch (e) {
+    res.status(502).json({ ok: false, error: 'Indexer غير متاح: ' + e.message });
+  }
+});
+
+/* ============ 404 ============ */
+app.use((req, res) => {
+  res.status(404).json({ ok: false, error: `المسار غير موجود: ${req.method} ${req.path}` });
+});
+
+/* ============ الإقلاع ============ */
+app.listen(PORT, HOST, () => {
+  logger.info('═══════════════════════════════════════');
+  logger.info('  NAWAT Search Pack — Search Server   ');
+  logger.info('═══════════════════════════════════════');
+  logger.info(`✅ http://${HOST}:${PORT}`);
+  logger.info(`   chunks: ${store.countChunks()} · files: ${store.allFiles().length}`);
+});
+
+process.on('SIGINT', () => { store.close(); process.exit(0); });
+process.on('SIGTERM', () => { store.close(); process.exit(0); });

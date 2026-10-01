@@ -1,0 +1,159 @@
+/**
+ * SearchEngine — يجمع:
+ *  - Vector search (semantic)
+ *  - Keyword search (يستخدم core-pack)
+ *  - Reranking
+ *  - Hybrid merge
+ */
+const { VectorStore } = require('./vectorStore');
+const { embedOne } = require('./embedder');
+const { rerank } = require('./reranker');
+const { truncate } = require('./utils');
+
+const CORE = process.env.CORE_URL || 'http://127.0.0.1:8790';
+
+class SearchEngine {
+  constructor(store) {
+    this.store = store || new VectorStore();
+  }
+
+  /**
+   * بحث دلالي خالص
+   */
+  async semantic({ query, limit = 10, ext = null, minScore = 0.25 }) {
+    const t0 = Date.now();
+    const queryVec = await embedOne(query);
+    const raw = this.store.search(queryVec, {
+      limit: limit * 3,
+      ext,
+      minScore,
+    });
+    const ranked = rerank(raw, { query, limit });
+    return {
+      ok: true,
+      mode: 'semantic',
+      query,
+      ms: Date.now() - t0,
+      count: ranked.length,
+      results: ranked.map((r) => this._format(r)),
+    };
+  }
+
+  /**
+   * بحث نصي عبر core-pack
+   */
+  async keyword({ query, limit = 20, ext = null }) {
+    const t0 = Date.now();
+    const body = { query, maxResults: limit * 3 };
+    const res = await fetch(`${CORE}/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error(`Core search failed: ${res.status}`);
+    const data = await res.json();
+
+    let results = (data.results || []).map((r) => ({
+      id: `${r.file}:${r.line}`,
+      path: r.file,
+      text: r.text,
+      ext: (r.file.split('.').pop() || '').toLowerCase(),
+      lineStart: r.line,
+      score: 0.5,
+    }));
+
+    if (ext) results = results.filter((r) => r.ext === ext);
+    results = results.slice(0, limit);
+
+    return {
+      ok: true,
+      mode: 'keyword',
+      query,
+      ms: Date.now() - t0,
+      count: results.length,
+      results: results.map((r) => this._format(r)),
+    };
+  }
+
+  /**
+   * بحث هجين — يدمج semantic + keyword
+   * دمج RRF (Reciprocal Rank Fusion)
+   */
+  async hybrid({ query, limit = 10, ext = null, minScore = 0.2 }) {
+    const t0 = Date.now();
+
+    const [sem, kw] = await Promise.all([
+      this.semantic({ query, limit: limit * 2, ext, minScore }).catch((e) => ({ results: [], error: e.message })),
+      this.keyword({ query, limit: limit * 2, ext }).catch((e) => ({ results: [], error: e.message })),
+    ]);
+
+    const merged = this._rrf(
+      [sem.results || [], kw.results || []],
+      { k: 60 }
+    );
+
+    const top = merged.slice(0, limit);
+
+    return {
+      ok: true,
+      mode: 'hybrid',
+      query,
+      ms: Date.now() - t0,
+      count: top.length,
+      sources: {
+        semantic: (sem.results || []).length,
+        keyword: (kw.results || []).length,
+      },
+      results: top.map((r) => this._format(r)),
+    };
+  }
+
+  /**
+   * استرجاع السياق للنماذج (RAG)
+   * يعيد قطع مرتبة، مع نصها الكامل (أو مقتطعة) جاهزة للإدراج في prompt
+   */
+  async retrieveContext({ query, topK = 5, maxCharsPerChunk = 1200 }) {
+    const res = await this.hybrid({ query, limit: topK });
+    return {
+      ok: true,
+      query,
+      chunks: res.results.map((r) => ({
+        path: r.path,
+        lineStart: r.lineStart,
+        score: r.score,
+        text: truncate(r.text, maxCharsPerChunk),
+      })),
+    };
+  }
+
+  /* ============ RRF ============ */
+  _rrf(lists, { k = 60 } = {}) {
+    const scores = new Map(); // id → { score, item }
+    lists.forEach((list) => {
+      list.forEach((item, rank) => {
+        const id = item.path + '::' + (item.lineStart ?? item.chunkIndex ?? item.id);
+        const add = 1 / (k + rank + 1);
+        if (!scores.has(id)) {
+          scores.set(id, { score: 0, item });
+        }
+        scores.get(id).score += add;
+      });
+    });
+    return Array.from(scores.values())
+      .sort((a, b) => b.score - a.score)
+      .map((x) => ({ ...x.item, rrfScore: x.score }));
+  }
+
+  _format(r) {
+    return {
+      path: r.path,
+      lineStart: r.lineStart ?? null,
+      ext: r.ext,
+      score: Number((r.finalScore ?? r.score ?? 0).toFixed(4)),
+      preview: truncate((r.text || '').replace(/\s+/g, ' '), 220),
+      text: r.text,
+    };
+  }
+}
+
+module.exports = { SearchEngine };

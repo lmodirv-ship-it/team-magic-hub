@@ -1,0 +1,64 @@
+/**
+ * أدوات مساعدة
+ */
+const crypto = require('crypto');
+const path = require('path');
+
+function sha1(text) {
+  return crypto.createHash('sha1').update(text).digest('hex');
+}
+
+function sha256(text) {
+  return crypto.createHash('sha256').update(text).digest('hex');
+}
+
+function fileExt(p) {
+  return (p.split('.').pop() || '').toLowerCase();
+}
+
+function isTextFile(p) {
+  const ext = fileExt(p);
+  const text = new Set([
+    'js','mjs','cjs','jsx','ts','tsx','json','jsonl','md','markdown',
+    'html','htm','css','scss','less','sass','py','rb','go','rs','java',
+    'php','c','h','cpp','hpp','cc','cxx','cs','swift','kt','sh','bash',
+    'ps1','bat','cmd','yml','yaml','toml','ini','cfg','conf','sql','xml',
+    'vue','svelte','astro','env','gitignore','dockerignore','lock','txt',
+    'log','csv','tsv','graphql','gql','proto','lua','r','pl','ex','exs',
+  ]);
+  return text.has(ext);
+}
+
+function isSkippedDir(name) {
+  const skip = new Set([
+    'node_modules','.git','.svn','.hg','dist','build','out','.next','.nuxt',
+    '.cache','.parcel-cache','.turbo','coverage','.nyc_output','stv',
+    'deepanalyse','.ollama','models','__pycache__','.venv','venv','env',
+    '.idea','.vscode-server','.pytest_cache','.mypy_cache','.tox',
+    'target','bin','obj','.gradle','.dart_tool','.expo',
+  ]);
+  return skip.has(name);
+}
+
+function truncate(text, n) {
+  if (typeof text !== 'string') return '';
+  return text.length > n ? text.slice(0, n) + '…' : text;
+}
+
+function safeJsonParse(text, fallback = null) {
+  try { return JSON.parse(text); } catch { return fallback; }
+}
+
+function nowMs() {
+  return Date.now();
+}
+
+function roundTo(n, digits = 3) {
+  const f = Math.pow(10, digits);
+  return Math.round(n * f) / f;
+}
+
+module.exports = {
+  sha1, sha256, fileExt, isTextFile, isSkippedDir,
+  truncate, safeJsonParse, nowMs, roundTo,
+};
