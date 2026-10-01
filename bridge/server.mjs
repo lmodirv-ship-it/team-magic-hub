@@ -11,7 +11,7 @@ const COMFY = env("COMFY_URL", "http://192.168.2.4:8188").replace(/\/$/, "");
 const TOKEN = env("BRIDGE_TOKEN", ""); // اختياري: إن وُضع يُطلب من كل طلب
 const DEFAULT_MODEL = env("DEFAULT_MODEL", "nawat-coder:latest");
 const ORIGINS = env("ALLOWED_ORIGINS",
-  "https://studio-nawat.lovable.app,https://nawat-ecosystem-hub.lovable.app,http://localhost:5174,http://localhost:8080"
+  "https://nawat.groupe-hn.com,https://team-magic-hub.lovable.app,http://localhost:5174,http://localhost:8080"
 ).split(",").map((s) => s.trim());
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
