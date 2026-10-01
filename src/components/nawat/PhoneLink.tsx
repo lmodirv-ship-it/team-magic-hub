@@ -83,7 +83,7 @@ function BridgeManager() {
         </div>)}
       </div>
       <label className="grid gap-1 text-xs font-medium">كلمة سر الشبكة العامة<Input type="password" value={token} onChange={(event) => setToken(event.target.value)} onBlur={() => saveRelayToken(token)} dir="ltr" className="h-8" autoComplete="off" /><span className="font-normal text-muted-foreground">محفوظة على هذا الجهاز فقط ولا تدخل في ملف التصدير.</span></label>
-      <div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={downloadConfig}><Download className="size-3.5" />تصدير الإعدادات</Button><Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={() => fileRef.current?.click()}><Upload className="size-3.5" />استيراد الإعدادات</Button><input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={(event) => uploadConfig(event.target.files?.[0])} />{notice && <span role="status" className="text-[11px] text-muted-foreground">{notice}</span>}</div>
+      <div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={downloadConfig}><Download className="size-3.5" />تصدير الإعدادات</Button><Button asChild size="sm" variant="outline" className="h-8 gap-1.5 text-xs"><label htmlFor="bridge-config-import"><Upload className="size-3.5" />استيراد الإعدادات</label></Button><input id="bridge-config-import" ref={fileRef} type="file" accept="application/json,.json" className="sr-only" onChange={(event) => uploadConfig(event.target.files?.[0])} />{notice && <span role="status" className="text-[11px] text-muted-foreground">{notice}</span>}</div>
     </div>
   );
 }
