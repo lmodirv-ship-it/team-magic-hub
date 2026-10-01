@@ -128,8 +128,8 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     };
 
     const connect = () => {
+      startPolling();
       if (usePolling) {
-        startPolling();
         return;
       }
       try {
@@ -156,8 +156,6 @@ export function LiveProvider({ children }: { children: ReactNode }) {
           }
         };
         socket.onclose = () => {
-          setConnected(false);
-          startPolling();
           if (!cancelled) reconnect = window.setTimeout(connect, 5000);
         };
         socket.onerror = () => socket?.close();
