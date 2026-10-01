@@ -52,8 +52,14 @@ const initial: State = {
   web: true, think: false, lang: "ar", localFirst: true, relayToken: "",
   tools: Object.fromEntries(TOOLS.map(([k]) => [k, true])), msgs: [],
 };
-const CLOUD_BRIDGE = "https://studio-nawat.lovable.app";
-const isCloud = (u: string) => /^https:\/\/[^/]*lovable\.app/.test(u);
+const CLOUD_BRIDGE = "https://nawat.groupe-hn.com";
+const isCloud = (u: string) => {
+  try {
+    return new URL(u).origin === CLOUD_BRIDGE;
+  } catch {
+    return false;
+  }
+};
 
 // يوحّد الاتصال: محلي مباشرة إلى الجسر، أو سحابي عبر مرحّل الموقع المنشور.
 async function bridgeCall(s: State, kind: "chat" | "models" | "health", payload: Record<string, unknown> = {}) {
