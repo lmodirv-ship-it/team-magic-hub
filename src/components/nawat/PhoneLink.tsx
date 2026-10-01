@@ -4,7 +4,7 @@ import { Smartphone, Globe, Wifi, Cable, Download, Upload, Activity } from "luci
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import apkAsset from "@/assets/nawat-apk.asset.json";
+import apkAsset from "@/assets/nawat-apk-v01092006.apk.asset.json";
 import srcAsset from "@/assets/nawat-mobile-source-v2.zip.asset.json";
 import { checkBridge, exportBridgeConfig, getBridgeConfig, getRelayToken, importBridgeConfig, saveBridgeConfig, saveRelayToken, type BridgeCheck, type BridgeConfig, type BridgeMode } from "@/lib/nawat/bridge-config";
 
@@ -160,10 +160,10 @@ export function PhoneLink() {
       <div className="flex items-center gap-2">
         <Smartphone className="h-4 w-4 text-nawat" />
         <h2 className="text-sm font-semibold">الربط الهاتفي</h2>
-        <a href={apkAsset.url} download="NAWAT-v1.0.apk" className="ms-auto">
+        <a href={apkAsset.url} download="NAWAT-V01092006.apk" className="ms-auto">
           <Button size="sm" className="h-8 gap-1.5 text-xs">
             <Download className="h-3.5 w-3.5" />
-            تحميل تطبيق الهاتف (APK — 107 MB)
+            تحميل تطبيق الهاتف (الإصدار 01.09.2006 — 114 MB)
           </Button>
         </a>
         <a href="/mobile" target="_blank" rel="noreferrer">
