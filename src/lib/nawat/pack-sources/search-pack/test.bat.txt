@@ -1,0 +1,39 @@
+@echo off
+chcp 65001 >nul
+title NAWAT Search Pack — Self Test
+color 0E
+
+set PASS=0
+set FAIL=0
+
+echo.
+echo ╔════════════════════════════════════════════════════╗
+echo ║        NAWAT Search Pack — اختبار القبول           ║
+echo ╚════════════════════════════════════════════════════╝
+echo.
+
+REM 1) Core
+curl -s -o nul http://127.0.0.1:8790/health 2>nul
+if errorlevel 1 (echo ❌ Core & set /a FAIL+=1) else (echo ✅ Core & set /a PASS+=1)
+
+REM 2) Ollama
+curl -s -o nul http://127.0.0.1:11434/api/tags 2>nul
+if errorlevel 1 (echo ❌ Ollama & set /a FAIL+=1) else (echo ✅ Ollama & set /a PASS+=1)
+
+REM 3) Search Server
+curl -s -o nul http://127.0.0.1:8792/health 2>nul
+if errorlevel 1 (echo ❌ Search Server & set /a FAIL+=1) else (echo ✅ Search Server & set /a PASS+=1)
+
+REM 4) Indexer
+curl -s -o nul http://127.0.0.1:8793/health 2>nul
+if errorlevel 1 (echo ❌ Indexer & set /a FAIL+=1) else (echo ✅ Indexer & set /a PASS+=1)
+
+REM 5) Embedder Model
+curl -s http://127.0.0.1:8792/health | findstr /C:"\"ok\":true" >nul
+if errorlevel 1 (echo ❌ Embedder & set /a FAIL+=1) else (echo ✅ Embedder & set /a PASS+=1)
+
+echo.
+echo ════════════════════════════════════════════════════════
+echo   ✅ نجح: %PASS%   ❌ فشل: %FAIL%
+echo ════════════════════════════════════════════════════════
+if %FAIL%==0 (exit /b 0) else (exit /b 1)

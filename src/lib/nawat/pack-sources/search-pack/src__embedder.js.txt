@@ -1,0 +1,131 @@
+/**
+ * Embedder — يحوّل النصوص إلى متجهات عبر Ollama
+ * - Batch (متوازي محدود)
+ * - Cache في الذاكرة (LRU)
+ * - Retry + Timeout
+ */
+const OLLAMA = process.env.OLLAMA_URL || 'http://127.0.0.1:11434';
+const MODEL = process.env.EMBED_MODEL || 'nomic-embed-text:latest';
+
+const CACHE_MAX = 5000;
+const cache = new Map(); // sha1(text) → number[]
+
+function cacheGet(key) {
+  if (!cache.has(key)) return null;
+  const v = cache.get(key);
+  cache.delete(key);
+  cache.set(key, v); // LRU touch
+  return v;
+}
+
+function cacheSet(key, val) {
+  if (cache.size >= CACHE_MAX) {
+    const first = cache.keys().next().value;
+    cache.delete(first);
+  }
+  cache.set(key, val);
+}
+
+async function embedOne(text, { timeoutMs = 30000 } = {}) {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${OLLAMA}/api/embeddings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: MODEL, prompt: text }),
+      signal: controller.signal,
+    });
+
+    if (!res.ok) {
+      const err = await res.text().catch(() => '');
+      throw new Error(`Ollama ${res.status}: ${err.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    if (!Array.isArray(data.embedding)) {
+      throw new Error('رد غير متوقع من Ollama — لا يوجد embedding');
+    }
+    return data.embedding;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/**
+ * توليد embeddings لدفعة نصوص
+ * - متوازي محدود (concurrency)
+ * - Cache
+ * - Progress callback
+ */
+async function embedBatch(texts, options = {}) {
+  const {
+    concurrency = 3,
+    onProgress = null,
+    timeoutMs = 30000,
+  } = options;
+
+  const results = new Array(texts.length);
+  let done = 0;
+  let next = 0;
+
+  async function worker() {
+    while (true) {
+      const i = next++;
+      if (i >= texts.length) break;
+
+      const text = texts[i];
+      const key = require('./utils').sha1(text);
+
+      const cached = cacheGet(key);
+      if (cached) {
+        results[i] = cached;
+        done++;
+        if (onProgress) onProgress(done, texts.length);
+        continue;
+      }
+
+      try {
+        const vec = await embedOne(text, { timeoutMs });
+        results[i] = vec;
+        cacheSet(key, vec);
+      } catch (e) {
+        results[i] = null;
+        console.warn(`[embedder] فشل العنصر ${i}: ${e.message}`);
+      }
+
+      done++;
+      if (onProgress) onProgress(done, texts.length);
+    }
+  }
+
+  await Promise.all(Array.from({ length: Math.min(concurrency, texts.length) }, worker));
+  return results;
+}
+
+/**
+ * اختبار الاتصال + النموذج
+ */
+async function checkEmbedder() {
+  try {
+    // 1) Ollama حي
+    const h = await fetch(`${OLLAMA}/api/tags`, { signal: AbortSignal.timeout(3000) });
+    if (!h.ok) return { ok: false, error: 'Ollama لا يستجيب' };
+    const tags = await h.json();
+    const hasModel = (tags.models || []).some((m) =>
+      m.name === MODEL || m.name.startsWith(MODEL.split(':')[0])
+    );
+    if (!hasModel) {
+      return { ok: false, error: `النموذج ${MODEL} غير مثبت. شغّل: ollama pull ${MODEL}` };
+    }
+
+    // 2) embedding تجريبي
+    const v = await embedOne('اختبار');
+    return { ok: true, dim: v.length, model: MODEL };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+module.exports = { embedOne, embedBatch, checkEmbedder, MODEL };

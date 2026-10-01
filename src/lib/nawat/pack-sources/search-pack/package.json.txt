@@ -1,0 +1,21 @@
+{
+  "name": "nawat-search-pack",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "NAWAT Search Pack — Semantic + Hybrid Search",
+  "scripts": {
+    "start": "node server/server.js",
+    "start:indexer": "node indexer/worker.js",
+    "test": "node test/run.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "better-sqlite3": "^11.0.0",
+    "chokidar": "^3.6.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
