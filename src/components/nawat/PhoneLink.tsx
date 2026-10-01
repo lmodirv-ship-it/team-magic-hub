@@ -10,7 +10,7 @@ const PRESETS = [
   {
     id: "cloud",
     name: "الموقع المنشور",
-    url: "https://studio-nawat.lovable.app",
+    url: "https://nawat.groupe-hn.com",
     hint: "يعمل من أي مكان بالإنترنت",
     icon: Globe,
   },
@@ -32,7 +32,7 @@ const PRESETS = [
 
 /** خدمات تطبيق الهاتف (المنافذ — الربط بالخدمات) */
 const PHONE_SERVICES = [
-  { id: "app", name: "التطبيق المنشور — الرابط بين الخدمات", url: "https://studio-nawat.lovable.app", test: "/", btn: "اختبار الرابط", hint: "يجمع الخدمات معًا: الجسر، المولّد، البوابة — ويفتح من أي مكان بالإنترنت." },
+  { id: "app", name: "التطبيق المنشور — الرابط بين الخدمات", url: "https://nawat.groupe-hn.com", test: "/", btn: "اختبار الرابط", hint: "يجمع الخدمات معًا: الجسر، المولّد، البوابة — ويفتح من أي مكان بالإنترنت." },
   { id: "models", name: "الجسر — نماذج الخادم (منفذ 8788)", url: "http://192.168.100.66:8788", test: "/api/ping", btn: "اختبار الجسر", hint: "يُستخدم للمهام الصعبة: برمجة، رؤية، استدلال طويل." },
   { id: "comfy", name: "مولّد الصور — ComfyUI (منفذ 8188)", url: "http://192.168.2.4:8188", test: "/system_stats", btn: "اختبار المولّد", hint: "يغذّي «ارسم…» وأزرار التكبير والتوسيع والتعبئة تحت كل صورة." },
   { id: "search", name: "بوابة البحث السحابية", url: "https://ntapi.hn-dbpro.com", test: "/", btn: "اختبار البوابة", hint: "تدعم: ويب · أخبار · صور · فيديو · ويكيبيديا · أسئلة." },

@@ -61,7 +61,7 @@ export const DEFAULT_PORTS: PortEntry[] = [
   p("containerd", "32871", S, "public", "docker", "containerd", "containerd", "واجهة containerd", ["/architecture"]),
   p("dns", "53", "127.0.0.53", "local", "infra", "systemd-resolved", "systemd", "DNS محلي داخل الخادم (127.0.0.53/54)", ["/settings"]),
   p("comfyui", "8188", "192.168.2.4", "public", "ai", "ComfyUI — مولّد الصور", "docker", "يغذّي «ارسم…» وأزرار التكبير والتوسيع والتعبئة", ["/atelier", "/models"]),
-  p("published-app", "443", "studio-nawat.lovable.app", "public", "web", "NAWAT Studio المنشور", "cloud", "الرابط بين خدمات تطبيق الهاتف — يفتح من أي مكان بالإنترنت", ["/ports"], ["bridge-models", "comfyui", "search-gateway"]),
+  p("published-app", "443", "nawat.groupe-hn.com", "public", "web", "NAWAT Studio المنشور", "cloud", "الرابط الرسمي بين خدمات تطبيق الهاتف — يفتح من أي مكان بالإنترنت", ["/ports"], ["bridge-models", "comfyui", "search-gateway"]),
   p("bridge-models", "8788", S, "public", "ai", "الجسر — نماذج الخادم", "local", "للمهام الصعبة: برمجة، رؤية، استدلال طويل (تطبيق الهاتف)", ["/models", "/atelier"], ["ollama"]),
   p("search-gateway", "443", "ntapi.hn-dbpro.com", "public", "web", "بوابة البحث السحابية", "cloud", "ويب · أخبار · صور · فيديو · ويكيبيديا · أسئلة", ["/atelier"]),
   p("ollama", "11434", S, "public", "ai", "Ollama", "systemd", "خادم النماذج المحلي", ["/models", "/atelier", "/chat/new", "/workspace", "/providers", "/settings"]),
