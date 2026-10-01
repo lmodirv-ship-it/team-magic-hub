@@ -121,11 +121,15 @@ export function LiveProvider({ children }: { children: ReactNode }) {
         if (!cancelled) setConnected(false);
       }
     };
+    const startPolling = () => {
+      if (poll || cancelled) return;
+      void pollStats();
+      poll = window.setInterval(() => { void pollStats(); }, 5000);
+    };
 
     const connect = () => {
       if (usePolling) {
-        void pollStats();
-        poll = window.setInterval(() => { void pollStats(); }, 5000);
+        startPolling();
         return;
       }
       try {
@@ -153,6 +157,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
         };
         socket.onclose = () => {
           setConnected(false);
+          startPolling();
           if (!cancelled) reconnect = window.setTimeout(connect, 5000);
         };
         socket.onerror = () => socket?.close();
