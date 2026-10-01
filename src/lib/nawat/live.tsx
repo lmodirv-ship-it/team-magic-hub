@@ -10,9 +10,8 @@ import {
 } from "react";
 
 /**
- * Single shared WebSocket connection to the NAWAT companion server
- * (ws://192.168.100.66:5001) plus the in-app notification centre.
- * Everything degrades gracefully when the server is offline.
+ * Shared live connection: local WebSocket on LAN pages, with same-origin
+ * statistics polling on secure/public pages where browsers block ws://.
  */
 
 export const LIVE_WS_URL = "ws://192.168.100.66:5001";
@@ -103,55 +102,34 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    let socket: WebSocket | undefined;
-    let reconnect: number | undefined;
+    let poll: number | undefined;
     let cancelled = false;
 
-    const connect = () => {
+    const pollStats = async () => {
       try {
-        socket = new WebSocket(LIVE_WS_URL);
-        socket.onopen = () => setConnected(true);
-        socket.onmessage = (event) => {
-          setLastEventAt(Date.now());
-          try {
-            const payload = JSON.parse(String(event.data)) as Record<string, unknown>;
-            const type = typeof payload["type"] === "string" ? payload["type"] : "";
-            if (type === "stats.update") {
-              setLastStats(payload);
-              return;
-            }
-            if (type === "task.started" || type === "task.finished") {
-              notify({
-                kind: type === "task.finished" ? "success" : "task",
-                title: eventTitle(type, payload),
-                detail: typeof payload["detail"] === "string" ? payload["detail"] : "",
-              });
-            }
-          } catch {
-            // Ignore malformed frames from third-party clients.
-          }
-        };
-        socket.onclose = () => {
-          setConnected(false);
-          if (!cancelled) reconnect = window.setTimeout(connect, 5000);
-        };
-        socket.onerror = () => socket?.close();
+        const response = await fetch("/api/stats", { cache: "no-store" });
+        if (!response.ok) throw new Error("Live statistics unavailable");
+        const payload: unknown = await response.json();
+        if (cancelled) return;
+        setLastStats(payload);
+        setLastEventAt(Date.now());
+        setConnected(true);
       } catch {
-        setConnected(false);
-        if (!cancelled) reconnect = window.setTimeout(connect, 5000);
+        if (!cancelled) setConnected(false);
       }
+    };
+    const startPolling = () => {
+      if (poll || cancelled) return;
+      void pollStats();
+      poll = window.setInterval(() => { void pollStats(); }, 5000);
     };
 
-    connect();
+    startPolling();
     return () => {
       cancelled = true;
-      if (reconnect) window.clearTimeout(reconnect);
-      if (socket) {
-        socket.onclose = null;
-        socket.close();
-      }
+      if (poll) window.clearInterval(poll);
     };
-  }, [notify]);
+  }, []);
 
   const value = useMemo<LiveCtx>(
     () => ({
