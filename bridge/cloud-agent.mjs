@@ -2,7 +2,7 @@
 // وكيل الجسر السحابي — يعمل على الخادم المحلي بجانب bridge/server.mjs.
 // يتصل هو بالموقع المنشور (اتصال خارج فقط، بلا فتح منافذ) ويسحب المهام وينفذها عبر الجسر المحلي.
 // التشغيل:  RELAY_TOKEN=كلمة-السر node bridge/cloud-agent.mjs
-const CLOUD = (process.env.CLOUD_URL ?? "https://studio-nawat.lovable.app").replace(/\/$/, "") + "/api/public/relay";
+const CLOUD = (process.env.CLOUD_URL ?? "https://nawat.groupe-hn.com").replace(/\/$/, "") + "/api/public/relay";
 const LOCAL = (process.env.LOCAL_BRIDGE ?? "http://127.0.0.1:8788").replace(/\/$/, "");
 const TOKEN = process.env.RELAY_TOKEN;
 const LOCAL_TOKEN = process.env.BRIDGE_TOKEN ?? "";
