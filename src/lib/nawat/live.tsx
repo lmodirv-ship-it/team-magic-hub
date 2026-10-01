@@ -107,7 +107,6 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     let poll: number | undefined;
     let cancelled = false;
 
-    const usePolling = window.location.protocol === "https:";
     const pollStats = async () => {
       try {
         const response = await fetch("/api/stats", { cache: "no-store" });
@@ -129,9 +128,9 @@ export function LiveProvider({ children }: { children: ReactNode }) {
 
     const connect = () => {
       startPolling();
-      if (usePolling) {
-        return;
-      }
+      return;
+      /* The direct socket remains documented below for the desktop build,
+         while the browser uses the reliable same-origin live feed. */
       try {
         socket = new WebSocket(LIVE_WS_URL);
         socket.onopen = () => setConnected(true);
