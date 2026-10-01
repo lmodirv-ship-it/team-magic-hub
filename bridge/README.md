@@ -44,5 +44,7 @@ cloudflared tunnel --url http://localhost:8788
 node bridge/server.mjs &
 RELAY_TOKEN=كلمة-سر-الجسر-السحابي node bridge/cloud-agent.mjs
 ```
-في الهاتف: الإعدادات ← الاتصال ← «سحابي» ثم اكتب نفس كلمة السر.
+المتغير `CLOUD_URL` اختياري وافتراضيه `https://nawat.groupe-hn.com`، والمتغير `LOCAL_BRIDGE` اختياري وافتراضيه `http://127.0.0.1:8788`. إذا كان الجسر المحلي محميًا فمرّر نفس الرمز في `BRIDGE_TOKEN` للوكيل.
+
+في الهاتف أو لوحة الربط اختر «تلقائي» للمحلي ثم العام، أو «محلي»، أو «عام»، ثم اكتب `RELAY_TOKEN` نفسه. يمكن تصدير عناوين الجسر ووضعه إلى JSON واستيرادها على جهاز آخر؛ كلمات السر لا تُصدّر وتبقى على الجهاز.
 نقاط المرحّل: `/api/public/relay/status | submit | result/:id | pull | done`.

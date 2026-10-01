@@ -5,6 +5,7 @@ import {
   Plus, Mic, Send, X, Trash2, MessageCircle, Folder, Layers, Brain, Languages, Zap, Search, SlidersHorizontal,
 } from "lucide-react";
 import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
+import { callConfiguredBridge, getBridgeConfig, getRelayToken, saveBridgeConfig, saveRelayToken, type BridgeMode } from "@/lib/nawat/bridge-config";
 
 export const Route = createFileRoute("/mobile")({
   head: () => ({
@@ -45,41 +46,20 @@ const TOOLS = [
 
 type State = {
   bridge: string; comfy: string; model: string; web: boolean; think: boolean; relayToken: string;
+  connectionMode: BridgeMode; publicBridge: string;
   lang: "ar" | "en" | "fr"; localFirst: boolean; tools: Record<string, boolean>; msgs: Msg[];
 };
 const initial: State = {
   bridge: "http://192.168.100.66:8788", comfy: "http://192.168.2.4:8188", model: "nawat-vision",
+  publicBridge: "https://nawat.groupe-hn.com", connectionMode: "auto",
   web: true, think: false, lang: "ar", localFirst: true, relayToken: "",
   tools: Object.fromEntries(TOOLS.map(([k]) => [k, true])), msgs: [],
 };
-const CLOUD_BRIDGE = "https://nawat.groupe-hn.com";
-const isCloud = (u: string) => {
-  try {
-    return new URL(u).origin === CLOUD_BRIDGE;
-  } catch {
-    return false;
-  }
-};
-
 // يوحّد الاتصال: محلي مباشرة إلى الجسر، أو سحابي عبر مرحّل الموقع المنشور.
 async function bridgeCall(s: State, kind: "chat" | "models" | "health", payload: Record<string, unknown> = {}) {
-  if (!isCloud(s.bridge)) {
-    const path = kind === "chat" ? "/api/chat" : kind === "models" ? "/api/models" : "/api/health";
-    const r = await fetch(s.bridge + path, kind === "chat"
-      ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) } : {});
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    return r.json();
-  }
-  const base = s.bridge.replace(/\/$/, "") + "/api/public/relay";
-  const headers = { "Content-Type": "application/json", Authorization: `Bearer ${s.relayToken}` };
-  let r = await fetch(`${base}/submit`, { method: "POST", headers, body: JSON.stringify({ kind, payload, wait: 20 }) });
-  let d = await r.json();
-  for (let i = 0; d.status === "pending" && i < 15; i++) {
-    r = await fetch(`${base}/result/${d.id}`, { headers });
-    d = await r.json();
-  }
-  if (d.status !== "done") throw new Error(d.error ?? "لم يرد الخادم المحلي");
-  return d.result;
+  saveBridgeConfig({ version: 1, mode: s.connectionMode, localUrl: s.bridge, publicUrl: s.publicBridge });
+  saveRelayToken(s.relayToken);
+  return callConfiguredBridge(kind, payload);
 }
 
 const now = () => new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -97,7 +77,12 @@ function MobileApp() {
   const endRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    try { const raw = localStorage.getItem(KEY); if (raw) setS({ ...initial, ...JSON.parse(raw) }); } catch { /* ignore */ }
+    try {
+      const raw = localStorage.getItem(KEY);
+      const saved = raw ? JSON.parse(raw) as Partial<State> : {};
+      const bridgeConfig = getBridgeConfig();
+      setS({ ...initial, ...saved, bridge: bridgeConfig.localUrl, publicBridge: bridgeConfig.publicUrl, connectionMode: bridgeConfig.mode, relayToken: getRelayToken() || saved.relayToken || "" });
+    } catch { /* ignore */ }
   }, []);
   useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* ignore */ } }, [s]);
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [s.msgs.length, busy]);
@@ -106,13 +91,7 @@ function MobileApp() {
 
   const ping = async () => {
     try {
-      if (isCloud(s.bridge)) {
-        const r = await fetch(s.bridge.replace(/\/$/, "") + "/api/public/relay/status");
-        const d = await r.json(); setOnline(!!d.agentOnline); return;
-      }
-      const c = new AbortController(); const t = setTimeout(() => c.abort(), 4000);
-      await fetch(`${s.bridge}/api/ping`, { signal: c.signal, mode: "no-cors" });
-      clearTimeout(t); setOnline(true);
+      await bridgeCall(s, "health"); setOnline(true);
     } catch { setOnline(false); }
   };
   const loadModels = async () => {
@@ -122,7 +101,7 @@ function MobileApp() {
       if (list.length) setModels(list);
     } catch { /* keep defaults */ }
   };
-  useEffect(() => { ping(); loadModels(); const i = setInterval(ping, 15000); return () => clearInterval(i); }, [s.bridge, s.relayToken]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { ping(); loadModels(); const i = setInterval(ping, 15000); return () => clearInterval(i); }, [s.bridge, s.publicBridge, s.connectionMode, s.relayToken]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const send = async (text = input) => {
     const t = text.trim(); if (!t || busy) return;
@@ -266,18 +245,26 @@ function MobileApp() {
               <Row title="البحث المفعّل" desc="الوضع الحالي: ويب"><Toggle label="البحث" on={s.web} onChange={(v) => up({ web: v })} /></Row>
             </Card>
             <Card icon={Search} title="الاتصال">
+              <label className="block text-sm">وضع الاتصال
+                <select value={s.connectionMode} onChange={(e) => up({ connectionMode: e.target.value as BridgeMode })} className="mt-1 h-10 w-full rounded-xl border px-3" style={{ borderColor: "var(--m-line)", background: "var(--m-bg)", color: "var(--m-text)" }}>
+                  <option value="auto">تلقائي — محلي ثم عام</option><option value="lan">محلي فقط</option><option value="public">عام فقط</option>
+                </select>
+              </label>
               <label className="block text-sm">الجسر (نماذج الخادم)
                 <input value={s.bridge} onChange={(e) => up({ bridge: e.target.value })} dir="ltr" className="mt-1 h-10 w-full rounded-xl border px-3" style={{ borderColor: "var(--m-line)", background: "var(--m-bg)", color: "var(--m-text)" }} />
               </label>
               <div className="flex gap-2 text-xs">
                 <button onClick={() => up({ bridge: "http://192.168.100.66:8788" })} className="rounded-lg border px-2 py-1" style={{ borderColor: "var(--m-line)" }}>محلي</button>
-                <button onClick={() => up({ bridge: CLOUD_BRIDGE })} className="rounded-lg border px-2 py-1" style={{ borderColor: "var(--m-line)" }}>سحابي (من أي مكان)</button>
+                <button onClick={() => up({ connectionMode: "public" })} className="rounded-lg border px-2 py-1" style={{ borderColor: "var(--m-line)" }}>عام (من أي مكان)</button>
               </div>
-              {isCloud(s.bridge) && (
+              {s.connectionMode !== "lan" && (
                 <label className="block text-sm">كلمة سر الجسر السحابي
                   <input type="password" value={s.relayToken} onChange={(e) => up({ relayToken: e.target.value })} dir="ltr" className="mt-1 h-10 w-full rounded-xl border px-3" style={{ borderColor: "var(--m-line)", background: "var(--m-bg)", color: "var(--m-text)" }} />
                 </label>
               )}
+              <label className="block text-sm">العنوان العام
+                <input value={s.publicBridge} onChange={(e) => up({ publicBridge: e.target.value })} dir="ltr" className="mt-1 h-10 w-full rounded-xl border px-3" style={{ borderColor: "var(--m-line)", background: "var(--m-bg)", color: "var(--m-text)" }} />
+              </label>
               <label className="block text-sm">مولّد الصور ComfyUI
                 <input value={s.comfy} onChange={(e) => up({ comfy: e.target.value })} dir="ltr" className="mt-1 h-10 w-full rounded-xl border px-3" style={{ borderColor: "var(--m-line)", background: "var(--m-bg)", color: "var(--m-text)" }} />
               </label>
