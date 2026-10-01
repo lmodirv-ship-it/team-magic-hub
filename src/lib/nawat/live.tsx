@@ -10,9 +10,8 @@ import {
 } from "react";
 
 /**
- * Single shared WebSocket connection to the NAWAT companion server
- * (ws://192.168.100.66:5001) plus the in-app notification centre.
- * Everything degrades gracefully when the server is offline.
+ * Shared live connection: local WebSocket on LAN pages, with same-origin
+ * statistics polling on secure/public pages where browsers block ws://.
  */
 
 export const LIVE_WS_URL = "ws://192.168.100.66:5001";
@@ -105,9 +104,30 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let socket: WebSocket | undefined;
     let reconnect: number | undefined;
+    let poll: number | undefined;
     let cancelled = false;
 
+    const usePolling = window.location.protocol === "https:";
+    const pollStats = async () => {
+      try {
+        const response = await fetch("/api/stats", { cache: "no-store" });
+        if (!response.ok) throw new Error("Live statistics unavailable");
+        const payload: unknown = await response.json();
+        if (cancelled) return;
+        setLastStats(payload);
+        setLastEventAt(Date.now());
+        setConnected(true);
+      } catch {
+        if (!cancelled) setConnected(false);
+      }
+    };
+
     const connect = () => {
+      if (usePolling) {
+        void pollStats();
+        poll = window.setInterval(() => { void pollStats(); }, 5000);
+        return;
+      }
       try {
         socket = new WebSocket(LIVE_WS_URL);
         socket.onopen = () => setConnected(true);
@@ -146,6 +166,7 @@ export function LiveProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
       if (reconnect) window.clearTimeout(reconnect);
+      if (poll) window.clearInterval(poll);
       if (socket) {
         socket.onclose = null;
         socket.close();

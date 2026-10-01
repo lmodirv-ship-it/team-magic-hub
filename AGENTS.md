@@ -16,4 +16,5 @@
 - Render the workspace terminal with local xterm.js and route browser commands only through the bridge's documented SSH exec endpoint; do not present one-shot HTTP execution as a persistent PTY session.
 - Cloud relay: phone/site submit jobs to /api/public/relay; bridge/cloud-agent.mjs on the LAN server pulls them outbound — no inbound ports or tunnels needed.
 - Bridge connection settings use the versioned shared profile in bridge-config.ts; relay secrets remain in device-only storage and are excluded from exports.
+- Live status uses LAN WebSocket only on non-secure local pages and same-origin polling on HTTPS, because browsers block insecure WebSocket from secure pages.
 - App data tables (roles, pages, permissions, app_store, api_keys, usage_events) are reached only via server functions in src/lib/nawat/db.functions.ts using the admin client — dev mode has no sign-in, so tables have RLS on with no client policies.

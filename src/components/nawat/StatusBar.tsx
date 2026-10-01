@@ -39,12 +39,12 @@ export function StatusBar() {
       <span className="flex items-center gap-1">
         <HardDrive className="size-3" /> VRAM {formatBytes(vram)}
       </span>
-      <span className="flex items-center gap-1" title="ws://localhost:5001">
+      <span className="flex items-center gap-1" title="اتصال مباشر محلي أو تحديث آمن عبر الموقع">
         <span
           className={`size-2 rounded-full ${connected ? "bg-success" : "bg-destructive"}`}
           aria-hidden
         />
-        {connected ? "WebSocket متصل" : "WebSocket غير متصل"}
+        {connected ? "التحديث المباشر متصل" : "التحديث المباشر غير متصل"}
       </span>
       <span>{isDesktop() ? "Desktop (Electron)" : "Browser mode"}</span>
       <span className="border-s border-border ps-3 text-foreground">
