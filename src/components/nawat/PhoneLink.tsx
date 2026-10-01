@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import apkAsset from "@/assets/nawat-apk-v01092006.apk.asset.json";
+import previousApkAsset from "@/assets/nawat-apk.asset.json";
 import srcAsset from "@/assets/nawat-mobile-source-v2.zip.asset.json";
 import { checkBridge, exportBridgeConfig, getBridgeConfig, getRelayToken, importBridgeConfig, saveBridgeConfig, saveRelayToken, type BridgeCheck, type BridgeConfig, type BridgeMode } from "@/lib/nawat/bridge-config";
 
@@ -164,6 +165,12 @@ export function PhoneLink() {
           <Button size="sm" className="h-8 gap-1.5 text-xs">
             <Download className="h-3.5 w-3.5" />
             تحميل تطبيق الهاتف (الإصدار 01.09.2006 — 114 MB)
+          </Button>
+        </a>
+        <a href={previousApkAsset.url} download="NAWAT-v1.0.apk">
+          <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs">
+            <Download className="h-3.5 w-3.5" />
+            الإصدار السابق v1.0
           </Button>
         </a>
         <a href="/mobile" target="_blank" rel="noreferrer">
