@@ -102,8 +102,6 @@ export function LiveProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    let socket: WebSocket | undefined;
-    let reconnect: number | undefined;
     let poll: number | undefined;
     let cancelled = false;
 
@@ -126,55 +124,12 @@ export function LiveProvider({ children }: { children: ReactNode }) {
       poll = window.setInterval(() => { void pollStats(); }, 5000);
     };
 
-    const connect = () => {
-      startPolling();
-      return;
-      /* The direct socket remains documented below for the desktop build,
-         while the browser uses the reliable same-origin live feed. */
-      try {
-        socket = new WebSocket(LIVE_WS_URL);
-        socket.onopen = () => setConnected(true);
-        socket.onmessage = (event) => {
-          setLastEventAt(Date.now());
-          try {
-            const payload = JSON.parse(String(event.data)) as Record<string, unknown>;
-            const type = typeof payload["type"] === "string" ? payload["type"] : "";
-            if (type === "stats.update") {
-              setLastStats(payload);
-              return;
-            }
-            if (type === "task.started" || type === "task.finished") {
-              notify({
-                kind: type === "task.finished" ? "success" : "task",
-                title: eventTitle(type, payload),
-                detail: typeof payload["detail"] === "string" ? payload["detail"] : "",
-              });
-            }
-          } catch {
-            // Ignore malformed frames from third-party clients.
-          }
-        };
-        socket.onclose = () => {
-          if (!cancelled) reconnect = window.setTimeout(connect, 5000);
-        };
-        socket.onerror = () => socket?.close();
-      } catch {
-        setConnected(false);
-        if (!cancelled) reconnect = window.setTimeout(connect, 5000);
-      }
-    };
-
-    connect();
+    startPolling();
     return () => {
       cancelled = true;
-      if (reconnect) window.clearTimeout(reconnect);
       if (poll) window.clearInterval(poll);
-      if (socket) {
-        socket.onclose = null;
-        socket.close();
-      }
     };
-  }, [notify]);
+  }, []);
 
   const value = useMemo<LiveCtx>(
     () => ({
