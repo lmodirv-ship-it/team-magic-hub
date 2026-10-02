@@ -30,7 +30,7 @@ export function ServerDiagnosis() {
   };
 
   const diagnose = async () => {
-    if (!logs.trim() && !metrics.trim()) return toast.error("أدخل السجلات أو المقاييس أولًا");
+    if (!logs.trim() && !metrics.trim()) { toast.error("أدخل السجلات أو المقاييس أولًا"); return; }
     setBusy(true);
     try {
       const r = await run({ data: { logs, metrics } });
