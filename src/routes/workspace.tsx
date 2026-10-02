@@ -10,6 +10,7 @@ import { Resizer } from "@/components/nawat/Resizer";
 import { TerminalPanel } from "@/components/nawat/TerminalPanel";
 
 export const Route = createFileRoute("/workspace")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "مساحة العمل — NAWAT Studio" },
@@ -41,6 +42,7 @@ function Workspace() {
 
   return (
     <main className="relative flex min-w-0 flex-1">
+      <h1 className="sr-only">مساحة العمل</h1>
       <div className="hidden lg:contents">
         <FileExplorer width={explorerW} />
         <Resizer

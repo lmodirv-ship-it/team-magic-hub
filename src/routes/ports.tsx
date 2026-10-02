@@ -13,6 +13,7 @@ import { ServerStatusCard } from "@/components/nawat/ServerStatusCard";
 import { ModelDiscovery } from "@/components/nawat/ModelDiscovery";
 
 export const Route = createFileRoute("/ports")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "المنافذ — NAWAT Studio" },

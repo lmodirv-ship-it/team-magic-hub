@@ -42,6 +42,7 @@ import { ModelDiscovery } from "@/components/nawat/ModelDiscovery";
 import { ServerDiagnosis } from "@/components/nawat/ServerDiagnosis";
 
 export const Route = createFileRoute("/settings")({
+  staticData: { sitemap: true },
   head: PageHead(
     "الإعدادات",
     "إعدادات NAWAT Studio المتقدمة للنماذج والوكلاء والأمان والنسخ الاحتياطي.",

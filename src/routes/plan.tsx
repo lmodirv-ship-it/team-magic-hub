@@ -3,6 +3,7 @@ import { WeeklyPlanView } from "@/components/nawat/WeeklyPlanView";
 import { PageHead } from "@/components/nawat/StudioViews";
 
 export const Route = createFileRoute("/plan")({
+  staticData: { sitemap: true },
   head: PageHead(
     "إضافات هذا الأسبوع",
     "خطة نماذج ووكلاء وخدمات NAWAT Studio الجديدة مع حالات الجاهزية والتفعيل.",

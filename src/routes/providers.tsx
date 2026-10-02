@@ -15,6 +15,7 @@ import {
 } from "@/lib/nawat/providers";
 
 export const Route = createFileRoute("/providers")({
+  staticData: { sitemap: true },
   head: PageHead(
     "المزوّدون — NAWAT Studio",
     "إدارة Groupe-HN الرسمي ومزوّدي النماذج الخارجية ومفاتيح الاتصال.",

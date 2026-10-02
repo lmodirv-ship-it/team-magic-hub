@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PackDashboard } from "@/components/nawat/PackDashboard";
 
 export const Route = createFileRoute("/packs")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "لوحة مراقبة Packs — NAWAT Studio" },

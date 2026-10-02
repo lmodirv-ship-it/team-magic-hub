@@ -17,6 +17,7 @@ import {
 } from "@/lib/nawat/api-keys";
 
 export const Route = createFileRoute("/api-keys")({
+  staticData: { sitemap: false },
   head: PageHead("مفاتيح API والاستهلاك", "إدارة مفاتيح Groupe-HN وتتبع استهلاك نماذج نواة في NAWAT Studio."),
   component: ApiKeysPage,
 });

@@ -4,6 +4,7 @@ import { clearMetrics, useMetrics } from "@/lib/nawat/metrics";
 import { useTableMouse } from "@/components/nawat/DataTable";
 
 export const Route = createFileRoute("/metrics")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "قياس السرعة — NAWAT Studio" },

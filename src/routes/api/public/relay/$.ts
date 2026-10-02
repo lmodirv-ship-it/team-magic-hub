@@ -105,6 +105,7 @@ async function handle(request: Request, path: string) {
 }
 
 export const Route = createFileRoute("/api/public/relay/$")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       GET: ({ request, params }) => handle(request, params._splat ?? ""),

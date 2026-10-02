@@ -33,6 +33,7 @@ import { useModels } from "@/lib/nawat/useModels";
 import { PageHead } from "@/components/nawat/StudioViews";
 
 export const Route = createFileRoute("/chat/$threadId")({
+  staticData: { sitemap: false },
   head: PageHead("NAWAT Chat", "محادثات مستقلة متعددة محفوظة محليًا مع نماذج NAWAT."),
   component: ChatPage,
 });

@@ -4,6 +4,7 @@ import { SshPanel } from "@/components/nawat/SshPanel";
 import { ServicesHealth } from "@/components/nawat/ServicesHealth";
 
 export const Route = createFileRoute("/tools")({
+  staticData: { sitemap: true },
   head: PageHead("الأدوات", "إدارة SSH وSFTP والمحرر والطرفية وأدوات NAWAT المحلية."),
   component: ToolsPage,
 });

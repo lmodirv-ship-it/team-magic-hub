@@ -29,6 +29,7 @@ function validRemote(value: unknown): value is Partial<StatsPayload> & Record<St
 }
 
 export const Route = createFileRoute("/api/stats")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       GET: async () => {

@@ -8,6 +8,7 @@ import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
 import { callConfiguredBridge, getBridgeConfig, getRelayToken, saveBridgeConfig, saveRelayToken, type BridgeMode } from "@/lib/nawat/bridge-config";
 
 export const Route = createFileRoute("/mobile")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "nawat-chat — تطبيق الهاتف" },

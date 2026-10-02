@@ -12,6 +12,7 @@ import {
 import { getKeys, getUsage } from "@/lib/nawat/api-keys";
 
 export const Route = createFileRoute("/database")({
+  staticData: { sitemap: true },
   head: PageHead("قواعد البيانات", "جداول قاعدة بيانات NAWAT Studio: الصفحات والأدوار والصلاحيات والمزامنة."),
   component: DatabasePage,
 });

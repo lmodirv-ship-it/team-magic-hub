@@ -91,7 +91,7 @@ function TreeNode({ node, depth }: { node: Node; depth: number }) {
         <span className="truncate">{node.name}</span>
       </button>
       <button
-        title="Rename"
+        title="Rename" aria-label="إعادة تسمية"
         className="opacity-0 transition group-hover:opacity-100"
         onClick={() => {
           const to = prompt("New path", node.path);
@@ -101,7 +101,7 @@ function TreeNode({ node, depth }: { node: Node; depth: number }) {
         <Pencil className="size-3.5 text-muted-foreground hover:text-foreground" />
       </button>
       <button
-        title="Delete"
+        title="Delete" aria-label="حذف"
         className="opacity-0 transition group-hover:opacity-100"
         onClick={() => {
           if (confirm(`Delete ${node.path}?`)) deleteFile(node.path);
@@ -138,7 +138,7 @@ function RootSection({ root, hint, paths }: { root: string; hint: string; paths:
           </span>
         </button>
         <button
-          title={`ملف جديد في ${root}/`}
+          title={`ملف جديد في ${root}/`} aria-label={`ملف جديد في ${root}`}
           className="opacity-0 transition group-hover:opacity-100"
           onClick={() => {
             const name = prompt(`اسم الملف داخل ${root}/`, "nouveau-fichier.md");
@@ -148,7 +148,7 @@ function RootSection({ root, hint, paths }: { root: string; hint: string; paths:
           <FilePlus className="size-3.5 text-muted-foreground hover:text-foreground" />
         </button>
         <button
-          title={`مجلد جديد في ${root}/`}
+          title={`مجلد جديد في ${root}/`} aria-label={`مجلد جديد في ${root}`}
           className="opacity-0 transition group-hover:opacity-100"
           onClick={() => {
             const name = prompt(`اسم المجلد داخل ${root}/`, "dossier");
@@ -195,7 +195,7 @@ export function FileExplorer({ width = 256 }: { width?: number }) {
           Explorer
         </span>
         <button
-          title="ملف جديد بمسار كامل"
+          title="ملف جديد بمسار كامل" aria-label="ملف جديد بمسار كامل"
           onClick={() => {
             const p = prompt("مسار الملف", "bibliotheque/note.md");
             if (p) createFile(p);
