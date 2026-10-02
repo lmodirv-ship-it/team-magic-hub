@@ -181,11 +181,11 @@ export async function checkBridge(target: "lan" | "public", config = getBridgeCo
   }
 }
 
-type BridgeKind = "chat" | "models" | "health" | "image" | "version" | "update" | "system";
+type BridgeKind = "chat" | "models" | "health" | "image" | "version" | "update" | "system" | "projects" | "sync";
 
 async function callLocal(config: BridgeConfig, kind: BridgeKind, payload: Record<string, unknown>) {
   const path = `/api/${kind}`;
-  const post = kind === "chat" || kind === "image" || kind === "update";
+  const post = kind === "chat" || kind === "image" || kind === "update" || kind === "projects" || kind === "sync";
   const response = await fetch(config.localUrl + path, post
     ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }
     : undefined);

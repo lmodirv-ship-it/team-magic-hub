@@ -5,6 +5,7 @@ import http from "node:http";
 import { randomUUID } from "node:crypto";
 import { execFile, spawn } from "node:child_process";
 import { readFileSync, openSync } from "node:fs";
+import { mkdir, readdir, readFile, writeFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -37,6 +38,57 @@ const OLLAMA_HOSTS = [env("OLLAMA_URL", "http://127.0.0.1:11434"), ...env("OLLAM
   .map((s) => s.trim().replace(/\/$/, "")).filter((v, i, a) => v && a.indexOf(v) === i);
 let OLLAMA = OLLAMA_HOSTS[0];
 const MODEL_DIR = env("MODEL_STORAGE_PATH", "/data/model");
+const PROJECTS_DIR = path.resolve(env("PROJECTS_DIR", "/data/projects"));
+const SYNC_PEERS = env("SYNC_PEERS", "").split(",").map((s) => s.trim().replace(/\/$/, "")).filter(Boolean);
+const safeName = (n) => String(n ?? "").trim().replace(/[^\w\u0600-\u06FF.-]+/g, "-").replace(/^[.-]+/, "").slice(0, 60);
+function inProject(name, rel = "") {
+  const root = path.join(PROJECTS_DIR, safeName(name));
+  const full = path.resolve(root, String(rel).replace(/^\/+/, ""));
+  if (!safeName(name) || (full !== root && !full.startsWith(root + path.sep))) throw new Error("مسار غير مسموح");
+  return { root, full };
+}
+async function walk(dir, base = dir, out = []) {
+  for (const e of await readdir(dir, { withFileTypes: true }).catch(() => [])) {
+    if (e.name === "node_modules" || e.name === ".git") continue;
+    const f = path.join(dir, e.name);
+    out.push({ path: path.relative(base, f), type: e.isDirectory() ? "dir" : "file" });
+    if (e.isDirectory() && out.length < 2000) await walk(f, base, out);
+  }
+  return out;
+}
+async function projects(b) {
+  const a = b.action ?? "list";
+  if (a === "list") {
+    await mkdir(PROJECTS_DIR, { recursive: true });
+    const list = [];
+    for (const e of await readdir(PROJECTS_DIR, { withFileTypes: true })) if (e.isDirectory()) {
+      const st = await stat(path.join(PROJECTS_DIR, e.name)); list.push({ name: e.name, updated: st.mtime.toISOString() });
+    }
+    return { root: PROJECTS_DIR, projects: list };
+  }
+  const { root, full } = inProject(b.name, b.path ?? "");
+  if (a === "create") {
+    await mkdir(root, { recursive: true });
+    const files = b.files && typeof b.files === "object" ? b.files : { "README.md": `# ${safeName(b.name)}\n\nمشروع أُنشئ من NAWAT Studio.\n` };
+    for (const [rel, content] of Object.entries(files)) { const t = inProject(b.name, rel).full; await mkdir(path.dirname(t), { recursive: true }); await writeFile(t, String(content)); }
+    return { ok: true, root, files: await walk(root) };
+  }
+  if (a === "tree") return { root, files: await walk(root) };
+  if (a === "read") return { path: b.path, content: await readFile(full, "utf8") };
+  if (a === "write") { await mkdir(path.dirname(full), { recursive: true }); await writeFile(full, String(b.content ?? "")); return { ok: true, path: path.relative(root, full) }; }
+  throw new Error("إجراء غير معروف");
+}
+async function sync(b) {
+  const self = await version();
+  const peers = await Promise.all(SYNC_PEERS.map(async (u) => {
+    try {
+      if (b.action === "update") { const r = await fetch(u + "/api/update", { method: "POST", signal: AbortSignal.timeout(8000) }); return { url: u, ok: r.ok, ...(await r.json().catch(() => ({}))) }; }
+      const r = await fetch(u + "/api/version", { signal: AbortSignal.timeout(8000) }); return { url: u, ok: r.ok, ...(await r.json()) };
+    } catch (e) { return { url: u, ok: false, error: String(e.message ?? e) }; }
+  }));
+  if (b.action === "update") runUpdate();
+  return { self, peers };
+}
 const NO_THINK = env("QWEN_NO_THINK", "1") !== "0";
 const COMFY = env("COMFY_URL", "http://192.168.2.4:8188").replace(/\/$/, "");
 const TOKEN = env("BRIDGE_TOKEN", ""); // اختياري: إن وُضع يُطلب من كل طلب
@@ -190,6 +242,8 @@ const server = http.createServer(async (req, res) => {
     if (p === "/api/system" && req.method === "GET") return send(res, 200, await system());
     if (p === "/api/version" && req.method === "GET") return send(res, 200, await version());
     if (p === "/api/update" && req.method === "POST") return send(res, 202, runUpdate());
+    if (p === "/api/projects" && req.method === "POST") return send(res, 200, await projects(await readJson(req)));
+    if (p === "/api/sync" && req.method === "POST") return send(res, 200, await sync(await readJson(req)));
     if (p === "/api/models" && req.method === "GET") return send(res, 200, await models());
     if (p === "/api/chat" && req.method === "POST") return await chat(await readJson(req), res);
     if (p === "/api/image" && req.method === "POST") {
@@ -197,7 +251,7 @@ const server = http.createServer(async (req, res) => {
       if (!b.prompt) return send(res, 400, { error: "prompt مطلوب" });
       return send(res, 200, { image: await generateImage(String(b.prompt).slice(0, 2000), b) });
     }
-    send(res, 404, { error: "not found", endpoints: ["/api/ping", "/api/health", "/api/models", "/api/chat", "/api/image", "/api/version", "/api/update"] });
+    send(res, 404, { error: "not found", endpoints: ["/api/ping", "/api/health", "/api/models", "/api/chat", "/api/image", "/api/version", "/api/update", "/api/projects", "/api/sync"] });
   } catch (e) {
     log("ERR", p, e.message);
     if (!res.headersSent) send(res, 502, { error: e.name === "AbortError" ? "انتهت مهلة الخدمة" : e.message });
