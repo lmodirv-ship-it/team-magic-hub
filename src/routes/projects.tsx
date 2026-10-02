@@ -137,7 +137,7 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
         const filesOut = extractFiles(out);
         for (const [p, c] of Object.entries(filesOut)) await writeProjectFile(project, p, c);
         if (Object.keys(filesOut).length) onWritten();
-        window.dispatchEvent(new CustomEvent("nawat:live-code", { detail: out }));
+        window.dispatchEvent(new CustomEvent("nawat:stream", { detail: { text: out, model: r.model, started: Date.now(), done: true } }));
         setRoles((l) => l.map((x, j) => (j === i ? { ...x, status: "done", output: out } : x)));
       } catch (e) {
         setRoles((l) => l.map((x, j) => (j === i ? { ...x, status: "fail", output: (e as Error).message } : x)));

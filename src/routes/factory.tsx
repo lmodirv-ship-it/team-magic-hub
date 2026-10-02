@@ -208,6 +208,7 @@ function FactoryPage() {
             <Button onClick={() => action("/api/worker/start")}><Play />تشغيل العامل</Button>
             <Button variant="outline" onClick={() => action("/api/worker/stop")}><Square />إيقاف</Button>
           </div>
+          <PipelinePanel api={api} action={action} identity={identity} />
         </div>
       )}
       {tab === "models" && <ModelsTab models={models} />}
@@ -385,6 +386,34 @@ ollama create nawat-think:v18 -f Modelfile`;
       <Factory className="mb-2 size-5 text-primary" />
       <pre className="overflow-x-auto rounded bg-muted p-3 text-xs" dir="ltr">{cmds}</pre>
       <Button className="mt-2" variant="outline" onClick={() => { void navigator.clipboard.writeText(cmds); toast.success("تم النسخ"); }}>نسخ الأوامر</Button>
+    </Panel>
+  );
+}
+
+function PipelinePanel({ api, action, identity }: { api: (p: string, i?: RequestInit) => Promise<any>; action: (p: string, b?: unknown, m?: string) => Promise<void>; identity: Identity }) {
+  const [version, setVersion] = useState("v18");
+  const [teacher, setTeacher] = useState("nawat-think:v17-anon");
+  const [logs, setLogs] = useState<string[]>([]);
+  useEffect(() => {
+    const load = async () => { try { setLogs((await api("/api/logs")).lines ?? []); } catch { /* offline */ } };
+    void load();
+    const i = setInterval(load, 4000);
+    return () => clearInterval(i);
+  }, [api]);
+  const runAll = async () => {
+    for (const type of ["generate_data", "train", "quantize", "deploy"]) {
+      await action("/api/queue/add", { version, teacher, type, prompts: [], identity: { system: identity.system, fingerprint: identity.fingerprint } });
+    }
+    await action("/api/worker/start");
+  };
+  return (
+    <Panel title="خط الإنتاج الكامل" note="توليد ← تدريب ← تكميم ← نشر بنقرة واحدة">
+      <div className="flex flex-wrap gap-2">
+        <input value={version} onChange={(e) => setVersion(e.target.value)} className="control w-28" placeholder="الإصدار" />
+        <input value={teacher} onChange={(e) => setTeacher(e.target.value)} className="control w-64 font-mono" placeholder="المعلّم" />
+        <Button onClick={() => void runAll()}><Play />شغّل خط الإنتاج</Button>
+      </div>
+      <pre dir="ltr" className="mt-3 max-h-64 overflow-auto rounded-md bg-muted p-2 font-mono text-[11px]">{logs.slice(-80).join("\n") || "لا سجلات بعد — شغّل خادم المصنع على السيرفر"}</pre>
     </Panel>
   );
 }

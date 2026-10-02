@@ -17,6 +17,10 @@ import {
   Settings,
   Cable,
   Wrench,
+  Link2,
+  ImageIcon,
+  FolderTree,
+  GitMerge,
 } from "lucide-react";
 import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
 
@@ -43,6 +47,10 @@ const items = [
   { to: "/architecture", icon: Network, label: "البنية" },
   { to: "/settings", icon: Settings, label: "الإعدادات" },
   { to: "/ports", icon: Cable, label: "المنافذ" },
+  { to: "/connect", icon: Link2, label: "الربط السريع" },
+  { to: "/projects", icon: FolderTree, label: "المشاريع والمنسّق" },
+  { to: "/comfyui", icon: ImageIcon, label: "استوديو ComfyUI" },
+  { to: "/sync", icon: GitMerge, label: "المزامنة ودمج الإضافات" },
 ] as const;
 
 export function ActivityBar() {
