@@ -154,7 +154,7 @@ export function activeBridges(config: BridgeConfig): PublicBridge[] {
 const relayBase = (b: PublicBridge) => b.id === "nawat" ? b.url : b.url;
 
 export async function checkPublicBridge(b: PublicBridge): Promise<BridgeCheck> {
-  if (b.serverKey) return serverBridgeStatus({ data: { id: b.id } });
+  if (b.serverKey) return serverBridgeStatus({ data: { id: b.id } }).catch((e: unknown) => ({ ok: false, latencyMs: 0, detail: e instanceof Error ? e.message : "تعذّر الاتصال" }));
   try {
     const { response, latencyMs } = await timedFetch(`${relayBase(b)}/api/public/relay/status`);
     const data = await response.json().catch(() => ({})) as { agentOnline?: boolean };
