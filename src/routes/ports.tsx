@@ -10,6 +10,7 @@ import { APP_PAGES, PORT_TYPES, portsApi, usePorts, type PortEntry, type PortTyp
 import { useTableMouse } from "@/components/nawat/DataTable";
 import { PhoneLink } from "@/components/nawat/PhoneLink";
 import { ServerStatusCard } from "@/components/nawat/ServerStatusCard";
+import { ModelDiscovery } from "@/components/nawat/ModelDiscovery";
 
 export const Route = createFileRoute("/ports")({
   head: () => ({
@@ -146,6 +147,7 @@ function PortsPage() {
       </div>
       <p className="text-[11px] text-muted-foreground">تعديل المنفذ هنا يغيّر سجل التطبيق فقط؛ لا يغيّر إعدادات الخادم نفسه. <Link to="/settings" className="underline">الإعدادات</Link></p>
       <ServerStatusCard />
+      <div className="mb-4 rounded-lg border border-border p-3"><ModelDiscovery /></div>
       <PhoneLink />
     </div>
   );

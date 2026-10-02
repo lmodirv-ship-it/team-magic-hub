@@ -36,6 +36,10 @@ import {
   saveDevelopmentModel,
   type DevelopmentModel,
 } from "@/lib/nawat/providers";
+import { logSettingChange } from "@/lib/nawat/server-settings";
+import { ServerModelSettings } from "@/components/nawat/ServerModelSettings";
+import { ModelDiscovery } from "@/components/nawat/ModelDiscovery";
+import { ServerDiagnosis } from "@/components/nawat/ServerDiagnosis";
 
 export const Route = createFileRoute("/settings")({
   head: PageHead(
@@ -66,7 +70,10 @@ function SettingsPage() {
       setHelpers([]);
     }
     setDevelopmentModels(getDevelopmentModels());
+    setLanguage(localStorage.getItem("nawat.language") ?? "العربية");
+    setReady(true);
   }, []);
+  const [ready, setReady] = useState(false);
   const save = () => {
     setOllamaHost(host);
     setModelPrefix(prefix.trim());
@@ -76,6 +83,20 @@ function SettingsPage() {
     setSaved(true);
     setTimeout(() => setSaved(false), 1800);
   };
+  // حفظ تلقائي وتسجيل لكل تغيير
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => {
+      setOllamaHost(host);
+      setModelPrefix(prefix.trim());
+      localStorage.setItem(HELPERS_KEY, JSON.stringify(helpers));
+      localStorage.setItem("nawat.language", language);
+      logSettingChange("settings.general", { host, prefix, helpers, language });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 1200);
+    }, 700);
+    return () => clearTimeout(t);
+  }, [ready, host, prefix, helpers, language]);
   const addDevelopmentModel = () => {
     if (!developmentName.trim()) return;
     saveDevelopmentModel({
@@ -347,6 +368,17 @@ function SettingsPage() {
               إعادة ضبط مساحة العمل
             </Button>
           </div>
+        </Panel>
+      </div>
+      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Panel title="خوادم النماذج وComfyUI ومجلد النماذج" note="يُحفظ تلقائيًا عند كل تغيير">
+          <ServerModelSettings />
+        </Panel>
+        <Panel title="البحث التلقائي عن النماذج" note="لكل نموذج منفذ مخصص يُضاف إلى صفحة المنافذ">
+          <ModelDiscovery />
+        </Panel>
+        <Panel title="تشخيص أعطال الخادم بالذكاء الاصطناعي" note="للمسؤول: سجلات + مقاييس ← تشخيص وخطوات إصلاح">
+          <ServerDiagnosis />
         </Panel>
       </div>
     </Page>
