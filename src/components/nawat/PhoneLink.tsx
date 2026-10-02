@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import apkAsset from "@/assets/nawat-apk-v01092006.apk.asset.json";
 import previousApkAsset from "@/assets/nawat-apk.asset.json";
 import srcAsset from "@/assets/nawat-mobile-source-v2.zip.asset.json";
+import { ServerSync } from "./ServerSync";
 import { checkBridge, exportBridgeConfig, getBridgeConfig, getRelayToken, importBridgeConfig, saveBridgeConfig, saveRelayToken, type BridgeCheck, type BridgeConfig, type BridgeMode } from "@/lib/nawat/bridge-config";
 
 const PRESETS = [
@@ -249,6 +250,7 @@ export function PhoneLink() {
         </div>
       </div>
       <BridgeManager />
+      <ServerSync />
       <PhoneServices />
     </section>
   );
