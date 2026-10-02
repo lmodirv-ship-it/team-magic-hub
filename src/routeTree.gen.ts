@@ -14,6 +14,8 @@ import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as ArchitectureRouteImport } from './routes/architecture'
 import { Route as AtelierRouteImport } from './routes/atelier'
+import { Route as ComfyuiRouteImport } from './routes/comfyui'
+import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DatabaseRouteImport } from './routes/database'
 import { Route as FactoryRouteImport } from './routes/factory'
 import { Route as McpRouteImport } from './routes/mcp'
@@ -58,6 +60,16 @@ const ArchitectureRoute = ArchitectureRouteImport.update({
 const AtelierRoute = AtelierRouteImport.update({
   id: '/atelier',
   path: '/atelier',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ComfyuiRoute = ComfyuiRouteImport.update({
+  id: '/comfyui',
+  path: '/comfyui',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ConnectRoute = ConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DatabaseRoute = DatabaseRouteImport.update({
@@ -167,6 +179,8 @@ export interface FileRoutesByFullPath {
   '/api-keys': typeof ApiKeysRoute
   '/architecture': typeof ArchitectureRoute
   '/atelier': typeof AtelierRoute
+  '/comfyui': typeof ComfyuiRoute
+  '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
   '/mcp': typeof McpRoute
@@ -194,6 +208,8 @@ export interface FileRoutesByTo {
   '/api-keys': typeof ApiKeysRoute
   '/architecture': typeof ArchitectureRoute
   '/atelier': typeof AtelierRoute
+  '/comfyui': typeof ComfyuiRoute
+  '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
   '/mcp': typeof McpRoute
@@ -222,6 +238,8 @@ export interface FileRoutesById {
   '/api-keys': typeof ApiKeysRoute
   '/architecture': typeof ArchitectureRoute
   '/atelier': typeof AtelierRoute
+  '/comfyui': typeof ComfyuiRoute
+  '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
   '/mcp': typeof McpRoute
@@ -251,6 +269,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/architecture'
     | '/atelier'
+    | '/comfyui'
+    | '/connect'
     | '/database'
     | '/factory'
     | '/mcp'
@@ -278,6 +298,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/architecture'
     | '/atelier'
+    | '/comfyui'
+    | '/connect'
     | '/database'
     | '/factory'
     | '/mcp'
@@ -305,6 +327,8 @@ export interface FileRouteTypes {
     | '/api-keys'
     | '/architecture'
     | '/atelier'
+    | '/comfyui'
+    | '/connect'
     | '/database'
     | '/factory'
     | '/mcp'
@@ -333,6 +357,8 @@ export interface RootRouteChildren {
   ApiKeysRoute: typeof ApiKeysRoute
   ArchitectureRoute: typeof ArchitectureRoute
   AtelierRoute: typeof AtelierRoute
+  ComfyuiRoute: typeof ComfyuiRoute
+  ConnectRoute: typeof ConnectRoute
   DatabaseRoute: typeof DatabaseRoute
   FactoryRoute: typeof FactoryRoute
   McpRoute: typeof McpRoute
@@ -390,6 +416,20 @@ declare module '@tanstack/react-router' {
       path: '/atelier'
       fullPath: '/atelier'
       preLoaderRoute: typeof AtelierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/comfyui': {
+      id: '/comfyui'
+      path: '/comfyui'
+      fullPath: '/comfyui'
+      preLoaderRoute: typeof ComfyuiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/connect': {
+      id: '/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof ConnectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/database': {
@@ -541,6 +581,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiKeysRoute: ApiKeysRoute,
   ArchitectureRoute: ArchitectureRoute,
   AtelierRoute: AtelierRoute,
+  ComfyuiRoute: ComfyuiRoute,
+  ConnectRoute: ConnectRoute,
   DatabaseRoute: DatabaseRoute,
   FactoryRoute: FactoryRoute,
   McpRoute: McpRoute,
