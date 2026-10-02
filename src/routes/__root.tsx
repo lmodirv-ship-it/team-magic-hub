@@ -98,6 +98,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "بيئة تطوير محلية لنماذج NAWAT: محرر أكواد، طرفية، ومحادثة مع النماذج.",
       },
       { name: "author", content: "Groupe-HN — Mouylay Ismail El Hassani" },
+      { name: "google-site-verification", content: "Hqa17MDQ4qXU8IVyQFvZ6dR9U3mRtlBRffUeHjiHlY8" },
       { name: "application-name", content: "NAWAT Studio" },
       { name: "theme-color", content: "#111827" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
