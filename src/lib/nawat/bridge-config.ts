@@ -148,10 +148,12 @@ async function timedFetch(url: string, init?: RequestInit): Promise<{ response: 
 }
 
 export function activeBridges(config: BridgeConfig): PublicBridge[] {
+  currentPublicUrl = config.publicUrl;
   const a = config.bridges.find((b) => b.id === config.activeBridge);
   return a ? [a, ...config.bridges.filter((b) => b !== a)] : config.bridges;
 }
-const relayBase = (b: PublicBridge) => b.id === "nawat" ? b.url : b.url;
+let currentPublicUrl = DEFAULT_BRIDGE_CONFIG.publicUrl;
+const relayBase = (b: PublicBridge) => b.id === "nawat" ? currentPublicUrl : b.url;
 
 export async function checkPublicBridge(b: PublicBridge): Promise<BridgeCheck> {
   if (b.serverKey) return serverBridgeStatus({ data: { id: b.id } }).catch((e: unknown) => ({ ok: false, latencyMs: 0, detail: e instanceof Error ? e.message : "تعذّر الاتصال" }));
