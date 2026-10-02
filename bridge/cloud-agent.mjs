@@ -18,6 +18,7 @@ async function run(job) {
     chat: ["POST", "/api/chat"], image: ["POST", "/api/image"],
     models: ["GET", "/api/models"], health: ["GET", "/api/health"],
     version: ["GET", "/api/version"], system: ["GET", "/api/system"], update: ["POST", "/api/update"],
+    projects: ["POST", "/api/projects"], sync: ["POST", "/api/sync"],
   };
   const [method, path] = map[job.kind] ?? [];
   if (!path) throw new Error(`نوع غير معروف: ${job.kind}`);
