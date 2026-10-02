@@ -16,6 +16,7 @@ import { Route as ArchitectureRouteImport } from './routes/architecture'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as DatabaseRouteImport } from './routes/database'
 import { Route as FactoryRouteImport } from './routes/factory'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MetricsRouteImport } from './routes/metrics'
 import { Route as MobileRouteImport } from './routes/mobile'
 import { Route as ModelsRouteImport } from './routes/models'
@@ -67,6 +68,11 @@ const DatabaseRoute = DatabaseRouteImport.update({
 const FactoryRoute = FactoryRouteImport.update({
   id: '/factory',
   path: '/factory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MetricsRoute = MetricsRouteImport.update({
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/atelier': typeof AtelierRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
   '/models': typeof ModelsRoute
@@ -189,6 +196,7 @@ export interface FileRoutesByTo {
   '/atelier': typeof AtelierRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
   '/models': typeof ModelsRoute
@@ -216,6 +224,7 @@ export interface FileRoutesById {
   '/atelier': typeof AtelierRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
   '/models': typeof ModelsRoute
@@ -244,6 +253,7 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/database'
     | '/factory'
+    | '/mcp'
     | '/metrics'
     | '/mobile'
     | '/models'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/database'
     | '/factory'
+    | '/mcp'
     | '/metrics'
     | '/mobile'
     | '/models'
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/atelier'
     | '/database'
     | '/factory'
+    | '/mcp'
     | '/metrics'
     | '/mobile'
     | '/models'
@@ -323,6 +335,7 @@ export interface RootRouteChildren {
   AtelierRoute: typeof AtelierRoute
   DatabaseRoute: typeof DatabaseRoute
   FactoryRoute: typeof FactoryRoute
+  McpRoute: typeof McpRoute
   MetricsRoute: typeof MetricsRoute
   MobileRoute: typeof MobileRoute
   ModelsRoute: typeof ModelsRoute
@@ -391,6 +404,13 @@ declare module '@tanstack/react-router' {
       path: '/factory'
       fullPath: '/factory'
       preLoaderRoute: typeof FactoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/metrics': {
@@ -523,6 +543,7 @@ const rootRouteChildren: RootRouteChildren = {
   AtelierRoute: AtelierRoute,
   DatabaseRoute: DatabaseRoute,
   FactoryRoute: FactoryRoute,
+  McpRoute: McpRoute,
   MetricsRoute: MetricsRoute,
   MobileRoute: MobileRoute,
   ModelsRoute: ModelsRoute,
