@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   DatabaseBackup,
   Download,
+  Factory,
   Globe2,
   KeyRound,
   MonitorCog,
@@ -117,10 +118,18 @@ function SettingsPage() {
       title="الإعدادات المتقدمة"
       description={`تشغيل ${isDesktop() ? "سطح المكتب الكامل" : "المتصفح المحدود"} — تُحفظ الإعدادات والبيانات على هذا الجهاز.`}
       actions={
-        <Button onClick={save}>
-          <Save />
-          {saved ? "تم الحفظ" : "حفظ التغييرات"}
-        </Button>
+        <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link to="/factory">
+              <Factory />
+              المصنع
+            </Link>
+          </Button>
+          <Button onClick={save}>
+            <Save />
+            {saved ? "تم الحفظ" : "حفظ التغييرات"}
+          </Button>
+        </div>
       }
     >
       <div className="mb-4">

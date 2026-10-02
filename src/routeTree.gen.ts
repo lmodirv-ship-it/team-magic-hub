@@ -15,6 +15,7 @@ import { Route as ApiKeysRouteImport } from './routes/api-keys'
 import { Route as ArchitectureRouteImport } from './routes/architecture'
 import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as DatabaseRouteImport } from './routes/database'
+import { Route as FactoryRouteImport } from './routes/factory'
 import { Route as MetricsRouteImport } from './routes/metrics'
 import { Route as MobileRouteImport } from './routes/mobile'
 import { Route as ModelsRouteImport } from './routes/models'
@@ -61,6 +62,11 @@ const AtelierRoute = AtelierRouteImport.update({
 const DatabaseRoute = DatabaseRouteImport.update({
   id: '/database',
   path: '/database',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FactoryRoute = FactoryRouteImport.update({
+  id: '/factory',
+  path: '/factory',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MetricsRoute = MetricsRouteImport.update({
@@ -156,6 +162,7 @@ export interface FileRoutesByFullPath {
   '/architecture': typeof ArchitectureRoute
   '/atelier': typeof AtelierRoute
   '/database': typeof DatabaseRoute
+  '/factory': typeof FactoryRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
   '/models': typeof ModelsRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/architecture': typeof ArchitectureRoute
   '/atelier': typeof AtelierRoute
   '/database': typeof DatabaseRoute
+  '/factory': typeof FactoryRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
   '/models': typeof ModelsRoute
@@ -207,6 +215,7 @@ export interface FileRoutesById {
   '/architecture': typeof ArchitectureRoute
   '/atelier': typeof AtelierRoute
   '/database': typeof DatabaseRoute
+  '/factory': typeof FactoryRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
   '/models': typeof ModelsRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/architecture'
     | '/atelier'
     | '/database'
+    | '/factory'
     | '/metrics'
     | '/mobile'
     | '/models'
@@ -259,6 +269,7 @@ export interface FileRouteTypes {
     | '/architecture'
     | '/atelier'
     | '/database'
+    | '/factory'
     | '/metrics'
     | '/mobile'
     | '/models'
@@ -284,6 +295,7 @@ export interface FileRouteTypes {
     | '/architecture'
     | '/atelier'
     | '/database'
+    | '/factory'
     | '/metrics'
     | '/mobile'
     | '/models'
@@ -310,6 +322,7 @@ export interface RootRouteChildren {
   ArchitectureRoute: typeof ArchitectureRoute
   AtelierRoute: typeof AtelierRoute
   DatabaseRoute: typeof DatabaseRoute
+  FactoryRoute: typeof FactoryRoute
   MetricsRoute: typeof MetricsRoute
   MobileRoute: typeof MobileRoute
   ModelsRoute: typeof ModelsRoute
@@ -371,6 +384,13 @@ declare module '@tanstack/react-router' {
       path: '/database'
       fullPath: '/database'
       preLoaderRoute: typeof DatabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/factory': {
+      id: '/factory'
+      path: '/factory'
+      fullPath: '/factory'
+      preLoaderRoute: typeof FactoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/metrics': {
@@ -502,6 +522,7 @@ const rootRouteChildren: RootRouteChildren = {
   ArchitectureRoute: ArchitectureRoute,
   AtelierRoute: AtelierRoute,
   DatabaseRoute: DatabaseRoute,
+  FactoryRoute: FactoryRoute,
   MetricsRoute: MetricsRoute,
   MobileRoute: MobileRoute,
   ModelsRoute: ModelsRoute,
