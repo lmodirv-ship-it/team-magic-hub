@@ -8,7 +8,7 @@ import apkAsset from "@/assets/nawat-apk-v01092006.apk.asset.json";
 import previousApkAsset from "@/assets/nawat-apk.asset.json";
 import srcAsset from "@/assets/nawat-mobile-source-v2.zip.asset.json";
 import { ServerSync } from "./ServerSync";
-import { checkBridge, exportBridgeConfig, getBridgeConfig, getRelayToken, importBridgeConfig, saveBridgeConfig, saveRelayToken, type BridgeCheck, type BridgeConfig, type BridgeMode } from "@/lib/nawat/bridge-config";
+import { DEFAULT_BRIDGE_CONFIG, checkPublicBridge, type PublicBridge, checkBridge, exportBridgeConfig, getBridgeConfig, getRelayToken, importBridgeConfig, saveBridgeConfig, saveRelayToken, type BridgeCheck, type BridgeConfig, type BridgeMode } from "@/lib/nawat/bridge-config";
 
 const PRESETS = [
   {
@@ -45,7 +45,7 @@ const PHONE_SERVICES = [
 type Status = "idle" | "wait" | "ok" | "fail";
 
 const MODE_LABELS: Record<BridgeMode, string> = { auto: "تلقائي — محلي ثم عام", lan: "الشبكة المحلية فقط", public: "الشبكة العامة فقط" };
-const DEFAULT_CONFIG: BridgeConfig = { version: 1, mode: "auto", localUrl: "http://192.168.100.66:8788", publicUrl: "https://nawat.groupe-hn.com" };
+const DEFAULT_CONFIG: BridgeConfig = DEFAULT_BRIDGE_CONFIG;
 
 function BridgeManager() {
   const [config, setConfig] = useState<BridgeConfig>(DEFAULT_CONFIG);
@@ -83,14 +83,36 @@ function BridgeManager() {
         <Select value={config.mode} onValueChange={(value) => update({ mode: value as BridgeMode })}><SelectTrigger className="h-8 w-52 text-xs" aria-label="وضع اتصال الجسر"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="auto">تلقائي — محلي ثم عام</SelectItem><SelectItem value="lan">الشبكة المحلية فقط</SelectItem><SelectItem value="public">الشبكة العامة فقط</SelectItem></SelectContent></Select>
       </div>
       <div className="grid gap-2 md:grid-cols-2">
-        {(["lan", "public"] as const).map((target) => <div key={target} className="grid gap-2 rounded-md border border-border p-3">
-          <label className="text-xs font-medium">{target === "lan" ? "عنوان الشبكة المحلية" : "عنوان الشبكة العامة"}</label>
-          <Input value={target === "lan" ? config.localUrl : config.publicUrl} onChange={(event) => setConfig((old) => ({ ...old, [target === "lan" ? "localUrl" : "publicUrl"]: event.target.value }))} onBlur={() => update(config)} dir="ltr" className="h-8 font-mono text-xs" />
-          <div className="flex items-center justify-between gap-2"><span className={checks[target] !== "wait" && checks[target]?.ok ? "text-[11px] text-success" : "text-[11px] text-muted-foreground"}>{resultText(target)}</span><Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => runCheck(target)}>اختبار الاتصال</Button></div>
-        </div>)}
+        <div className="grid gap-2 rounded-md border border-border p-3">
+          <label className="text-xs font-medium">عنوان الشبكة المحلية</label>
+          <Input value={config.localUrl} onChange={(event) => setConfig((old) => ({ ...old, localUrl: event.target.value }))} onBlur={() => update(config)} dir="ltr" className="h-8 font-mono text-xs" />
+          <div className="flex items-center justify-between gap-2"><span className={checks.lan !== "wait" && checks.lan?.ok ? "text-[11px] text-success" : "text-[11px] text-muted-foreground"}>{resultText("lan")}</span><Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => runCheck("lan")}>اختبار الاتصال</Button></div>
+        </div>
+        <PublicBridges config={config} onChange={(patch) => update(patch)} />
       </div>
       <label className="grid gap-1 text-xs font-medium">كلمة سر الشبكة العامة<Input type="password" value={token} onChange={(event) => setToken(event.target.value)} onBlur={() => saveRelayToken(token)} dir="ltr" className="h-8" autoComplete="off" /><span className="font-normal text-muted-foreground">محفوظة على هذا الجهاز فقط ولا تدخل في ملف التصدير.</span></label>
       <div className="flex flex-wrap items-center gap-2"><Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs" onClick={downloadConfig}><Download className="size-3.5" />تصدير الإعدادات</Button><label className="relative inline-flex h-8 cursor-pointer items-center gap-1.5 overflow-hidden rounded-md border border-input px-3 text-xs"><Upload className="size-3.5" />استيراد الإعدادات<input ref={fileRef} type="file" accept="application/json,.json" aria-label="اختيار ملف إعدادات الجسر" className="absolute inset-0 cursor-pointer opacity-0" onInput={(event) => uploadConfig(event.currentTarget.files?.[0])} onChange={(event) => uploadConfig(event.currentTarget.files?.[0])} /></label>{notice && <span role="status" className="text-[11px] text-muted-foreground">{notice}</span>}</div>
+    </div>
+  );
+}
+
+function PublicBridges({ config, onChange }: { config: BridgeConfig; onChange: (patch: Partial<BridgeConfig>) => void }) {
+  const [st, setSt] = useState<Record<string, string>>({});
+  const [name, setName] = useState(""); const [url, setUrl] = useState("");
+  const test = async (b: PublicBridge) => { setSt((o) => ({ ...o, [b.id]: "جارٍ الفحص…" })); const r = await checkPublicBridge(b); setSt((o) => ({ ...o, [b.id]: `${r.ok ? "✓ " : ""}${r.detail}${r.latencyMs ? ` · ${r.latencyMs}ms` : ""}` })); };
+  const add = () => { if (!url.trim()) return; const id = "b" + Date.now().toString(36); onChange({ bridges: [...config.bridges, { id, name: name || url, url: url.trim().replace(/\/+$/, "") }] }); setName(""); setUrl(""); };
+  return (
+    <div className="grid gap-2 rounded-md border border-border p-3">
+      <label className="text-xs font-medium">الجسور العامة (يُستخدم النشط أولًا ثم البقية احتياطًا)</label>
+      {config.bridges.map((b) => (
+        <div key={b.id} className="flex flex-wrap items-center gap-2 rounded border border-border p-2 text-xs">
+          <input type="radio" name="active-bridge" aria-label={`تفعيل ${b.name}`} checked={config.activeBridge === b.id} onChange={() => onChange({ activeBridge: b.id })} />
+          <div className="min-w-0 flex-1"><div className="font-medium">{b.name}{b.serverKey && <span className="ms-1 text-[10px] text-success">· كلمة السر محفوظة في الخادم</span>}</div><div className="truncate font-mono text-[10px] text-muted-foreground" dir="ltr">{b.url}</div>{st[b.id] && <div className="text-[10px] text-muted-foreground">{st[b.id]}</div>}</div>
+          <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => test(b)}>اختبار</Button>
+          {!["hnchat", "nawat"].includes(b.id) && <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => onChange({ bridges: config.bridges.filter((x) => x.id !== b.id) })}>حذف</Button>}
+        </div>
+      ))}
+      <div className="flex gap-2"><Input placeholder="الاسم" value={name} onChange={(e) => setName(e.target.value)} className="h-8 w-28 text-xs" /><Input placeholder="https://…" value={url} onChange={(e) => setUrl(e.target.value)} dir="ltr" className="h-8 flex-1 font-mono text-xs" /><Button size="sm" className="h-8 text-xs" onClick={add}>إضافة جسر</Button></div>
     </div>
   );
 }

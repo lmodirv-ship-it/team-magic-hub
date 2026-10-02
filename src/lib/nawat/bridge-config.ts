@@ -1,3 +1,5 @@
+import { serverBridgeCall, serverBridgeStatus } from "./relay.functions";
+
 export type BridgeMode = "auto" | "lan" | "public";
 
 export type BridgeConfig = {
@@ -5,7 +7,18 @@ export type BridgeConfig = {
   mode: BridgeMode;
   localUrl: string;
   publicUrl: string;
+  /** عدة جسور عامة؛ النشط يُستخدم أولًا ثم البقية كاحتياط. */
+  bridges: PublicBridge[];
+  activeBridge: string;
 };
+
+/** serverKey: كلمة السر محفوظة على الخادم وليس في المتصفح. */
+export type PublicBridge = { id: string; name: string; url: string; serverKey?: boolean };
+
+export const BUILTIN_BRIDGES: PublicBridge[] = [
+  { id: "hnchat", name: "HN Chat Bridge", url: "https://bridge.hnchat.net/index.php", serverKey: true },
+  { id: "nawat", name: "نواة الرسمي", url: "https://nawat.groupe-hn.com" },
+];
 
 export type BridgeCheck = {
   ok: boolean;
@@ -22,6 +35,8 @@ export const DEFAULT_BRIDGE_CONFIG: BridgeConfig = {
   mode: "auto",
   localUrl: "http://192.168.100.66:8788",
   publicUrl: "https://nawat.groupe-hn.com",
+  bridges: BUILTIN_BRIDGES,
+  activeBridge: "hnchat",
 };
 
 function normalizeUrl(value: unknown, fallback: string): string {
@@ -39,11 +54,19 @@ function normalizeConfig(value: unknown): BridgeConfig | null {
   if (!value || typeof value !== "object") return null;
   const candidate = value as Partial<BridgeConfig>;
   if (candidate.version !== 1 || !["auto", "lan", "public"].includes(candidate.mode ?? "")) return null;
+  const custom = (Array.isArray(candidate.bridges) ? candidate.bridges : [])
+    .filter((b) => b && typeof b.id === "string" && !BUILTIN_BRIDGES.some((x) => x.id === b.id))
+    .slice(0, 20)
+    .map((b) => ({ id: String(b.id).slice(0, 40), name: String(b.name ?? b.id).slice(0, 60), url: normalizeUrl(b.url, "") }))
+    .filter((b) => b.url);
+  const bridges = [...BUILTIN_BRIDGES, ...custom];
   return {
     version: 1,
     mode: candidate.mode as BridgeMode,
     localUrl: normalizeUrl(candidate.localUrl, DEFAULT_BRIDGE_CONFIG.localUrl),
     publicUrl: normalizeUrl(candidate.publicUrl, DEFAULT_BRIDGE_CONFIG.publicUrl),
+    bridges,
+    activeBridge: bridges.some((b) => b.id === candidate.activeBridge) ? candidate.activeBridge! : bridges[0]!.id,
   };
 }
 
@@ -51,7 +74,12 @@ export function getBridgeConfig(): BridgeConfig {
   if (typeof window === "undefined") return DEFAULT_BRIDGE_CONFIG;
   try {
     const stored = localStorage.getItem(CONFIG_KEY);
-    if (stored) return normalizeConfig(JSON.parse(stored)) ?? DEFAULT_BRIDGE_CONFIG;
+    if (stored) {
+      const raw = JSON.parse(stored) as Partial<BridgeConfig>;
+      const cfg = normalizeConfig(raw) ?? DEFAULT_BRIDGE_CONFIG;
+      if (!raw.bridges) { const next = { ...cfg, mode: "public" as const, activeBridge: "hnchat" }; localStorage.setItem(CONFIG_KEY, JSON.stringify(next)); return next; }
+      return cfg;
+    }
 
     const mobile = JSON.parse(localStorage.getItem("nawat.mobile.v1") ?? "null") as { bridge?: unknown; relayToken?: unknown } | null;
     const oldBridge = typeof mobile?.bridge === "string" ? mobile.bridge : "";
@@ -119,7 +147,24 @@ async function timedFetch(url: string, init?: RequestInit): Promise<{ response: 
   }
 }
 
+export function activeBridges(config: BridgeConfig): PublicBridge[] {
+  const a = config.bridges.find((b) => b.id === config.activeBridge);
+  return a ? [a, ...config.bridges.filter((b) => b !== a)] : config.bridges;
+}
+const relayBase = (b: PublicBridge) => b.id === "nawat" ? b.url : b.url;
+
+export async function checkPublicBridge(b: PublicBridge): Promise<BridgeCheck> {
+  if (b.serverKey) return serverBridgeStatus({ data: { id: b.id } }).catch((e: unknown) => ({ ok: false, latencyMs: 0, detail: e instanceof Error ? e.message : "تعذّر الاتصال" }));
+  try {
+    const { response, latencyMs } = await timedFetch(`${relayBase(b)}/api/public/relay/status`);
+    const data = await response.json().catch(() => ({})) as { agentOnline?: boolean };
+    const ok = response.ok && data.agentOnline === true;
+    return { ok, latencyMs, detail: ok ? "متصل" : response.ok ? "الوكيل المحلي غير متصل" : `HTTP ${response.status}` };
+  } catch { return { ok: false, latencyMs: 0, detail: "تعذّر الاتصال" }; }
+}
+
 export async function checkBridge(target: "lan" | "public", config = getBridgeConfig()): Promise<BridgeCheck> {
+  if (target === "public") return checkPublicBridge(activeBridges(config)[0]!);
   try {
     const url = target === "lan"
       ? `${config.localUrl}/api/ping`
@@ -148,8 +193,17 @@ async function callLocal(config: BridgeConfig, kind: BridgeKind, payload: Record
 }
 
 async function callPublic(config: BridgeConfig, token: string, kind: BridgeKind, payload: Record<string, unknown>) {
+  let last: unknown;
+  for (const b of activeBridges(config)) {
+    try { return await callOne(b, token, kind, payload); } catch (e) { last = e; }
+  }
+  throw last instanceof Error ? last : new Error("تعذّر الوصول إلى أي جسر عام");
+}
+
+async function callOne(b: PublicBridge, token: string, kind: BridgeKind, payload: Record<string, unknown>) {
+  if (b.serverKey) return (await serverBridgeCall({ data: { id: b.id, kind, payload } })).result as unknown;
   if (!token) throw new Error("كلمة سر الجسر العام مطلوبة");
-  const base = `${config.publicUrl}/api/public/relay`;
+  const base = `${relayBase(b)}/api/public/relay`;
   const headers = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
   let response = await fetch(`${base}/submit`, { method: "POST", headers, body: JSON.stringify({ kind, payload, wait: 20 }) });
   let data = await response.json().catch(() => ({})) as { id?: string; status?: string; result?: unknown; error?: string };

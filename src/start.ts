@@ -1,7 +1,6 @@
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";
-import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -18,6 +17,17 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
   }
 });
 
+// Attaches a session token when one exists; never blocks calls when the backend
+// isn't configured (e.g. a self-hosted server without Supabase keys).
+const attachAuthIfAvailable = createMiddleware({ type: "function" }).client(async ({ next }) => {
+  let token: string | undefined;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    token = (await supabase.auth.getSession()).data.session?.access_token;
+  } catch { /* no backend configured */ }
+  return next({ headers: token ? { Authorization: `Bearer ${token}` } : {} });
+});
+
 // Start installs this automatically when src/start.ts is absent; defining the
 // file opts out, so re-add it explicitly to keep server functions protected
 // from cross-site requests.
@@ -26,6 +36,6 @@ const csrfMiddleware = createCsrfMiddleware({
 });
 
 export const startInstance = createStart(() => ({
-  functionMiddleware: [attachSupabaseAuth],
+  functionMiddleware: [attachAuthIfAvailable],
   requestMiddleware: [errorMiddleware, csrfMiddleware],
 }));
