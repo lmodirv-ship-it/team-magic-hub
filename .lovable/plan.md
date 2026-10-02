@@ -28,6 +28,21 @@ Everything below is added on top of what already exists. No current setting or f
 5. **Deploy guide**
    - Add steps: install `smartmontools`, schedule the reboot, and restart ComfyUI.
 
+6. **Track a request all the way to building the site (the coordinator)**
+   - Visible stages: choose modules, then structure questions with no fixed limit, then approve the structure, then create files inside the project (p000x), then run the preview, then show the site in the preview panel.
+   - A stage tracker inside the coordinator panel, with a status per stage (waiting, working, done, failed) and the time taken.
+   - Spread the work across several models: a fast model for structure and questions, a stronger model for the code, ComfyUI for images, with an automatic fallback to qwen3.5:9b.
+   - Focus on production speed: run independent stages in parallel, and keep responses short (thinking off).
+7. **Desktop versions (exe + PWA)**
+   - PWA: install the app from the browser on the computer and the phone, with an "update available" notice when a new version comes out.
+   - exe for Windows: a light wrapper (Electron) that opens the server address or the official address. Auto-update pulls the latest version from GitHub Releases, so every change made here shows up automatically.
+   - A download button for "NAWAT Desktop (exe)" on the ports page, next to the APK versions, which stay in place.
+8. **Model file transfer**
+   - A transfer-status display (GB moved and percentage) from the bridge, plus a note on network speed: the switch port is limited to 100 Mbps, so moving the cable to a Gigabit port is the fix.
+
+## Limit
+- I can't reach 192.168.100.67 from here. Changes reach the server through the existing sync: GitHub, then "Update server now", or the automatic check every 5 minutes.
+
 ## Technical details
 - `bridge-config.ts`: new fields (`ollamaHosts[]`, `comfyUrl`, `modelStoragePath`, `qwenNoThink`) with versioned defaults, without deleting old fields.
 - `providers.ts`: pass `think:false`/`num_predict` when the option is on.
