@@ -88,6 +88,11 @@ function BridgeManager() {
           <Input value={config.localUrl} onChange={(event) => setConfig((old) => ({ ...old, localUrl: event.target.value }))} onBlur={() => update(config)} dir="ltr" className="h-8 font-mono text-xs" />
           <div className="flex items-center justify-between gap-2"><span className={checks.lan !== "wait" && checks.lan?.ok ? "text-[11px] text-success" : "text-[11px] text-muted-foreground"}>{resultText("lan")}</span><Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => runCheck("lan")}>اختبار الاتصال</Button></div>
         </div>
+        <div className="grid gap-2 rounded-md border border-border p-3">
+          <label className="text-xs font-medium">عنوان الشبكة العامة (نواة الرسمي)</label>
+          <Input value={config.publicUrl} onChange={(event) => setConfig((old) => ({ ...old, publicUrl: event.target.value }))} onBlur={() => update(config)} dir="ltr" className="h-8 font-mono text-xs" />
+          <div className="flex items-center justify-between gap-2"><span className={checks.public !== "wait" && checks.public?.ok ? "text-[11px] text-success" : "text-[11px] text-muted-foreground"}>{resultText("public")}</span><Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => runCheck("public")}>اختبار الاتصال</Button></div>
+        </div>
         <PublicBridges config={config} onChange={(patch) => update(patch)} />
       </div>
       <label className="grid gap-1 text-xs font-medium">كلمة سر الشبكة العامة<Input type="password" value={token} onChange={(event) => setToken(event.target.value)} onBlur={() => saveRelayToken(token)} dir="ltr" className="h-8" autoComplete="off" /><span className="font-normal text-muted-foreground">محفوظة على هذا الجهاز فقط ولا تدخل في ملف التصدير.</span></label>
