@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏭 مصنع NAWAT — Groupe-HN</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  .header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px; background: #1e293b; border-radius: 12px;
+    margin-bottom: 20px; border: 1px solid #334155;
+  }
+  .title { font-size: 24px; font-weight: bold; color: #38bdf8; }
+  .status-badge {
+    padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: bold;
+  }
+  .online { background: #065f46; color: #6ee7b7; }
+  .offline { background: #7f1d1d; color: #fca5a5; }
+  .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: #1e293b; border-radius: 12px; padding: 20px;
+    border: 1px solid #334155; margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: 18px; color: #38bdf8; margin-bottom: 15px;
+    border-bottom: 1px solid #334155; padding-bottom: 10px;
+  }
+  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; }
+  .stat { background: #0f172a; padding: 15px; border-radius: 8px; text-align: center; }
+  .stat-value { font-size: 28px; font-weight: bold; color: #38bdf8; }
+  .stat-label { font-size: 12px; color: #94a3b8; margin-top: 5px; }
+  button {
+    background: #0ea5e9; color: white; border: none;
+    padding: 10px 20px; border-radius: 8px; cursor: pointer;
+    font-size: 14px; font-weight: bold; transition: 0.2s;
+    margin: 5px;
+  }
+  button:hover { background: #0284c7; transform: translateY(-2px); }
+  button.danger { background: #dc2626; }
+  button.danger:hover { background: #b91c1c; }
+  button.success { background: #059669; }
+  button.success:hover { background: #047857; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px; text-align: right; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-size: 13px; }
+  .badge {
+    padding: 3px 10px; border-radius: 12px; font-size: 12px;
+    font-weight: bold;
+  }
+  .pending { background: #78350f; color: #fcd34d; }
+  .running { background: #1e40af; color: #93c5fd; animation: pulse 1.5s infinite; }
+  .completed { background: #065f46; color: #6ee7b7; }
+  .failed { background: #7f1d1d; color: #fca5a5; }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+  .input-group { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+  input, select, textarea {
+    background: #0f172a; color: #e2e8f0; border: 1px solid #334155;
+    padding: 10px; border-radius: 8px; font-size: 14px; font-family: inherit;
+    flex: 1; min-width: 150px;
+  }
+  textarea { min-height: 100px; resize: vertical; width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: #0ea5e9; }
+  .log-box {
+    background: #000; color: #0f0; font-family: 'Courier New', monospace;
+    padding: 15px; border-radius: 8px; max-height: 400px; overflow-y: auto;
+    font-size: 12px; line-height: 1.6; direction: ltr; text-align: left;
+  }
+  .spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid #38bdf8; border-top-color: transparent;
+    border-radius: 50%; animation: spin 1s linear infinite;
+    margin-left: 5px; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty { text-align: center; color: #64748b; padding: 30px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="title">🏭 مصنع NAWAT — Groupe-HN</div>
+  <div id="serverStatus" class="status-badge offline">جاري الفحص...</div>
+</div>
+
+<div class="grid">
+  <!-- العمود الأيمن: الإحصائيات + المهام -->
+  <div>
+    <div class="card">
+      <h2>📊 الإحصائيات</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-value" id="statGenerated">0</div>
+          <div class="stat-label">مثال مُنتج</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statFailed">0</div>
+          <div class="stat-label">فشل</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statDeployed">0</div>
+          <div class="stat-label">نموذج منشور</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="statModels">0</div>
+          <div class="stat-label">نموذج متاح</div>
+        </div>
+      </div>
+      <div style="margin-top:15px;text-align:center;">
+        <button class="success" onclick="startWorker()">▶️ تشغيل العامل</button>
+        <button class="danger" onclick="stopWorker()">⏹️ إيقاف العامل</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📋 قائمة المهام</h2>
+      <div id="queueTable">
+        <div class="empty">لا توجد مهام</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>➕ إضافة مهمة جديدة</h2>
+      <div class="input-group">
+        <input id="newVersion" placeholder="الإصدار (r18)" />
+        <select id="newTeacher"></select>
+      </div>
+      <div class="input-group">
+        <input id="newPromptsFile" placeholder="مسار ملف المطالبات (اختياري)" />
+      </div>
+      <textarea id="newPrompts" placeholder="أو الصق المطالبات هنا (واحدة لكل سطر)..."></textarea>
+      <button onclick="addTask()" style="width:100%;margin-top:10px;">➕ إضافة مهمة</button>
+    </div>
+  </div>
+
+  <!-- العمود الأيسر: السجل -->
+  <div>
+    <div class="card">
+      <h2>📜 السجل الحي</h2>
+      <div class="log-box" id="logBox">في انتظار السجل...</div>
+      <button onclick="refreshLogs()" style="width:100%;margin-top:10px;">🔄 تحديث</button>
+    </div>
+
+    <div class="card">
+      <h2>🧪 اختبار سريع</h2>
+      <textarea id="testPrompt" placeholder="اكتب سؤالاً للاختبار...">قل مرحباً فقط</textarea>
+      <button onclick="testTeacher()" style="width:100%;margin-top:10px;">🧪 اختبار المعلم</button>
+      <div id="testResult" style="margin-top:15px;padding:15px;background:#0f172a;border-radius:8px;display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = window.location.origin + '/api';
+
+async function fetchJSON(url, options = {}) {
+  try {
+    const r = await fetch(url, options);
+    return await r.json();
+  } catch (e) {
+    console.error('Fetch error:', e);
+    return null;
+  }
+}
+
+async function refreshStatus() {
+  const data = await fetchJSON(`${API}/status`);
+  if (!data) {
+    document.getElementById('serverStatus').className = 'status-badge offline';
+    document.getElementById('serverStatus').textContent = '❌ غير متصل';
+    return;
+  }
+  const s = document.getElementById('serverStatus');
+  if (data.ollama.online) {
+    s.className = 'status-badge online';
+    s.textContent = `✅ متصل — ${data.ollama.models_count} نموذج`;
+  } else {
+    s.className = 'status-badge offline';
+    s.textContent = '⚠️ Ollama متوقف';
+  }
+  document.getElementById('statGenerated').textContent = data.worker.stats.total_generated;
+  document.getElementById('statFailed').textContent = data.worker.stats.total_failed;
+  document.getElementById('statDeployed').textContent = data.worker.stats.total_deployed;
+  document.getElementById('statModels').textContent = data.ollama.models_count;
+}
+
+async function refreshQueue() {
+  const data = await fetchJSON(`${API}/queue`);
+  if (!data) return;
+  const tbody = [];
+  tbody.push('<table><thead><tr><th>الإصدار</th><th>المعلم</th><th>النوع</th><th>الحالة</th><th>حذف</th></tr></thead><tbody>');
+  if (data.tasks.length === 0) {
+    tbody.push('<tr><td colspan="5" class="empty">لا توجد مهام</td></tr>');
+  } else {
+    for (const t of data.tasks) {
+      tbody.push(`<tr>
+        <td>${t.version}</td>
+        <td style="font-size:12px;color:#94a3b8;">${t.teacher}</td>
+        <td>${t.type}</td>
+        <td><span class="badge ${t.status}">${t.status}</span></td>
+        <td><button class="danger" style="padding:5px 10px;font-size:12px;" onclick="deleteTask('${t.task_id}')">🗑️</button></td>
+      </tr>`);
+    }
+  }
+  tbody.push('</tbody></table>');
+  document.getElementById('queueTable').innerHTML = tbody.join('');
+}
+
+async function refreshModels() {
+  const data = await fetchJSON(`${API}/models`);
+  if (!data) return;
+  const sel = document.getElementById('newTeacher');
+  sel.innerHTML = '';
+  for (const m of data.models) {
+    const opt = document.createElement('option');
+    opt.value = m;
+    opt.textContent = m;
+    sel.appendChild(opt);
+  }
+}
+
+async function refreshLogs() {
+  const data = await fetchJSON(`${API}/logs`);
+  if (!data) return;
+  const box = document.getElementById('logBox');
+  box.textContent = data.lines.join('\n') || 'لا توجد سجلات';
+  box.scrollTop = box.scrollHeight;
+}
+
+async function addTask() {
+  const version = document.getElementById('newVersion').value.trim();
+  const teacher = document.getElementById('newTeacher').value;
+  const promptsText = document.getElementById('newPrompts').value.trim();
+  const promptsFile = document.getElementById('newPromptsFile').value.trim();
+  
+  if (!version) { alert('أدخل رقم الإصدار'); return; }
+  if (!teacher) { alert('اختر معلم'); return; }
+  if (!promptsText && !promptsFile) { alert('أدخل المطالبات أو مسار الملف'); return; }
+  
+  const prompts = promptsText ? promptsText.split('\n').filter(l => l.trim()) : [];
+  
+  const result = await fetchJSON(`${API}/queue/add`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({version, teacher, type: 'generate_data', prompts, prompts_file: promptsFile})
+  });
+  
+  if (result && result.success) {
+    alert(`✅ أُضيفت المهمة: ${version}`);
+    document.getElementById('newVersion').value = '';
+    document.getElementById('newPrompts').value = '';
+    refreshQueue();
+  } else {
+    alert('❌ فشل: ' + (result?.error || 'خطأ'));
+  }
+}
+
+async function deleteTask(taskId) {
+  if (!confirm('حذف المهمة؟')) return;
+  await fetchJSON(`${API}/queue/task/${taskId}`, { method: 'DELETE' });
+  refreshQueue();
+}
+
+async function startWorker() {
+  await fetchJSON(`${API}/worker/start`, { method: 'POST' });
+  refreshStatus();
+}
+
+async function stopWorker() {
+  await fetchJSON(`${API}/worker/stop`, { method: 'POST' });
+  refreshStatus();
+}
+
+async function testTeacher() {
+  const teacher = document.getElementById('newTeacher').value;
+  const prompt = document.getElementById('testPrompt').value;
+  const box = document.getElementById('testResult');
+  box.style.display = 'block';
+  box.innerHTML = '⏳ جاري الاختبار... <span class="spinner"></span>';
+  
+  const result = await fetchJSON(`${API}/test`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({teacher, prompt})
+  });
+  
+  if (result && result.success) {
+    box.innerHTML = `<strong>✅ ${teacher}</strong><br><br>${result.answer.replace(/\n/g, '<br>')}`;
+  } else {
+    box.innerHTML = `❌ فشل: ${result?.error || 'خطأ'}`;
+  }
+}
+
+// التحديث الدوري
+setInterval(refreshStatus, 5000);
+setInterval(refreshQueue, 10000);
+setInterval(refreshLogs, 15000);
+
+// التهيئة
+refreshStatus();
+refreshQueue();
+refreshModels();
+refreshLogs();
+</script>
+</body>
+</html>
