@@ -390,7 +390,7 @@ ollama create nawat-think:v18 -f Modelfile`;
   );
 }
 
-function PipelinePanel({ api, action, identity }: { api: (p: string, i?: RequestInit) => Promise<any>; action: (p: string, b?: unknown, m?: string) => Promise<void>; identity: Identity }) {
+function PipelinePanel({ api, action, identity }: { api: (p: string, i?: RequestInit) => Promise<{ lines?: string[] }>; action: (p: string, b?: unknown, m?: string) => Promise<void>; identity: Identity }) {
   const [version, setVersion] = useState("v18");
   const [teacher, setTeacher] = useState("nawat-think:v17-anon");
   const [logs, setLogs] = useState<string[]>([]);

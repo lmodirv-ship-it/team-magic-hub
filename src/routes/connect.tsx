@@ -51,7 +51,7 @@ function ConnectPage() {
 
   const patch = (id: string, p: Partial<Connector>) => setList((l) => l.map((c) => (c.id === id ? { ...c, ...p } : c)));
   const test = async (c: Connector) => {
-    if (!c.url) return toast.error("أضف العنوان أولًا");
+    if (!c.url) { toast.error("أضف العنوان أولًا"); return; }
     const t = performance.now();
     try {
       await fetch(c.url, { mode: "no-cors", signal: AbortSignal.timeout(8000) });
@@ -71,7 +71,7 @@ function ConnectPage() {
             {Object.entries(KIND_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
           <Button onClick={() => {
-            if (!draft.name.trim()) return toast.error("اكتب الاسم");
+            if (!draft.name.trim()) { toast.error("اكتب الاسم"); return; }
             setList((l) => [...l, { id: `c-${Date.now()}`, ...draft, name: draft.name.trim() }]);
             setDraft({ name: "", url: "", kind: "chat" });
             toast.success("أُضيف الموصل");

@@ -109,7 +109,7 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
   const setModel = (k: keyof typeof DEFAULT_ROLES, v: string) => { const n = { ...models, [k]: v }; setModels(n); localStorage.setItem(ORCH_KEY, JSON.stringify(n)); };
 
   const plan = async () => {
-    if (!goal.trim()) return toast.error("اكتب الهدف");
+    if (!goal.trim()) { toast.error("اكتب الهدف"); return; }
     setBusy(true);
     try {
       const txt = await ask(models.coordinator,
@@ -122,7 +122,7 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
   };
 
   const execute = async () => {
-    if (!project) return toast.error("اختر مشروعًا أولًا");
+    if (!project) { toast.error("اختر مشروعًا أولًا"); return; }
     setBusy(true);
     let context = "";
     for (let i = 0; i < roles.length; i++) {

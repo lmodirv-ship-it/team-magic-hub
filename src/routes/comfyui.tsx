@@ -70,7 +70,7 @@ function ComfyPage() {
   const addImage = (src: string) => setGallery((g) => [{ src, prompt, at: new Date().toISOString() }, ...g]);
 
   const run = async () => {
-    if (!prompt.trim()) return toast.error("اكتب وصف الصورة");
+    if (!prompt.trim()) { toast.error("اكتب وصف الصورة"); return; }
     setBusy(true);
     try {
       if (online) {

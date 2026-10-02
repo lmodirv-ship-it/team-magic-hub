@@ -28,7 +28,7 @@ const SECRET = /token|secret|password|relayToken/i;
 export function mergeAdd(a: unknown, b: unknown): unknown {
   if (a === undefined || a === null) return b;
   if (Array.isArray(a) && Array.isArray(b)) {
-    const key = (x: unknown) => (x && typeof x === "object" ? String((x as Record<string, unknown>).id ?? (x as Record<string, unknown>).name ?? JSON.stringify(x)) : JSON.stringify(x));
+    const key = (x: unknown) => (x && typeof x === "object" ? String((x as Record<string, unknown>)["id"] ?? (x as Record<string, unknown>)["name"] ?? JSON.stringify(x)) : JSON.stringify(x));
     const out = [...a];
     for (const x of b) { const i = out.findIndex((y) => key(y) === key(x)); if (i < 0) out.push(x); else out[i] = mergeAdd(out[i], x); }
     return out;
