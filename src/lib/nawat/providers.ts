@@ -194,6 +194,14 @@ export async function* modelChatStream(
     yield* providerChatStream(provider, model, messages, signal);
     return;
   }
+  const { getBridgeConfig } = await import("./bridge-config");
+  const bridgeMode = getBridgeConfig().mode;
+  const secure = typeof location !== "undefined" && location.protocol === "https:";
+  // Public mode (or a secure page in auto mode): never touch 192.168.*/localhost.
+  if (bridgeMode === "public" || (bridgeMode === "auto" && secure)) {
+    yield await relayChat(model, messages, signal);
+    return;
+  }
   const { enginesFor } = await import("./engines");
   const hosts = enginesFor(model);
   let lastErr: unknown = null;
@@ -210,7 +218,25 @@ export async function* modelChatStream(
       lastErr = e;
     }
   }
+  if (bridgeMode === "auto") {
+    yield await relayChat(model, messages, signal);
+    return;
+  }
   throw lastErr ?? new Error("لا يوجد محرك مفعّل في الإعدادات.");
+}
+
+/** Chat through the public relay bridge: submit once, poll the result, no NDJSON streaming. */
+async function relayChat(model: string, messages: ChatMessage[], signal?: AbortSignal): Promise<string> {
+  const { callConfiguredBridge } = await import("./bridge-config");
+  const job = callConfiguredBridge("chat", { model, messages, stream: false }) as Promise<{ message?: { content?: string }; response?: string } | null>;
+  const result = await new Promise<Awaited<typeof job>>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("انتهت مهلة الجسر العام (120 ثانية)")), 120_000);
+    signal?.addEventListener("abort", () => { clearTimeout(timer); reject(new DOMException("أُلغي الطلب", "AbortError")); }, { once: true });
+    job.then((v) => { clearTimeout(timer); resolve(v); }, (e) => { clearTimeout(timer); reject(e); });
+  });
+  const text = result?.message?.content ?? result?.response ?? "";
+  if (!text) throw new Error("ردّ الجسر العام فارغ");
+  return text;
 }
 
 export async function* providerChatStream(
