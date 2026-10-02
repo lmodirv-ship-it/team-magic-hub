@@ -12,6 +12,7 @@ import {
 import { useModels } from "@/lib/nawat/useModels";
 
 export const Route = createFileRoute("/models")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "النماذج — NAWAT Studio" },

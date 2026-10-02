@@ -18,6 +18,7 @@ import { LIBRARY_ROOT, previewKindOf, useWorkspace } from "@/lib/nawat/workspace
 import { createZip, downloadBlob, downloadText } from "@/lib/nawat/zip";
 
 export const Route = createFileRoute("/resultats")({
+  staticData: { sitemap: true },
   validateSearch: (search: Record<string, unknown>) => ({
     status: search["status"] === "fixed" ? ("fixed" as const) : undefined,
   }),

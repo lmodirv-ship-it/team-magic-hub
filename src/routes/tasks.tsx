@@ -6,6 +6,7 @@ import { useModels } from "@/lib/nawat/useModels";
 import { useWorkspace } from "@/lib/nawat/workspace";
 
 export const Route = createFileRoute("/tasks")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "المهام والمقارنة — NAWAT Studio" },

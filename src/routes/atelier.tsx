@@ -13,6 +13,7 @@ import { formatBytes } from "@/lib/nawat/bridge";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/atelier")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "الورشة متعددة النماذج — NAWAT Studio" },

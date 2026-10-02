@@ -3,6 +3,7 @@ import { PageHead } from "@/components/nawat/StudioViews";
 import { MissionControlView } from "@/components/nawat/MissionControl";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: PageHead(
     "مركز القيادة",
     "مركز قيادة NAWAT Studio: ثلاث عقد، خمسة نماذج محلية، وكلاء ومراقبة حية.",
