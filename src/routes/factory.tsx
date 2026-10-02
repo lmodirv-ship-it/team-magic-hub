@@ -135,7 +135,7 @@ function FactoryPage() {
 
   const action = async (path: string, body?: unknown, method = "POST") => {
     try {
-      await api(path, { method, body: body ? JSON.stringify(body) : undefined });
+      await api(path, { method, body: body ? JSON.stringify(body) : null });
       toast.success("تم");
       void refresh();
     } catch {
