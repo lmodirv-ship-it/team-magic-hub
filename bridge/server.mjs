@@ -33,7 +33,11 @@ function runUpdate() {
 
 const env = (k, d) => process.env[k] ?? d;
 const PORT = Number(env("BRIDGE_PORT", 8788));
-const OLLAMA = env("OLLAMA_URL", "http://127.0.0.1:11434").replace(/\/$/, "");
+const OLLAMA_HOSTS = [env("OLLAMA_URL", "http://127.0.0.1:11434"), ...env("OLLAMA_FALLBACKS", "http://192.168.2.4:11434").split(",")]
+  .map((s) => s.trim().replace(/\/$/, "")).filter((v, i, a) => v && a.indexOf(v) === i);
+let OLLAMA = OLLAMA_HOSTS[0];
+const MODEL_DIR = env("MODEL_STORAGE_PATH", "/data/model");
+const NO_THINK = env("QWEN_NO_THINK", "1") !== "0";
 const COMFY = env("COMFY_URL", "http://192.168.2.4:8188").replace(/\/$/, "");
 const TOKEN = env("BRIDGE_TOKEN", ""); // اختياري: إن وُضع يُطلب من كل طلب
 const DEFAULT_MODEL = env("DEFAULT_MODEL", "nawat-coder:latest");
@@ -74,7 +78,23 @@ async function up(url, opts = {}, ms = 5000) {
 async function health() {
   const check = async (u) => { try { const r = await up(u, {}, 3000); return r.ok; } catch { return false; } };
   const [ollama, comfy] = await Promise.all([check(`${OLLAMA}/api/tags`), check(`${COMFY}/system_stats`)]);
-  return { ok: true, bridge: "nawat", version: "1.0.0", ollama, comfy, ollamaUrl: OLLAMA, comfyUrl: COMFY };
+  return { ok: true, bridge: "nawat", version: "1.1.0", ollama, comfy, ollamaUrl: OLLAMA, ollamaHosts: OLLAMA_HOSTS, comfyUrl: COMFY };
+}
+
+// ---------- حالة السيرفر (قراءة فقط) ----------
+const sh = (cmd, args, t = 8000) => new Promise((ok) => execFile(cmd, args, { timeout: t }, (e, out) => ok(e ? "" : String(out))));
+async function system() {
+  const [df, mem, pm2, smart, du, net] = await Promise.all([
+    sh("df", ["-B1", "--output=target,size,used,avail", "/", "/data"]),
+    sh("free", ["-b"]), sh("pm2", ["jlist"]), sh("smartctl", ["--version"]),
+    sh("du", ["-sb", MODEL_DIR], 20000), sh("bash", ["-c", "cat /sys/class/net/*/speed 2>/dev/null | sort -n | tail -1"]),
+  ]);
+  const disks = df.trim().split("\n").slice(1).map((l) => { const [mount, size, used, avail] = l.trim().split(/\s+/); return { mount, size: +size, used: +used, avail: +avail }; });
+  const m = mem.split("\n")[1]?.trim().split(/\s+/) ?? [];
+  let procs = []; try { procs = JSON.parse(pm2).map((p) => ({ name: p.name, status: p.pm2_env?.status })); } catch {}
+  let rebootRequired = false; try { readFileSync("/var/run/reboot-required"); rebootRequired = true; } catch {}
+  return { ok: true, version: "1.1.0", disks, memory: { total: +m[1] || 0, used: +m[2] || 0 }, pm2: procs, smart: !!smart,
+    rebootRequired, modelDir: MODEL_DIR, modelBytes: +(du.split(/\s/)[0] || 0), linkMbps: +net.trim() || 0, ...(await health()) };
 }
 
 async function models() {
@@ -131,12 +151,19 @@ async function chat(body, res) {
   const sys = [];
   if (body.think) sys.push("فكّر خطوة بخطوة قبل الإجابة.");
   sys.push("أجب بالعربية ما لم يطلب المستخدم غير ذلك.");
+  const model = body.model || DEFAULT_MODEL;
   const payload = {
-    model: body.model || DEFAULT_MODEL,
+    model,
     stream: !!body.stream,
     messages: [{ role: "system", content: sys.join(" ") }, ...messages],
   };
-  const r = await up(`${OLLAMA}/api/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, 600_000);
+  // qwen3: إيقاف التفكير المطوّل وتحديد طول الرد للسرعة
+  if (/qwen3/i.test(model) && !body.think && (body.noThink ?? NO_THINK)) { payload.think = false; payload.options = { num_predict: Number(body.maxTokens ?? 1024) }; }
+  let r;
+  for (const host of [OLLAMA, ...OLLAMA_HOSTS.filter((h) => h !== OLLAMA)]) {
+    try { r = await up(`${host}/api/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }, 600_000); if (r.ok || r.status === 400) { OLLAMA = host; break; } } catch (e) { r = null; }
+  }
+  if (!r) return send(res, 502, { error: "لا يوجد Ollama متاح", hosts: OLLAMA_HOSTS });
   if (!r.ok) return send(res, r.status, { error: `Ollama: ${await r.text()}` });
   if (payload.stream) { // تمرير البث كما هو (NDJSON)
     res.writeHead(200, { "Content-Type": "application/x-ndjson; charset=utf-8" });
@@ -160,6 +187,7 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (p === "/api/health" && req.method === "GET") return send(res, 200, await health());
+    if (p === "/api/system" && req.method === "GET") return send(res, 200, await system());
     if (p === "/api/version" && req.method === "GET") return send(res, 200, await version());
     if (p === "/api/update" && req.method === "POST") return send(res, 202, runUpdate());
     if (p === "/api/models" && req.method === "GET") return send(res, 200, await models());
