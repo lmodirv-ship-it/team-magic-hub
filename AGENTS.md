@@ -19,3 +19,5 @@
 - Live status uses LAN WebSocket only on non-secure local pages and same-origin polling on HTTPS, because browsers block insecure WebSocket from secure pages.
 - App data tables (roles, pages, permissions, app_store, api_keys, usage_events) are reached only via server functions in src/lib/nawat/db.functions.ts using the admin client — dev mode has no sign-in, so tables have RLS on with no client policies.
 - Public bridges are a list in the bridge config (active first, others as fallback); bridges marked serverKey keep their password in a server secret and are called only through relay.functions.ts.
+- Desktop exe is a thin Electron wrapper (desktop/main.cjs) that loads the server URL then the official URL — so published changes reach it without rebuilding.
+- Server status comes from the bridge's read-only /api/system (relay kind "system"); the UI falls back to the last recorded report when the bridge is unreachable.

@@ -5,7 +5,7 @@ import { z } from "zod";
 const SERVER_BRIDGES: Record<string, { url: string; env: string }> = {
   hnchat: { url: "https://bridge.hnchat.net/index.php", env: "HNCHAT_RELAY_TOKEN" },
 };
-const KINDS = ["chat", "image", "models", "health", "version", "update"] as const;
+const KINDS = ["chat", "image", "models", "health", "version", "update", "system"] as const;
 
 function bridge(id: string) {
   const b = SERVER_BRIDGES[id];

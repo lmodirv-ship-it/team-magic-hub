@@ -181,7 +181,7 @@ export async function checkBridge(target: "lan" | "public", config = getBridgeCo
   }
 }
 
-type BridgeKind = "chat" | "models" | "health" | "image" | "version" | "update";
+type BridgeKind = "chat" | "models" | "health" | "image" | "version" | "update" | "system";
 
 async function callLocal(config: BridgeConfig, kind: BridgeKind, payload: Record<string, unknown>) {
   const path = `/api/${kind}`;

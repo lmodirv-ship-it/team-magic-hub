@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { APP_PAGES, PORT_TYPES, portsApi, usePorts, type PortEntry, type PortType } from "@/lib/nawat/ports";
 import { useTableMouse } from "@/components/nawat/DataTable";
 import { PhoneLink } from "@/components/nawat/PhoneLink";
+import { ServerStatusCard } from "@/components/nawat/ServerStatusCard";
 
 export const Route = createFileRoute("/ports")({
   head: () => ({
@@ -144,6 +145,7 @@ function PortsPage() {
         </table>
       </div>
       <p className="text-[11px] text-muted-foreground">تعديل المنفذ هنا يغيّر سجل التطبيق فقط؛ لا يغيّر إعدادات الخادم نفسه. <Link to="/settings" className="underline">الإعدادات</Link></p>
+      <ServerStatusCard />
       <PhoneLink />
     </div>
   );
