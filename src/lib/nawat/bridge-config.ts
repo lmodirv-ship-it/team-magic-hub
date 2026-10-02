@@ -210,7 +210,8 @@ async function callOne(b: PublicBridge, token: string, kind: BridgeKind, payload
   let response = await fetch(`${base}/submit`, { method: "POST", headers, body: JSON.stringify({ kind, payload, wait: 20 }) });
   let data = await response.json().catch(() => ({})) as { id?: string; status?: string; result?: unknown; error?: string };
   if (!response.ok && response.status !== 202) throw new Error(data.error ?? `HTTP ${response.status}`);
-  for (let attempt = 0; data.status === "pending" && data.id && attempt < 3; attempt++) {
+  for (let attempt = 0; (data.status ?? "") !== "" && ["pending","working"].includes(data.status as string) && data.id && attempt < 30; attempt++) {
+    await new Promise((res) => setTimeout(res, 2000));
     response = await fetch(`${base}/result/${data.id}`, { headers });
     data = await response.json().catch(() => ({}));
   }

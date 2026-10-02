@@ -40,8 +40,9 @@ export const serverBridgeCall = createServerFn({ method: "POST" })
     let r = await fetch(`${base}/submit`, { method: "POST", headers, body: JSON.stringify({ kind: data.kind, payload: data.payload, wait: 20 }) });
     let d = (await r.json().catch(() => ({}))) as { id?: string; status?: string; result?: unknown; error?: string | null };
     if (!r.ok && r.status !== 202) throw new Error(d.error ?? `HTTP ${r.status}`);
-    for (let i = 0; d.status === "pending" && d.id && i < 4; i++) {
-      r = await fetch(`${base}/result/${d.id}`, { headers });
+    for (let i = 0; (d.status ?? "") !== "" && ["pending","working"].includes(d.status as string) && d.id && i < 30; i++) {
+      await new Promise((res) => setTimeout(res, 2000));
+    r = await fetch(`${base}/result/${d.id}`, { headers });
       d = await r.json().catch(() => ({}));
     }
     if (d.status !== "done") throw new Error(d.error ?? "لم يرد الخادم المحلي");
