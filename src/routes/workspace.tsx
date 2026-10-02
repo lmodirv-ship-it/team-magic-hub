@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Files, Hammer, MessageSquareText, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Code2, Files, Hammer, MessageSquareText, PanelTop, X } from "lucide-react";
 import { ChatPanel } from "@/components/nawat/ChatPanel";
 import { SiteBuildTracker } from "@/components/nawat/SiteBuildTracker";
+import { FloatingCodeBox } from "@/components/nawat/FloatingCodeBox";
+import { LiveCodeStream } from "@/components/nawat/LiveCodeStream";
 import { Button } from "@/components/ui/button";
 import { EditorPane } from "@/components/nawat/EditorPane";
 import { FileExplorer } from "@/components/nawat/FileExplorer";
@@ -39,6 +41,8 @@ function Workspace() {
   const [termH, setTermH] = useState(256);
   const [mobilePanel, setMobilePanel] = useState<"files" | "chat" | null>(null);
   const [builderOpen, setBuilderOpen] = useState(false);
+  const [floatOpen, setFloatOpen] = useState(false);
+  const [liveOpen, setLiveOpen] = useState(true);
 
   return (
     <main className="relative flex min-w-0 flex-1">
@@ -96,14 +100,22 @@ function Workspace() {
         </>
       )}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex shrink-0 justify-end border-b border-border px-2 py-1">
+        <div className="flex shrink-0 justify-end gap-1 border-b border-border px-2 py-1">
+          <Button size="sm" variant={floatOpen ? "default" : "outline"} className="h-7 gap-1 text-xs" onClick={() => setFloatOpen((v) => !v)}>
+            <PanelTop className="size-3" /> الكود أثناء الكتابة
+          </Button>
+          <Button size="sm" variant={liveOpen ? "default" : "outline"} className="h-7 gap-1 text-xs" onClick={() => setLiveOpen((v) => !v)}>
+            <Code2 className="size-3" /> الكود المباشر
+          </Button>
           <Button size="sm" variant={builderOpen ? "default" : "outline"} className="h-7 gap-1 text-xs" onClick={() => setBuilderOpen((v) => !v)}>
             <Hammer className="size-3" /> {builderOpen ? "العودة للمحرر" : "تتبع بناء الموقع"}
           </Button>
         </div>
         <div className="flex min-h-0 flex-1">
-          {builderOpen ? <SiteBuildTracker /> : <EditorPane />}
+          <div className="flex min-w-0 flex-1">{builderOpen ? <SiteBuildTracker /> : <EditorPane />}</div>
+          {liveOpen && <div className="hidden w-80 shrink-0 md:block"><LiveCodeStream /></div>}
         </div>
+        {floatOpen && <FloatingCodeBox onClose={() => setFloatOpen(false)} />}
         {termOpen && (
           <Resizer
             axis="y"

@@ -71,10 +71,16 @@ export function ChatPanel() {
     abort.current = new AbortController();
     try {
       let acc = "";
+      const started = Date.now();
+      const emit = (done: boolean) =>
+        window.dispatchEvent(new CustomEvent("nawat:stream", { detail: { text: acc, model, started, done } }));
+      emit(false);
       for await (const chunk of modelChatStream(model, next, abort.current.signal)) {
         acc += chunk;
         setMessages([...next, { role: "assistant", content: acc }]);
+        emit(false);
       }
+      emit(true);
       if (voice.enabled) voice.speak(acc);
     } catch (e) {
       setMessages([...next, { role: "assistant", content: `⚠️ ${(e as Error).message}` }]);
