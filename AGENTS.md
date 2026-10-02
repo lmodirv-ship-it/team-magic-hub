@@ -22,3 +22,4 @@
 - Desktop exe is a thin Electron wrapper (desktop/main.cjs) that loads the server URL then the official URL — so published changes reach it without rebuilding.
 - Server status comes from the bridge's read-only /api/system (relay kind "system"); the UI falls back to the last recorded report when the bridge is unreachable.
 - Model factory UI lives at /factory and talks directly to the LAN factory_server.py (port 8789, URL saved per device); server scripts live in deploy/factory. Why: training runs on the LAN GPU server, not in the cloud.
+- CLI and MCP server live in cli/ and share cli/lib.mjs; dependency-free Node so they run on Windows and the LAN server without installs. MCP uses stdio JSON-RPC.
