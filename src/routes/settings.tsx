@@ -4,6 +4,7 @@ import {
   DatabaseBackup,
   Download,
   Factory,
+  Terminal,
   Globe2,
   KeyRound,
   MonitorCog,
@@ -123,6 +124,12 @@ function SettingsPage() {
             <Link to="/factory">
               <Factory />
               المصنع
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/mcp">
+              <Terminal />
+              MCP + CLI
             </Link>
           </Button>
           <Button onClick={save}>
