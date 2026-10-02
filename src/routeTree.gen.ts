@@ -24,6 +24,7 @@ import { Route as PortsRouteImport } from './routes/ports'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as ResultatsRouteImport } from './routes/resultats'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SpyRouteImport } from './routes/spy'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as ToolsRouteImport } from './routes/tools'
@@ -107,6 +108,11 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpyRoute = SpyRouteImport.update({
   id: '/spy',
   path: '/spy',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/providers': typeof ProvidersRoute
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spy': typeof SpyRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
@@ -183,6 +190,7 @@ export interface FileRoutesByTo {
   '/providers': typeof ProvidersRoute
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spy': typeof SpyRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
@@ -208,6 +216,7 @@ export interface FileRoutesById {
   '/providers': typeof ProvidersRoute
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spy': typeof SpyRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/providers'
     | '/resultats'
     | '/settings'
+    | '/sitemap.xml'
     | '/spy'
     | '/tasks'
     | '/tools'
@@ -258,6 +268,7 @@ export interface FileRouteTypes {
     | '/providers'
     | '/resultats'
     | '/settings'
+    | '/sitemap.xml'
     | '/spy'
     | '/tasks'
     | '/tools'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/providers'
     | '/resultats'
     | '/settings'
+    | '/sitemap.xml'
     | '/spy'
     | '/tasks'
     | '/tools'
@@ -307,6 +319,7 @@ export interface RootRouteChildren {
   ProvidersRoute: typeof ProvidersRoute
   ResultatsRoute: typeof ResultatsRoute
   SettingsRoute: typeof SettingsRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpyRoute: typeof SpyRoute
   TasksRoute: typeof TasksRoute
   ToolsRoute: typeof ToolsRoute
@@ -423,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spy': {
       id: '/spy'
       path: '/spy'
@@ -491,6 +511,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProvidersRoute: ProvidersRoute,
   ResultatsRoute: ResultatsRoute,
   SettingsRoute: SettingsRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpyRoute: SpyRoute,
   TasksRoute: TasksRoute,
   ToolsRoute: ToolsRoute,
