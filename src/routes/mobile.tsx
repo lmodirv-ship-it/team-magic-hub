@@ -57,7 +57,7 @@ const initial: State = {
 };
 // يوحّد الاتصال: محلي مباشرة إلى الجسر، أو سحابي عبر مرحّل الموقع المنشور.
 async function bridgeCall(s: State, kind: "chat" | "models" | "health", payload: Record<string, unknown> = {}) {
-  saveBridgeConfig({ version: 1, mode: s.connectionMode, localUrl: s.bridge, publicUrl: s.publicBridge });
+  saveBridgeConfig({ ...getBridgeConfig(), mode: s.connectionMode, localUrl: s.bridge, publicUrl: s.publicBridge });
   saveRelayToken(s.relayToken);
   return callConfiguredBridge(kind, payload);
 }
