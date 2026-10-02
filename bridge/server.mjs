@@ -3,6 +3,33 @@
 // بلا اعتماديات: يعمل بـ Node 18+ فقط.  التشغيل: node bridge/server.mjs
 import http from "node:http";
 import { randomUUID } from "node:crypto";
+import { execFile, spawn } from "node:child_process";
+import { readFileSync, openSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const git = (...args) => new Promise((ok) => execFile("git", args, { cwd: ROOT, timeout: 20000 }, (e, out) => ok(e ? "" : out.trim())));
+async function version() {
+  const br = process.env.GIT_BRANCH ?? "main";
+  await git("fetch", "-q", "origin", br);
+  const [local, remote, date, behind, msg] = await Promise.all([
+    git("rev-parse", "--short", "HEAD"), git("rev-parse", "--short", `origin/${br}`),
+    git("log", "-1", "--format=%cI"), git("rev-list", "--count", `HEAD..origin/${br}`), git("log", "-1", "--format=%s", `origin/${br}`),
+  ]);
+  let log = ""; try { log = readFileSync(path.join(ROOT, "update.log"), "utf8").split("\n").slice(-8).join("\n"); } catch {}
+  return { local, remote, branch: br, localDate: date, behind: Number(behind || 0), latest: msg, updating: updating, log };
+}
+let updating = false;
+function runUpdate() {
+  if (updating) return { started: false, message: "تحديث جارٍ بالفعل" };
+  updating = true;
+  const out = openSync(path.join(ROOT, "update.log"), "a");
+  const child = spawn("bash", [path.join(ROOT, "deploy/update.sh")], { cwd: ROOT, stdio: ["ignore", out, out], detached: true });
+  child.on("exit", () => { updating = false; });
+  child.unref();
+  return { started: true, message: "بدأ سحب آخر التعديلات وإعادة البناء" };
+}
 
 const env = (k, d) => process.env[k] ?? d;
 const PORT = Number(env("BRIDGE_PORT", 8788));
@@ -133,6 +160,8 @@ const server = http.createServer(async (req, res) => {
   }
   try {
     if (p === "/api/health" && req.method === "GET") return send(res, 200, await health());
+    if (p === "/api/version" && req.method === "GET") return send(res, 200, await version());
+    if (p === "/api/update" && req.method === "POST") return send(res, 202, runUpdate());
     if (p === "/api/models" && req.method === "GET") return send(res, 200, await models());
     if (p === "/api/chat" && req.method === "POST") return await chat(await readJson(req), res);
     if (p === "/api/image" && req.method === "POST") {
@@ -140,7 +169,7 @@ const server = http.createServer(async (req, res) => {
       if (!b.prompt) return send(res, 400, { error: "prompt مطلوب" });
       return send(res, 200, { image: await generateImage(String(b.prompt).slice(0, 2000), b) });
     }
-    send(res, 404, { error: "not found", endpoints: ["/api/ping", "/api/health", "/api/models", "/api/chat", "/api/image"] });
+    send(res, 404, { error: "not found", endpoints: ["/api/ping", "/api/health", "/api/models", "/api/chat", "/api/image", "/api/version", "/api/update"] });
   } catch (e) {
     log("ERR", p, e.message);
     if (!res.headersSent) send(res, 502, { error: e.name === "AbortError" ? "انتهت مهلة الخدمة" : e.message });
