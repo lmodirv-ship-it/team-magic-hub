@@ -21,3 +21,4 @@
 - Public bridges are a list in the bridge config (active first, others as fallback); bridges marked serverKey keep their password in a server secret and are called only through relay.functions.ts.
 - Desktop exe is a thin Electron wrapper (desktop/main.cjs) that loads the server URL then the official URL — so published changes reach it without rebuilding.
 - Server status comes from the bridge's read-only /api/system (relay kind "system"); the UI falls back to the last recorded report when the bridge is unreachable.
+- Model factory UI lives at /factory and talks directly to the LAN factory_server.py (port 8789, URL saved per device); server scripts live in deploy/factory. Why: training runs on the LAN GPU server, not in the cloud.
