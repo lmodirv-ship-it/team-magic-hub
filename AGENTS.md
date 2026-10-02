@@ -18,3 +18,4 @@
 - Bridge connection settings use the versioned shared profile in bridge-config.ts; relay secrets remain in device-only storage and are excluded from exports.
 - Live status uses LAN WebSocket only on non-secure local pages and same-origin polling on HTTPS, because browsers block insecure WebSocket from secure pages.
 - App data tables (roles, pages, permissions, app_store, api_keys, usage_events) are reached only via server functions in src/lib/nawat/db.functions.ts using the admin client — dev mode has no sign-in, so tables have RLS on with no client policies.
+- Public bridges are a list in the bridge config (active first, others as fallback); bridges marked serverKey keep their password in a server secret and are called only through relay.functions.ts.
