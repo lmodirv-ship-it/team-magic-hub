@@ -23,7 +23,7 @@ export function ServerDiagnosis() {
 
   const fetchMetrics = async () => {
     try {
-      const r = await callConfiguredBridge("system" as never, {} as never);
+      const r = await callConfiguredBridge("system");
       setMetrics(JSON.stringify(r, null, 2).slice(0, 20000));
       toast.success("جُلبت المقاييس من السيرفر");
     } catch { toast.error("تعذّر الوصول إلى السيرفر — ألصق المقاييس يدويًا"); }
