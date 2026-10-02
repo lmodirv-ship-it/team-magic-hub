@@ -25,11 +25,13 @@ import { Route as ModelsRouteImport } from './routes/models'
 import { Route as PacksRouteImport } from './routes/packs'
 import { Route as PlanRouteImport } from './routes/plan'
 import { Route as PortsRouteImport } from './routes/ports'
+import { Route as ProjectsRouteImport } from './routes/projects'
 import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as ResultatsRouteImport } from './routes/resultats'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SpyRouteImport } from './routes/spy'
+import { Route as SyncRouteImport } from './routes/sync'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
@@ -117,6 +119,11 @@ const PortsRoute = PortsRouteImport.update({
   path: '/ports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProvidersRoute = ProvidersRouteImport.update({
   id: '/providers',
   path: '/providers',
@@ -140,6 +147,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SpyRoute = SpyRouteImport.update({
   id: '/spy',
   path: '/spy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SyncRoute = SyncRouteImport.update({
+  id: '/sync',
+  path: '/sync',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TasksRoute = TasksRouteImport.update({
@@ -190,11 +202,13 @@ export interface FileRoutesByFullPath {
   '/packs': typeof PacksRoute
   '/plan': typeof PlanRoute
   '/ports': typeof PortsRoute
+  '/projects': typeof ProjectsRoute
   '/providers': typeof ProvidersRoute
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spy': typeof SpyRoute
+  '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
   '/workspace': typeof WorkspaceRoute
@@ -219,11 +233,13 @@ export interface FileRoutesByTo {
   '/packs': typeof PacksRoute
   '/plan': typeof PlanRoute
   '/ports': typeof PortsRoute
+  '/projects': typeof ProjectsRoute
   '/providers': typeof ProvidersRoute
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spy': typeof SpyRoute
+  '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
   '/workspace': typeof WorkspaceRoute
@@ -249,11 +265,13 @@ export interface FileRoutesById {
   '/packs': typeof PacksRoute
   '/plan': typeof PlanRoute
   '/ports': typeof PortsRoute
+  '/projects': typeof ProjectsRoute
   '/providers': typeof ProvidersRoute
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/spy': typeof SpyRoute
+  '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
   '/workspace': typeof WorkspaceRoute
@@ -280,11 +298,13 @@ export interface FileRouteTypes {
     | '/packs'
     | '/plan'
     | '/ports'
+    | '/projects'
     | '/providers'
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
     | '/spy'
+    | '/sync'
     | '/tasks'
     | '/tools'
     | '/workspace'
@@ -309,11 +329,13 @@ export interface FileRouteTypes {
     | '/packs'
     | '/plan'
     | '/ports'
+    | '/projects'
     | '/providers'
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
     | '/spy'
+    | '/sync'
     | '/tasks'
     | '/tools'
     | '/workspace'
@@ -338,11 +360,13 @@ export interface FileRouteTypes {
     | '/packs'
     | '/plan'
     | '/ports'
+    | '/projects'
     | '/providers'
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
     | '/spy'
+    | '/sync'
     | '/tasks'
     | '/tools'
     | '/workspace'
@@ -368,11 +392,13 @@ export interface RootRouteChildren {
   PacksRoute: typeof PacksRoute
   PlanRoute: typeof PlanRoute
   PortsRoute: typeof PortsRoute
+  ProjectsRoute: typeof ProjectsRoute
   ProvidersRoute: typeof ProvidersRoute
   ResultatsRoute: typeof ResultatsRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SpyRoute: typeof SpyRoute
+  SyncRoute: typeof SyncRoute
   TasksRoute: typeof TasksRoute
   ToolsRoute: typeof ToolsRoute
   WorkspaceRoute: typeof WorkspaceRoute
@@ -495,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PortsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/providers': {
       id: '/providers'
       path: '/providers'
@@ -528,6 +561,13 @@ declare module '@tanstack/react-router' {
       path: '/spy'
       fullPath: '/spy'
       preLoaderRoute: typeof SpyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sync': {
+      id: '/sync'
+      path: '/sync'
+      fullPath: '/sync'
+      preLoaderRoute: typeof SyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tasks': {
@@ -592,11 +632,13 @@ const rootRouteChildren: RootRouteChildren = {
   PacksRoute: PacksRoute,
   PlanRoute: PlanRoute,
   PortsRoute: PortsRoute,
+  ProjectsRoute: ProjectsRoute,
   ProvidersRoute: ProvidersRoute,
   ResultatsRoute: ResultatsRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SpyRoute: SpyRoute,
+  SyncRoute: SyncRoute,
   TasksRoute: TasksRoute,
   ToolsRoute: ToolsRoute,
   WorkspaceRoute: WorkspaceRoute,
