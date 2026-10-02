@@ -26,7 +26,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const admin = async () => (await import("@/integrations/supabase/client.server")).supabaseAdmin;
 
 const Submit = z.object({
-  kind: z.enum(["chat", "image", "models", "health", "version", "update"]),
+  kind: z.enum(["chat", "image", "models", "health", "version", "update", "system"]),
   payload: z.record(z.string(), z.unknown()).default({}),
   wait: z.number().min(0).max(25).default(20),
 });
