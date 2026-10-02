@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { callConfiguredBridge } from "@/lib/nawat/bridge-config";
 
 type Status = "waiting" | "working" | "done" | "failed";
-type Stage = { id: string; label: string; model?: string; status: Status; ms?: number; note?: string };
+type Stage = { id: string; label: string; model?: string; status: Status; ms?: number | undefined; note?: string | undefined };
 
 const FAST = "qwen3:4b";
 const STRONG = "qwen3.5:9b";
