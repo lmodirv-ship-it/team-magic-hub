@@ -10,6 +10,7 @@ import { extractCode } from "@/components/nawat/LiveCodeStream";
 import { getActiveProject, writeProjectFile } from "@/lib/nawat/projects";
 
 export const Route = createFileRoute("/speed-build")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Speed Build — بناء فائق السرعة | NAWAT Studio" },
@@ -105,7 +106,7 @@ function SpeedBuild() {
 
   async function saveServer() {
     const p = getActiveProject();
-    if (!p) return toast.error("اختر مشروعًا من صفحة المشاريع أولًا");
+    if (!p) { toast.error("اختر مشروعًا من صفحة المشاريع أولًا"); return; }
     try { await writeProjectFile(p, "index.html", code); toast.success(`حُفظ في ${p}/index.html`); }
     catch (e) { toast.error((e as Error).message); }
   }
