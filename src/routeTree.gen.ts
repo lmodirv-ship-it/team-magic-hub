@@ -30,6 +30,7 @@ import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as ResultatsRouteImport } from './routes/resultats'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SpeedBuildRouteImport } from './routes/speed-build'
 import { Route as SpyRouteImport } from './routes/spy'
 import { Route as SyncRouteImport } from './routes/sync'
 import { Route as TasksRouteImport } from './routes/tasks'
@@ -144,6 +145,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SpeedBuildRoute = SpeedBuildRouteImport.update({
+  id: '/speed-build',
+  path: '/speed-build',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpyRoute = SpyRouteImport.update({
   id: '/spy',
   path: '/spy',
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/speed-build': typeof SpeedBuildRoute
   '/spy': typeof SpyRoute
   '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/speed-build': typeof SpeedBuildRoute
   '/spy': typeof SpyRoute
   '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/speed-build': typeof SpeedBuildRoute
   '/spy': typeof SpyRoute
   '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
+    | '/speed-build'
     | '/spy'
     | '/sync'
     | '/tasks'
@@ -334,6 +344,7 @@ export interface FileRouteTypes {
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
+    | '/speed-build'
     | '/spy'
     | '/sync'
     | '/tasks'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
+    | '/speed-build'
     | '/spy'
     | '/sync'
     | '/tasks'
@@ -397,6 +409,7 @@ export interface RootRouteChildren {
   ResultatsRoute: typeof ResultatsRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SpeedBuildRoute: typeof SpeedBuildRoute
   SpyRoute: typeof SpyRoute
   SyncRoute: typeof SyncRoute
   TasksRoute: typeof TasksRoute
@@ -556,6 +569,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/speed-build': {
+      id: '/speed-build'
+      path: '/speed-build'
+      fullPath: '/speed-build'
+      preLoaderRoute: typeof SpeedBuildRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/spy': {
       id: '/spy'
       path: '/spy'
@@ -637,6 +657,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResultatsRoute: ResultatsRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SpeedBuildRoute: SpeedBuildRoute,
   SpyRoute: SpyRoute,
   SyncRoute: SyncRoute,
   TasksRoute: TasksRoute,

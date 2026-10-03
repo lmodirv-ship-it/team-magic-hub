@@ -21,12 +21,14 @@ import {
   ImageIcon,
   FolderTree,
   GitMerge,
+  Zap,
 } from "lucide-react";
 import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
 
 const items = [
   { to: "/", icon: LayoutDashboard, label: "نظرة عامة" },
   { to: "/workspace", icon: Code2, label: "مساحة العمل" },
+  { to: "/speed-build", icon: Zap, label: "Speed Build" },
   {
     to: "/chat/$threadId",
     params: { threadId: "new" },
