@@ -7,6 +7,7 @@ const Body = z.object({
 
 /** Streams plain-text deltas from the cloud model for the Speed Build page. */
 export const Route = createFileRoute("/api/speed-build")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       POST: async ({ request }) => {
