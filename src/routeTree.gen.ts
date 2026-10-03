@@ -36,6 +36,7 @@ import { Route as SyncRouteImport } from './routes/sync'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
+import { Route as ApiSpeedBuildRouteImport } from './routes/api/speed-build'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
 import { Route as ApiPublicRelaySplatRouteImport } from './routes/api/public/relay/$'
@@ -175,6 +176,11 @@ const WorkspaceRoute = WorkspaceRouteImport.update({
   path: '/workspace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSpeedBuildRoute = ApiSpeedBuildRouteImport.update({
+  id: '/api/speed-build',
+  path: '/api/speed-build',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStatsRoute = ApiStatsRouteImport.update({
   id: '/api/stats',
   path: '/api/stats',
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
   '/workspace': typeof WorkspaceRoute
+  '/api/speed-build': typeof ApiSpeedBuildRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
@@ -251,6 +258,7 @@ export interface FileRoutesByTo {
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
   '/workspace': typeof WorkspaceRoute
+  '/api/speed-build': typeof ApiSpeedBuildRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
@@ -284,6 +292,7 @@ export interface FileRoutesById {
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
   '/workspace': typeof WorkspaceRoute
+  '/api/speed-build': typeof ApiSpeedBuildRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
@@ -318,6 +327,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/tools'
     | '/workspace'
+    | '/api/speed-build'
     | '/api/stats'
     | '/chat/$threadId'
     | '/api/public/relay/$'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/tools'
     | '/workspace'
+    | '/api/speed-build'
     | '/api/stats'
     | '/chat/$threadId'
     | '/api/public/relay/$'
@@ -382,6 +393,7 @@ export interface FileRouteTypes {
     | '/tasks'
     | '/tools'
     | '/workspace'
+    | '/api/speed-build'
     | '/api/stats'
     | '/chat/$threadId'
     | '/api/public/relay/$'
@@ -415,6 +427,7 @@ export interface RootRouteChildren {
   TasksRoute: typeof TasksRoute
   ToolsRoute: typeof ToolsRoute
   WorkspaceRoute: typeof WorkspaceRoute
+  ApiSpeedBuildRoute: typeof ApiSpeedBuildRoute
   ApiStatsRoute: typeof ApiStatsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
   ApiPublicRelaySplatRoute: typeof ApiPublicRelaySplatRoute
@@ -611,6 +624,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkspaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/speed-build': {
+      id: '/api/speed-build'
+      path: '/api/speed-build'
+      fullPath: '/api/speed-build'
+      preLoaderRoute: typeof ApiSpeedBuildRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/stats': {
       id: '/api/stats'
       path: '/api/stats'
@@ -663,6 +683,7 @@ const rootRouteChildren: RootRouteChildren = {
   TasksRoute: TasksRoute,
   ToolsRoute: ToolsRoute,
   WorkspaceRoute: WorkspaceRoute,
+  ApiSpeedBuildRoute: ApiSpeedBuildRoute,
   ApiStatsRoute: ApiStatsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
   ApiPublicRelaySplatRoute: ApiPublicRelaySplatRoute,

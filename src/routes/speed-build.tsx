@@ -120,16 +120,16 @@ function SpeedBuild() {
           spoke = true;
           const say = acc.split("```")[0]?.trim();
           if (say && voice.enabled) voice.speak(say);
-          step("🧩 توليد الكود");
+          step("◆ توليد الكود");
         }
       }
       window.dispatchEvent(new CustomEvent("nawat:stream", { detail: { text: acc, model, started: t0, done: true } }));
       if (!spoke && voice.enabled) voice.speak(acc.slice(0, 400));
       setHistory((h) => [...h, { role: "user", content: text }, { role: "assistant", content: acc.slice(0, 4000) }]);
-      step("✅ جاهز — المعاينة محدثة");
+      step("✔ جاهز — المعاينة محدثة");
       if (voice.enabled && spoke) voice.speak("انتهيت، المعاينة جاهزة.");
     } catch (e) {
-      step(`⚠️ ${(e as Error).message}`);
+      step(`✖ ${(e as Error).message}`);
       toast.error((e as Error).message);
     }
     setBusy(false);
@@ -179,7 +179,7 @@ function SpeedBuild() {
         </h1>
         <span className="text-xs text-muted-foreground">تحدث أو اكتب — النموذج يجيب بالصوت ويكتب الكود لحظيًا</span>
         <select value={model} onChange={(e) => setModel(e.target.value)} className="ms-auto rounded-md border border-border bg-background/60 px-2 py-1 text-xs backdrop-blur" aria-label="النموذج">
-          {models.length === 0 && <option value="">لا توجد نماذج</option>}
+          <option value={CLOUD}>☁ NAWAT السحابي (فائق السرعة)</option>
           {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
         </select>
         <span dir="ltr" className="rounded-md border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[11px] text-primary">
