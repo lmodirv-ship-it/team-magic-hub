@@ -29,6 +29,19 @@ const SYSTEM =
   "أنت NAWAT Speed Builder. أجب بسرعة وباختصار. ابدأ بجملة عربية واحدة قصيرة تشرح ما تفعله (تُقرأ بالصوت)، ثم ضع الكود كاملًا داخل كتلة واحدة ```html (صفحة HTML كاملة بـ CSS داخلي، عربية RTL، متجاوبة وجميلة) ما لم يُطلب غير ذلك. لا تفكير طويل.";
 
 type Step = { label: string; at: number };
+const CLOUD = "nawat-cloud";
+
+async function* cloudStream(messages: ChatMessage[], signal: AbortSignal): AsyncGenerator<string> {
+  const r = await fetch("/api/speed-build", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages }), signal });
+  if (!r.ok || !r.body) throw new Error((await r.text().catch(() => "")) || `خطأ ${r.status}`);
+  const reader = r.body.getReader();
+  const dec = new TextDecoder();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) return;
+    yield dec.decode(value, { stream: true });
+  }
+}
 
 function SpeedBuild() {
   const { models } = useModels();
@@ -54,8 +67,8 @@ function SpeedBuild() {
     } catch { /* ignore */ }
   }, []);
   useEffect(() => {
-    if (!model && models[0]) setModel(models.find((m) => /coder|qwen2\.5-coder/.test(m.name))?.name ?? models[0].name);
-  }, [models, model]);
+    if (!model) setModel(CLOUD);
+  }, [model]);
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify({ model, out, history: history.slice(-12) })); } catch { /* ignore */ }
   }, [model, out, history]);
@@ -77,9 +90,27 @@ function SpeedBuild() {
     const t0 = Date.now();
     let acc = "";
     let spoke = false;
-    step(`🧠 ${model} يكتب…`);
+    const label = model === CLOUD ? "NAWAT السحابي" : model;
+    step(`● ${label} يكتب…`);
+    const signal = abort.current.signal;
+    // محلي أولًا مع مهلة قصيرة، ثم احتياط سحابي تلقائي إن لم يبدأ الرد
+    async function* source(): AsyncGenerator<string> {
+      if (model === CLOUD) { yield* cloudStream(msgs, signal); return; }
+      const local = modelChatStream(model, msgs, signal);
+      const first = await Promise.race([
+        local.next(),
+        new Promise<"timeout">((r) => setTimeout(() => r("timeout"), 15000)),
+      ]).catch(() => "timeout" as const);
+      if (first === "timeout" || first.done) {
+        step("↻ النموذج المحلي غير متاح — تحويل للسحابي");
+        yield* cloudStream(msgs, signal);
+        return;
+      }
+      yield first.value;
+      for await (const c of { [Symbol.asyncIterator]: () => local }) yield c;
+    }
     try {
-      for await (const c of modelChatStream(model, msgs, abort.current.signal)) {
+      for await (const c of source()) {
         acc += c;
         setOut(acc);
         const secs = Math.max(0.1, (Date.now() - t0) / 1000);
