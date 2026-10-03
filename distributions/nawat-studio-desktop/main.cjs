@@ -147,3 +147,10 @@ ipcMain.handle("shell:exec", (_e, cmd, opts = {}) => {
 
 // ---------- ollama ----------
 ipcMain.handle("ollama:host", () => process.env.OLLAMA_HOST || "http://127.0.0.1:11434");
+
+// السماح بالميكروفون لصفحة Speed Build والمحادثة الصوتية
+app.whenReady().then(() => {
+  const { session } = require("electron");
+  session.defaultSession.setPermissionRequestHandler((_wc, perm, cb) => cb(perm === "media" || perm === "microphone" || perm === "audioCapture"));
+  session.defaultSession.setPermissionCheckHandler((_wc, perm) => perm === "media" || perm === "microphone" || perm === "audioCapture");
+});

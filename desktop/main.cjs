@@ -17,3 +17,10 @@ async function create() {
 }
 app.whenReady().then(create);
 app.on("window-all-closed", () => app.quit());
+
+// السماح بالميكروفون لصفحة Speed Build والمحادثة الصوتية
+app.whenReady().then(() => {
+  const { session } = require("electron");
+  session.defaultSession.setPermissionRequestHandler((_wc, perm, cb) => cb(perm === "media" || perm === "microphone" || perm === "audioCapture"));
+  session.defaultSession.setPermissionCheckHandler((_wc, perm) => perm === "media" || perm === "microphone" || perm === "audioCapture");
+});

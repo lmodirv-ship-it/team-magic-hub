@@ -75,7 +75,11 @@ export function useVoiceInput(onText: (text: string) => void) {
       const code = event.error ?? "unknown";
       setError(
         code === "not-allowed"
-          ? "تم رفض إذن الميكروفون."
+          ? "الميكروفون مرفوض: اضغط القفل بجانب العنوان ← الميكروفون ← سماح، ثم أعد تحميل الصفحة."
+          : code === "network"
+          ? "التعرف على الصوت يحتاج اتصالًا بالإنترنت."
+          : code === "no-speech"
+          ? "لم أسمع شيئًا — حاول مرة أخرى."
           : `تعذّر التسجيل الصوتي (${code}).`,
       );
       setListening(false);
