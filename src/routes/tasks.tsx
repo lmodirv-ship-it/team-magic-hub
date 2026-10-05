@@ -80,7 +80,6 @@ function TasksPage() {
               ),
             );
           }
-        let ok = true;
         } catch (e) {
           acc += `\n⚠️ ${(e as Error).message}`;
         }
