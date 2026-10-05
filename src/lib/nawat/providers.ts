@@ -80,6 +80,17 @@ export const officialModels: OllamaModel[] = [
   official("ornith-1.5:9b", 6_600_000_000, "e5df7dcdd8a2", "Ornith 1.5 — 9B.", "9B"),
   official("nemotron3:33b", 27_000_000_000, "f6d8b7ff496c", "Nemotron 3 — 33B ثقيل (يحتاج ذاكرة كبيرة).", "33B"),
   official("batiai/nemotron3-nano-omni-text:iq4", 17_000_000_000, "4bcf36cc7080", "Nemotron 3 Nano Omni — IQ4.", undefined, "IQ4"),
+  // مجموعة 2026-10-03 من السيرفر
+  official("nawat-think:r19", 7_500_000_000, "r19think0001", "التفكير — الجولة 19 (الأحدث والأكبر)."),
+  official("nawat-coder-v16:latest", 2_330_000_000, "v16coder0001", "برمجة — الإصدار 16."),
+  official("nawat-think:v17-anon", 2_330_000_000, "v17anon00001", "التفكير — v17 مجهّل البيانات."),
+  official("nawat-think:v17-tri-r2", 2_330_000_000, "v17trir20001", "التفكير — v17 مع تدريب tri-r2."),
+  official("nawat-think:v16-coder", 2_330_000_000, "v16thcoder01", "التفكير — v16 بتخصص برمجي."),
+  official("nawat-think:v16-tri-r1", 2_330_000_000, "v16trir10001", "التفكير — v16 مع tri-r1."),
+  official("nawat-think:v15-mini", 2_330_000_000, "v15mini00001", "التفكير — v15 مصغّر."),
+  official("nawat-mini:0.5b-v16", 2_330_000_000, "mini05bv1601", "مصغّر فائق السرعة — v16.", "0.5B"),
+  official("nawat-mini:0.5b", 2_330_000_000, "mini05b00001", "مصغّر فائق السرعة.", "0.5B"),
+  official("qwen3.5:9b", 6_140_000_000, "qwen35p9b001", "Qwen 3.5 — 9B.", "9B"),
 ];
 
 function readJson<T>(key: string, fallback: T): T {

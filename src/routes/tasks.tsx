@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Play, Save } from "lucide-react";
+import { BarChart3, Play, Save } from "lucide-react";
 import { modelChatStream } from "@/lib/nawat/providers";
 import { useModels } from "@/lib/nawat/useModels";
 import { useWorkspace } from "@/lib/nawat/workspace";
+import { addRun, CATEGORIES, categoryOf, rateRun, type ModelCategory } from "@/lib/nawat/model-catalog";
 
 export const Route = createFileRoute("/tasks")({
   staticData: { sitemap: true },
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/tasks")({
   component: TasksPage,
 });
 
-type Result = { model: string; output: string; ms: number; done: boolean };
+type Result = { model: string; output: string; ms: number; done: boolean; at?: string; score?: number };
 
 const HISTORY_KEY = "nawat.tasks.v1";
 
@@ -39,6 +40,8 @@ function TasksPage() {
   const [results, setResults] = useState<Result[]>([]);
   const [running, setRunning] = useState(false);
   const [history, setHistory] = useState<{ prompt: string; at: string }[]>([]);
+  const [cat, setCat] = useState<ModelCategory | "all">("all");
+  const shown = models.filter((m) => cat === "all" || categoryOf(m.name) === cat);
 
   useEffect(() => {
     try {
@@ -80,10 +83,19 @@ function TasksPage() {
         } catch (e) {
           acc += `\n⚠️ ${(e as Error).message}`;
         }
+        const ms = performance.now() - t0;
+        const at = new Date().toISOString();
+        addRun({
+          model: m,
+          at,
+          ms,
+          chars: acc.length,
+          tps: acc.length / Math.max(ms / 1000, 0.001),
+          ok: !acc.includes("⚠️") && acc.length > 0,
+          prompt: prompt.slice(0, 200),
+        });
         setResults((rs) =>
-          rs.map((r) =>
-            r.model === m ? { ...r, output: acc, ms: performance.now() - t0, done: true } : r,
-          ),
+          rs.map((r) => (r.model === m ? { ...r, output: acc, ms, done: true, at } : r)),
         );
       }),
     );
@@ -130,12 +142,29 @@ function TasksPage() {
               {running ? "جارٍ التنفيذ…" : "تشغيل على النماذج المحددة"}
             </button>
           </div>
+          <Link
+            to="/model-results"
+            className="mt-3 flex w-fit items-center gap-1 rounded border border-nawat px-3 py-1.5 text-xs text-nawat hover:bg-accent"
+          >
+            <BarChart3 className="size-3.5" /> النتائج — تطور ومقارنة النماذج
+          </Link>
         </div>
 
         <div className="rounded-lg border border-border bg-card p-4">
           <h2 className="mb-2 text-sm font-semibold">النماذج</h2>
-          <div className="space-y-1">
-            {models.map((m) => (
+          <div className="mb-2 flex flex-wrap gap-1">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => setCat(c.id)}
+                className={`rounded px-2 py-0.5 text-[11px] ${cat === c.id ? "bg-nawat text-nawat-foreground" : "border border-border text-muted-foreground"}`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+          <div className="max-h-96 space-y-1 overflow-auto">
+            {shown.map((m) => (
               <label key={m.name} className="flex items-center gap-2 text-xs">
                 <input
                   type="checkbox"
@@ -145,7 +174,7 @@ function TasksPage() {
                 <span className="font-mono">{m.name}</span>
               </label>
             ))}
-            {models.length === 0 && (
+            {shown.length === 0 && (
               <p className="text-xs text-muted-foreground">لا توجد نماذج متاحة.</p>
             )}
           </div>
@@ -159,6 +188,22 @@ function TasksPage() {
               <h3 className="font-mono text-xs font-semibold">{r.model}</h3>
               <span className="text-[11px] text-muted-foreground">{(r.ms / 1000).toFixed(1)}s</span>
               <div className="flex-1" />
+              {r.done && r.at && (
+                <span className="flex gap-0.5" title="قيّم الجودة">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => {
+                        rateRun(r.at!, r.model, s);
+                        setResults((rs) => rs.map((x) => (x.model === r.model ? { ...x, score: s } : x)));
+                      }}
+                      className={`text-xs ${(r.score ?? 0) >= s ? "text-nawat" : "text-muted-foreground"}`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </span>
+              )}
               <button
                 title="حفظ النتيجة في ملف"
                 onClick={() => {

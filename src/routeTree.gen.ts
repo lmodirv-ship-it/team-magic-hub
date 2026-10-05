@@ -21,6 +21,7 @@ import { Route as FactoryRouteImport } from './routes/factory'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MetricsRouteImport } from './routes/metrics'
 import { Route as MobileRouteImport } from './routes/mobile'
+import { Route as ModelResultsRouteImport } from './routes/model-results'
 import { Route as ModelsRouteImport } from './routes/models'
 import { Route as PacksRouteImport } from './routes/packs'
 import { Route as PlanRouteImport } from './routes/plan'
@@ -99,6 +100,11 @@ const MetricsRoute = MetricsRouteImport.update({
 const MobileRoute = MobileRouteImport.update({
   id: '/mobile',
   path: '/mobile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModelResultsRoute = ModelResultsRouteImport.update({
+  id: '/model-results',
+  path: '/model-results',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModelsRoute = ModelsRouteImport.update({
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
+  '/model-results': typeof ModelResultsRoute
   '/models': typeof ModelsRoute
   '/packs': typeof PacksRoute
   '/plan': typeof PlanRoute
@@ -243,6 +250,7 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
+  '/model-results': typeof ModelResultsRoute
   '/models': typeof ModelsRoute
   '/packs': typeof PacksRoute
   '/plan': typeof PlanRoute
@@ -277,6 +285,7 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
+  '/model-results': typeof ModelResultsRoute
   '/models': typeof ModelsRoute
   '/packs': typeof PacksRoute
   '/plan': typeof PlanRoute
@@ -312,6 +321,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/metrics'
     | '/mobile'
+    | '/model-results'
     | '/models'
     | '/packs'
     | '/plan'
@@ -345,6 +355,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/metrics'
     | '/mobile'
+    | '/model-results'
     | '/models'
     | '/packs'
     | '/plan'
@@ -378,6 +389,7 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/metrics'
     | '/mobile'
+    | '/model-results'
     | '/models'
     | '/packs'
     | '/plan'
@@ -412,6 +424,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   MetricsRoute: typeof MetricsRoute
   MobileRoute: typeof MobileRoute
+  ModelResultsRoute: typeof ModelResultsRoute
   ModelsRoute: typeof ModelsRoute
   PacksRoute: typeof PacksRoute
   PlanRoute: typeof PlanRoute
@@ -517,6 +530,13 @@ declare module '@tanstack/react-router' {
       path: '/mobile'
       fullPath: '/mobile'
       preLoaderRoute: typeof MobileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/model-results': {
+      id: '/model-results'
+      path: '/model-results'
+      fullPath: '/model-results'
+      preLoaderRoute: typeof ModelResultsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/models': {
@@ -668,6 +688,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   MetricsRoute: MetricsRoute,
   MobileRoute: MobileRoute,
+  ModelResultsRoute: ModelResultsRoute,
   ModelsRoute: ModelsRoute,
   PacksRoute: PacksRoute,
   PlanRoute: PlanRoute,
