@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Play, Save } from "lucide-react";
+import { BarChart3, Play, Save } from "lucide-react";
 import { modelChatStream } from "@/lib/nawat/providers";
 import { useModels } from "@/lib/nawat/useModels";
 import { useWorkspace } from "@/lib/nawat/workspace";
+import { addRun, CATEGORIES, categoryOf, rateRun, type ModelCategory } from "@/lib/nawat/model-catalog";
 
 export const Route = createFileRoute("/tasks")({
   staticData: { sitemap: true },
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/tasks")({
   component: TasksPage,
 });
 
-type Result = { model: string; output: string; ms: number; done: boolean };
+type Result = { model: string; output: string; ms: number; done: boolean; at?: string; score?: number };
 
 const HISTORY_KEY = "nawat.tasks.v1";
 
@@ -39,6 +40,8 @@ function TasksPage() {
   const [results, setResults] = useState<Result[]>([]);
   const [running, setRunning] = useState(false);
   const [history, setHistory] = useState<{ prompt: string; at: string }[]>([]);
+  const [cat, setCat] = useState<ModelCategory | "all">("all");
+  const shown = models.filter((m) => cat === "all" || categoryOf(m.name) === cat);
 
   useEffect(() => {
     try {
@@ -77,13 +80,23 @@ function TasksPage() {
               ),
             );
           }
+        let ok = true;
         } catch (e) {
           acc += `\n⚠️ ${(e as Error).message}`;
         }
+        const ms = performance.now() - t0;
+        const at = new Date().toISOString();
+        addRun({
+          model: m,
+          at,
+          ms,
+          chars: acc.length,
+          tps: acc.length / Math.max(ms / 1000, 0.001),
+          ok: !acc.includes("⚠️") && acc.length > 0,
+          prompt: prompt.slice(0, 200),
+        });
         setResults((rs) =>
-          rs.map((r) =>
-            r.model === m ? { ...r, output: acc, ms: performance.now() - t0, done: true } : r,
-          ),
+          rs.map((r) => (r.model === m ? { ...r, output: acc, ms, done: true, at } : r)),
         );
       }),
     );
