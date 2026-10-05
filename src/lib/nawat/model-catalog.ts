@@ -23,7 +23,7 @@ export function categoryOf(name: string): ModelCategory {
 
 /** العائلة = الاسم قبل ":" — تجمع إصدارات النموذج نفسه */
 export function familyOf(name: string) {
-  return name.split(":")[0];
+  return name.split(":")[0] ?? name;
 }
 
 /** رقم الجولة/الإصدار للترتيب الزمني (r19, v17 …) */

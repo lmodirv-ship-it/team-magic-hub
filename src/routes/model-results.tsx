@@ -110,7 +110,7 @@ function ResultsPage() {
                 <tbody>
                   {ms.map((m, i) => {
                     const s = statsFor(runs, m.name);
-                    const p = i > 0 ? statsFor(runs, ms[i - 1].name) : null;
+                    const p = i > 0 ? statsFor(runs, ms[i - 1]!.name) : null;
                     const maxTps = Math.max(1, ...ms.map((x) => statsFor(runs, x.name).avgTps));
                     return (
                       <tr key={m.name} className="border-t border-border">
