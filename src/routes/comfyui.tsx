@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useServerSettings, updateServerSettings } from "@/lib/nawat/server-settings";
 import { callConfiguredBridge } from "@/lib/nawat/bridge-config";
 import { cn } from "@/lib/utils";
+import { ComfyInstances } from "@/components/nawat/ComfyInstances";
 
 export const Route = createFileRoute("/comfyui")({
   staticData: { sitemap: true },
@@ -143,6 +144,7 @@ function ComfyPage() {
               </div>
             )}
           </Panel>
+          <ComfyInstances />
         </div>
       </div>
     </Page>

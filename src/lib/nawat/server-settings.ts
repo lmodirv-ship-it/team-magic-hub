@@ -1,9 +1,13 @@
 import { useSyncExternalStore } from "react";
 
 /** إعدادات الخادم التي يغيّرها المستخدم من التطبيق — تُحفظ فورًا وتبقى حتى يغيّرها. */
+export type ComfyInstance = { id: string; name: string; url: string; task: string };
+
 export type ServerSettings = {
   ollamaFallbacks: string[];
   comfyUrl: string;
+  /** نسخ ComfyUI متعددة (منفذ لكل مهمة) — comfyUrl يبقى النسخة النشطة */
+  comfyInstances: ComfyInstance[];
   modelStoragePath: string;
   updatedAt: string;
 };
@@ -16,6 +20,7 @@ const LOG_KEY = "nawat.settings.log.v1";
 export const DEFAULT_SERVER_SETTINGS: ServerSettings = {
   ollamaFallbacks: ["http://192.168.2.4:11434"],
   comfyUrl: "http://192.168.2.4:8188",
+  comfyInstances: [{ id: "c1", name: "ComfyUI 1", url: "http://192.168.2.4:8188", task: "عام" }],
   modelStoragePath: "/data/model",
   updatedAt: "",
 };
@@ -29,7 +34,14 @@ function load() {
   loaded = true;
   try {
     const raw = JSON.parse(localStorage.getItem(KEY) ?? "null") as Partial<ServerSettings> | null;
-    if (raw) current = { ...DEFAULT_SERVER_SETTINGS, ...raw, ollamaFallbacks: Array.isArray(raw.ollamaFallbacks) ? raw.ollamaFallbacks.map(String) : DEFAULT_SERVER_SETTINGS.ollamaFallbacks };
+    if (raw) current = {
+      ...DEFAULT_SERVER_SETTINGS,
+      ...raw,
+      ollamaFallbacks: Array.isArray(raw.ollamaFallbacks) ? raw.ollamaFallbacks.map(String) : DEFAULT_SERVER_SETTINGS.ollamaFallbacks,
+      comfyInstances: Array.isArray(raw.comfyInstances) && raw.comfyInstances.length
+        ? raw.comfyInstances
+        : [{ id: "c1", name: "ComfyUI 1", url: raw.comfyUrl ?? DEFAULT_SERVER_SETTINGS.comfyUrl, task: "عام" }],
+    };
   } catch { /* defaults */ }
   window.addEventListener("storage", (e) => { if (e.key === KEY) { loaded = false; load(); listeners.forEach((l) => l()); } });
 }
