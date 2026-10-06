@@ -238,11 +238,11 @@ export function AgentsView() {
                 <Stat value={i ? "1.8s" : "3.2s"} label="استجابة" />
               </div>
               <div className="flex gap-2">
-                <Button size="sm">
-                  <Play /> تشغيل مهمة
+                <Button size="sm" asChild>
+                  <Link to="/projects"><Play /> تشغيل مهمة</Link>
                 </Button>
-                <Button size="sm" variant="outline">
-                  <RefreshCw /> إعادة التشغيل
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/models"><RefreshCw /> إعادة التشغيل</Link>
                 </Button>
               </div>
             </div>
@@ -312,11 +312,11 @@ export function ToolsView() {
                 </div>
               </div>
               <div className="mt-5 flex gap-2">
-                <Button size="sm" variant="outline">
-                  فحص الاتصال
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/ports">فحص الاتصال</Link>
                 </Button>
-                <Button size="sm" variant="ghost">
-                  إعداد
+                <Button size="sm" variant="ghost" asChild>
+                  <Link to="/settings">إعداد</Link>
                 </Button>
               </div>
             </Panel>
