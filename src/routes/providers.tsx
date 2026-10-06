@@ -4,6 +4,7 @@ import { CheckCircle2, KeyRound, Plus, RefreshCw, Server, Trash2 } from "lucide-
 import { Button } from "@/components/ui/button";
 import { Page, Panel } from "@/components/nawat/StudioUI";
 import { PageHead } from "@/components/nawat/StudioViews";
+import { GroupeHnPlatform } from "@/components/nawat/GroupeHnPlatform";
 import {
   discoverProviderModels,
   getProviders,
@@ -152,6 +153,10 @@ function ProvidersPage() {
             </p>
           </div>
         </Panel>
+      </div>
+
+      <div className="mt-4">
+        <GroupeHnPlatform />
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
