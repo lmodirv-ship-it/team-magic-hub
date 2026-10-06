@@ -42,6 +42,7 @@ import { logSettingChange } from "@/lib/nawat/server-settings";
 import { ServerModelSettings } from "@/components/nawat/ServerModelSettings";
 import { ModelDiscovery } from "@/components/nawat/ModelDiscovery";
 import { ServerDiagnosis } from "@/components/nawat/ServerDiagnosis";
+import { FreePeriodSetting } from "@/components/nawat/FreePeriodSetting";
 
 export const Route = createFileRoute("/settings")({
   staticData: { sitemap: true },
@@ -146,6 +147,9 @@ function SettingsPage() {
         >
           <RegistryTable />
         </Panel>
+      </div>
+      <div className="mb-4">
+        <FreePeriodSetting />
       </div>
       <div className="mb-4">
         <Panel title="النماذج الرسمية المفعّلة" note={`${officialModels.length} نماذج Groupe-HN — مفعّلة في جميع الصفحات`}>
