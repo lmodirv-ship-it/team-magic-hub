@@ -4,7 +4,6 @@ import {
   Menu, Settings, ChevronDown, ChevronLeft, User, Globe, Sparkles, Clock, SquareTerminal, Eye,
   Plus, Mic, Send, X, Trash2, MessageCircle, Folder, Layers, Brain, Languages, Zap, Search, SlidersHorizontal,
 } from "lucide-react";
-import { useVoiceInput } from "@/lib/nawat/voice";
 import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
 import { callConfiguredBridge, getBridgeConfig, getRelayToken, saveBridgeConfig, saveRelayToken, type BridgeMode } from "@/lib/nawat/bridge-config";
 
@@ -74,8 +73,6 @@ function MobileApp() {
   const [models, setModels] = useState<Model[]>(DEFAULT_MODELS);
   const [online, setOnline] = useState<boolean | null>(null);
   const [input, setInput] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
-  const voice = useVoiceInput((t) => setInput((v) => (v ? `${v} ${t}` : t)));
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -156,7 +153,7 @@ function MobileApp() {
         {tab === "chat" && (
           <>
             <header className="flex items-center gap-2 border-b px-3 py-2" style={{ borderColor: "var(--m-line)" }}>
-              <button aria-label="القائمة" onClick={() => setTab("settings")} className="grid h-11 w-11 place-items-center rounded-2xl border" style={{ borderColor: "var(--m-line)", background: "var(--m-card)" }}><Menu className="h-5 w-5" /></button>
+              <button aria-label="القائمة" className="grid h-11 w-11 place-items-center rounded-2xl border" style={{ borderColor: "var(--m-line)", background: "var(--m-card)" }}><Menu className="h-5 w-5" /></button>
               <Logo />
               <div className="min-w-0 leading-tight">
                 <div className="text-base font-bold" style={{ color: "var(--m-accent)" }}>nawat-chat</div>
@@ -222,11 +219,10 @@ function MobileApp() {
               <Chip icon={Eye} label="رؤية" onClick={() => up({ model: "nawat-vision" })} />
             </div>
             <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex items-center gap-2 px-3 pb-3 pt-1">
-              <input ref={fileRef} type="file" className="hidden" onChange={async (e) => { const f = e.target.files?.[0]; if (!f) return; const t = await f.text(); setInput((v) => `${v}\n\n--- ${f.name} ---\n${t.slice(0, 8000)}`); e.target.value = ""; }} />
-              <button type="button" aria-label="إرفاق" onClick={() => fileRef.current?.click()} className="grid h-12 w-12 place-items-center rounded-2xl border" style={{ borderColor: "var(--m-line)", background: "var(--m-card)" }}><Plus className="h-5 w-5" /></button>
+              <button type="button" aria-label="إرفاق" className="grid h-12 w-12 place-items-center rounded-2xl border" style={{ borderColor: "var(--m-line)", background: "var(--m-card)" }}><Plus className="h-5 w-5" /></button>
               <input value={input} onChange={(e) => setInput(e.target.value)} placeholder="اكتب رسالتك هنا…"
                 className="h-12 min-w-0 flex-1 rounded-2xl border px-4 outline-none" style={{ borderColor: "var(--m-line)", background: "var(--m-card)", color: "var(--m-text)" }} />
-              <button type="button" aria-label="إدخال صوتي" onClick={() => (voice.listening ? voice.stop() : voice.start())} className="grid h-12 w-12 place-items-center rounded-2xl border" style={{ borderColor: "var(--m-line)", background: "var(--m-card)" }}><Mic className="h-5 w-5" /></button>
+              <button type="button" aria-label="إدخال صوتي" className="grid h-12 w-12 place-items-center rounded-2xl border" style={{ borderColor: "var(--m-line)", background: "var(--m-card)" }}><Mic className="h-5 w-5" /></button>
               <button type="submit" aria-label="إرسال" disabled={busy} className="grid h-12 w-14 place-items-center rounded-2xl disabled:opacity-50" style={{ background: "var(--m-user)" }}><Send className="h-5 w-5 -scale-x-100" /></button>
             </form>
           </>
