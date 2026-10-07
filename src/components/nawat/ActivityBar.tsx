@@ -23,7 +23,6 @@ import {
   GitMerge,
   Zap,
 } from "lucide-react";
-import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
 
 const items = [
   { to: "/", icon: LayoutDashboard, label: "نظرة عامة" },
@@ -64,7 +63,7 @@ export function ActivityBar() {
         className="mb-4 grid size-11 place-items-center overflow-hidden rounded-md border border-nawat/30 bg-secondary"
         title="NAWAT Studio"
       >
-        <img src={logoAsset.url} alt="شعار نواة الرئيسي" className="size-full object-cover" />
+        <img src="/nawat-logo.jpg" alt="شعار نواة الرئيسي" className="size-full object-cover" />
       </Link>
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2">
         {items.map(({ to, icon: Icon, label }) => {

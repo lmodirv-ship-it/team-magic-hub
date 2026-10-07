@@ -4,14 +4,13 @@ import { ChatStatsWidget } from "@/components/nawat/ChatStatsWidget";
 import { NotificationCenter } from "@/components/nawat/NotificationCenter";
 import { ThemeToggle } from "@/components/nawat/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import logoAsset from "@/assets/nawat-neural-logo.jpg.asset.json";
 
 export function BrandHeader() {
   return (
     <header className="flex h-12 shrink-0 items-center border-b border-border bg-rail px-3 shadow-sm">
       <Link to="/" className="flex min-w-0 items-center gap-2.5" aria-label="NAWAT Studio">
         <img
-          src={logoAsset.url}
+          src="/nawat-logo.jpg"
           alt="شعار نواة"
           className="size-8 shrink-0 rounded-md border border-nawat/40 object-cover"
         />
