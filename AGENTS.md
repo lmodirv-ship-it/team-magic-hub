@@ -25,3 +25,4 @@
 - CLI and MCP server live in cli/ and share cli/lib.mjs; dependency-free Node so they run on Windows and the LAN server without installs. MCP uses stdio JSON-RPC.
 - Server projects live one folder per project under the bridge's PROJECTS_DIR and are reached only through the bridge "projects" kind (list/create/tree/read/write, path-confined). Why: isolates each project and works over LAN or relay.
 - Copy sync uses the bridge "sync" kind against SYNC_PEERS; the extension merge engine in /sync merges exported nawat.* settings additively and never exports secrets. Why: "add, never remove".
+- Speed Build executes only the model explicitly selected by the user, with no automatic model or cloud fallback. Why: preserve local-model sovereignty and predictable execution.
