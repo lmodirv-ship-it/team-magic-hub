@@ -199,7 +199,7 @@ function ChatPage() {
                 <ConversationEmptyState
                   icon={
                     <img
-                      src="/__l5e/assets-v1/b27d7498-76ab-4414-8e77-b2003fc9d7d2/nawat-logo-reference.png"
+                      src="/nawat-logo.jpg"
                       alt="NAWAT"
                       className="size-16 rounded-lg object-cover"
                     />

@@ -4,7 +4,6 @@ import {
   Menu, Settings, ChevronDown, ChevronLeft, User, Globe, Sparkles, Clock, SquareTerminal, Eye,
   Plus, Mic, Send, X, Trash2, MessageCircle, Folder, Layers, Brain, Languages, Zap, Search, SlidersHorizontal,
 } from "lucide-react";
-import logoAsset from "@/assets/nawat-main-logo.jpg.asset.json";
 import { callConfiguredBridge, getBridgeConfig, getRelayToken, saveBridgeConfig, saveRelayToken, type BridgeMode } from "@/lib/nawat/bridge-config";
 
 export const Route = createFileRoute("/mobile")({
@@ -131,7 +130,7 @@ function MobileApp() {
   };
 
   const Logo = ({ size = 44 }: { size?: number }) => (
-    <img src={logoAsset.url} alt="شعار نواة" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />
+    <img src="/nawat-logo.jpg" alt="شعار نواة" width={size} height={size} className="rounded-full object-cover" style={{ width: size, height: size }} />
   );
   const Toggle = ({ on, onChange, label }: { on: boolean; onChange: (v: boolean) => void; label: string }) => (
     <button role="switch" aria-checked={on} aria-label={label} onClick={() => onChange(!on)}
