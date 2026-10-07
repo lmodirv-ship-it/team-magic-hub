@@ -29,19 +29,7 @@ const SYSTEM =
   "أنت NAWAT Speed Builder. أجب بسرعة وباختصار. ابدأ بجملة عربية واحدة قصيرة تشرح ما تفعله (تُقرأ بالصوت)، ثم ضع الكود كاملًا داخل كتلة واحدة ```html (صفحة HTML كاملة بـ CSS داخلي، عربية RTL، متجاوبة وجميلة) ما لم يُطلب غير ذلك. لا تفكير طويل.";
 
 type Step = { label: string; at: number };
-const CLOUD = "nawat-cloud";
-
-async function* cloudStream(messages: ChatMessage[], signal: AbortSignal): AsyncGenerator<string> {
-  const r = await fetch("/api/speed-build", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages }), signal });
-  if (!r.ok || !r.body) throw new Error((await r.text().catch(() => "")) || `خطأ ${r.status}`);
-  const reader = r.body.getReader();
-  const dec = new TextDecoder();
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) return;
-    yield dec.decode(value, { stream: true });
-  }
-}
+const DEFAULT_MODEL = "nawat-coder:latest";
 
 function SpeedBuild() {
   const { models } = useModels();
@@ -61,14 +49,14 @@ function SpeedBuild() {
   useEffect(() => {
     try {
       const s = JSON.parse(localStorage.getItem(KEY) ?? "{}") as { model?: string; out?: string; history?: ChatMessage[] };
-      if (s.model) setModel(s.model);
+      if (s.model && s.model !== "nawat-cloud") setModel(s.model);
       if (s.out) setOut(s.out);
       if (s.history) setHistory(s.history);
     } catch { /* ignore */ }
   }, []);
   useEffect(() => {
-    if (!model) setModel(CLOUD);
-  }, [model]);
+    if (!model) setModel(DEFAULT_MODEL);
+  }, [model, models]);
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify({ model, out, history: history.slice(-12) })); } catch { /* ignore */ }
   }, [model, out, history]);
@@ -90,27 +78,10 @@ function SpeedBuild() {
     const t0 = Date.now();
     let acc = "";
     let spoke = false;
-    const label = model === CLOUD ? "NAWAT السحابي" : model;
-    step(`● ${label} يكتب…`);
+    step(`● ${model} يكتب…`);
     const signal = abort.current.signal;
-    // محلي أولًا مع مهلة قصيرة، ثم احتياط سحابي تلقائي إن لم يبدأ الرد
-    async function* source(): AsyncGenerator<string> {
-      if (model === CLOUD) { yield* cloudStream(msgs, signal); return; }
-      const local = modelChatStream(model, msgs, signal);
-      const first = await Promise.race([
-        local.next(),
-        new Promise<"timeout">((r) => setTimeout(() => r("timeout"), 15000)),
-      ]).catch(() => "timeout" as const);
-      if (first === "timeout" || first.done) {
-        step("↻ النموذج المحلي غير متاح — تحويل للسحابي");
-        yield* cloudStream(msgs, signal);
-        return;
-      }
-      yield first.value;
-      for await (const c of { [Symbol.asyncIterator]: () => local }) yield c;
-    }
     try {
-      for await (const c of source()) {
+      for await (const c of modelChatStream(model, msgs, signal)) {
         acc += c;
         setOut(acc);
         const secs = Math.max(0.1, (Date.now() - t0) / 1000);
@@ -130,7 +101,6 @@ function SpeedBuild() {
       if (voice.enabled && spoke) voice.speak("انتهيت، المعاينة جاهزة.");
     } catch (e) {
       step(`✖ ${(e as Error).message}`);
-      toast.error((e as Error).message);
     }
     setBusy(false);
   }
@@ -179,7 +149,6 @@ function SpeedBuild() {
         </h1>
         <span className="text-xs text-muted-foreground">تحدث أو اكتب — النموذج يجيب بالصوت ويكتب الكود لحظيًا</span>
         <select value={model} onChange={(e) => setModel(e.target.value)} className="ms-auto rounded-md border border-border bg-background/60 px-2 py-1 text-xs backdrop-blur" aria-label="النموذج">
-          <option value={CLOUD}>☁ NAWAT السحابي (فائق السرعة)</option>
           {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
         </select>
         <span dir="ltr" className="rounded-md border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[11px] text-primary">
