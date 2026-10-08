@@ -175,13 +175,17 @@ export async function* chatStream(
   const { record } = await import("./metrics");
   const t0 = performance.now();
   let res: Response;
-  try {
-    res = await fetch(host + "/api/chat", {
+  // Fast mode: no thinking, keep the model loaded in memory.
+  const send = (fast: boolean) =>
+    fetch(host + "/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages, stream: true }),
+      body: JSON.stringify(fast ? { model, messages, stream: true, think: false, keep_alive: "30m" } : { model, messages, stream: true }),
       ...(signal ? { signal } : {}),
     });
+  try {
+    res = await send(true);
+    if (res.status === 400) res = await send(false); // older Ollama / model without think support
   } catch (e) {
     if (signal?.aborted) throw e;
     throw new EngineUnreachable(host);
