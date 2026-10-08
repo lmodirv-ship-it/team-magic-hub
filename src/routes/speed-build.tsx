@@ -216,7 +216,7 @@ function SpeedBuild() {
                 <button aria-label="حفظ في السيرفر" title="حفظ في مشروع السيرفر" onClick={saveServer} disabled={!code}><FolderUp className="size-3.5" /></button>
               </div>
             </div>
-            <pre ref={codeRef} dir="ltr" className="max-h-80 min-h-0 flex-1 overflow-auto whitespace-pre-wrap p-3 text-start font-mono text-[12px] leading-5">
+            <pre ref={codeRef} dir="ltr" className="min-h-[60vh] flex-1 overflow-auto whitespace-pre-wrap p-3 text-start font-mono text-[12px] leading-5">
               {code || <span className="text-muted-foreground">// الكود يظهر هنا لحظة بلحظة</span>}
             </pre>
           </div>
