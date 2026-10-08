@@ -19,3 +19,4 @@
 - [x] مصنع NAWAT (/factory) مع زر في أعلى الإعدادات: الهوية والبصمة، لوحة القيادة، النماذج، المهام، المقارنة، النشر؛ سكربتات السيرفر في deploy/factory.
 - [x] MCP + CLI: cli/nawat.mjs (أمر nawat)، cli/mcp-server.mjs (Claude/Cursor/OpenCode)، صفحة /mcp.
 - [x] Speed Build page (/speed-build): voice in/out, 3D glass code, preview
+- [x] Day 1: 20 features (ledger #001-#020)

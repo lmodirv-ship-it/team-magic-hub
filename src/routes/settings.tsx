@@ -128,6 +128,9 @@ function SettingsPage() {
             </Link>
           </Button>
           <Button asChild variant="outline">
+            <Link to="/ledger">📜 سجل الميزات</Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link to="/mcp">
               <Terminal />
               MCP + CLI

@@ -78,7 +78,7 @@ function PortsPage() {
   };
 
   return (
-    <div className="flex min-w-0 flex-1 flex-col gap-4 p-4" dir="rtl">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4 pb-24" dir="rtl">
       <header className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-xl font-semibold">المنافذ</h1>

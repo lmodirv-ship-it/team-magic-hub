@@ -18,6 +18,7 @@ import { Route as ComfyuiRouteImport } from './routes/comfyui'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DatabaseRouteImport } from './routes/database'
 import { Route as FactoryRouteImport } from './routes/factory'
+import { Route as LedgerRouteImport } from './routes/ledger'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MetricsRouteImport } from './routes/metrics'
 import { Route as MobileRouteImport } from './routes/mobile'
@@ -84,6 +85,11 @@ const DatabaseRoute = DatabaseRouteImport.update({
 const FactoryRoute = FactoryRouteImport.update({
   id: '/factory',
   path: '/factory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LedgerRoute = LedgerRouteImport.update({
+  id: '/ledger',
+  path: '/ledger',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -207,6 +213,7 @@ export interface FileRoutesByFullPath {
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/ledger': typeof LedgerRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
@@ -240,6 +247,7 @@ export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/ledger': typeof LedgerRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/ledger': typeof LedgerRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
@@ -309,6 +318,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/database'
     | '/factory'
+    | '/ledger'
     | '/mcp'
     | '/metrics'
     | '/mobile'
@@ -342,6 +352,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/database'
     | '/factory'
+    | '/ledger'
     | '/mcp'
     | '/metrics'
     | '/mobile'
@@ -375,6 +386,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/database'
     | '/factory'
+    | '/ledger'
     | '/mcp'
     | '/metrics'
     | '/mobile'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   ConnectRoute: typeof ConnectRoute
   DatabaseRoute: typeof DatabaseRoute
   FactoryRoute: typeof FactoryRoute
+  LedgerRoute: typeof LedgerRoute
   McpRoute: typeof McpRoute
   MetricsRoute: typeof MetricsRoute
   MobileRoute: typeof MobileRoute
@@ -496,6 +509,13 @@ declare module '@tanstack/react-router' {
       path: '/factory'
       fullPath: '/factory'
       preLoaderRoute: typeof FactoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ledger': {
+      id: '/ledger'
+      path: '/ledger'
+      fullPath: '/ledger'
+      preLoaderRoute: typeof LedgerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -665,6 +685,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectRoute: ConnectRoute,
   DatabaseRoute: DatabaseRoute,
   FactoryRoute: FactoryRoute,
+  LedgerRoute: LedgerRoute,
   McpRoute: McpRoute,
   MetricsRoute: MetricsRoute,
   MobileRoute: MobileRoute,

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Copy, Terminal } from "lucide-react";
 import { toast } from "sonner";
 import { Page, Panel } from "@/components/nawat/StudioUI";
+import { DevTools } from "@/components/nawat/DevToolsPanel";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/mcp")({
@@ -115,6 +116,8 @@ function McpPage() {
             ))}
           </ul>
         </Panel>
+
+        <DevTools s={s} />
       </div>
     </Page>
   );
