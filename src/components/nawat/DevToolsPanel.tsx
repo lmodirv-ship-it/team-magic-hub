@@ -52,7 +52,7 @@ export function DevTools({ s }: { s: { path: string; ollama: string } }) {
           ))}
         </div>
         <ul className="mt-2 grid gap-1">
-          {[["نشر", deploy], ["مزامنة تراكمية", sync], ["تثبيت npm", npm], ["تثبيت pip", pip]].map(([t, c]) => (
+          {([["نشر", deploy], ["مزامنة تراكمية", sync], ["تثبيت npm", npm], ["تثبيت pip", pip]] as [string, string][]).map(([t, c]) => (
             <li key={t} className="flex items-center justify-between gap-2 rounded border border-border p-2 text-xs">
               <span className="shrink-0">{t}</span>
               <code dir="ltr" className="truncate">{c}</code>
