@@ -109,15 +109,24 @@ async function j<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+async function tagsOrEmbedded(): Promise<{ models: OllamaModel[] }> {
+  try {
+    return await j<{ models: OllamaModel[] }>("/api/tags");
+  } catch {
+    const { EMBEDDED_MODELS } = await import("./embedded-models");
+    return { models: EMBEDDED_MODELS.map((m) => ({ name: m.name } as OllamaModel)) };
+  }
+}
+
 export async function listModels(): Promise<OllamaModel[]> {
-  const data = await j<{ models: OllamaModel[] }>("/api/tags");
+  const data = await tagsOrEmbedded();
   const prefix = modelPrefix().toLowerCase();
   const all = data.models ?? [];
   return prefix ? all.filter((m) => m.name.toLowerCase().startsWith(prefix)) : all;
 }
 
 export async function listAllModels(): Promise<OllamaModel[]> {
-  const data = await j<{ models: OllamaModel[] }>("/api/tags");
+  const data = await tagsOrEmbedded();
   return data.models ?? [];
 }
 
