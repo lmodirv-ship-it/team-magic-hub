@@ -171,8 +171,8 @@ export function TerminalPanel() {
           {hosts.map((host) => <option key={host.host} value={host.host}>{host.user ? `${host.user}@` : ""}{host.host}:{host.port ?? 22}{host.online === false ? " · غير متصل" : ""}</option>)}
         </select>
         <span className="flex min-w-0 items-center gap-1 text-[11px] text-muted-foreground" title={sshBridgeUrl()}>
-          <span className={`size-2 shrink-0 rounded-full ${bridgeOk === null ? "bg-muted-foreground" : bridgeOk ? "bg-success" : "bg-destructive"}`} />
-          {bridgeOk === null ? "جار الاتصال" : bridgeOk ? "الجسر متصل" : "الجسر غير متصل"}
+          <span className={`size-2 shrink-0 rounded-full ${bridgeOk === null ? "bg-muted-foreground" : bridgeOk ? "bg-success" : "bg-warning"}`} />
+          {bridgeOk === null ? "جار الاتصال" : bridgeOk ? "الجسر متصل" : "الطرفية بدون جسر — النماذج تعمل مباشرة"}
         </span>
         <div className="flex-1" />
         <Button variant="ghost" size="icon-sm" title="إعادة الاتصال" aria-label="إعادة الاتصال بالجسر" onClick={() => { void probe(); }}><RefreshCw className="size-3.5" /></Button>
