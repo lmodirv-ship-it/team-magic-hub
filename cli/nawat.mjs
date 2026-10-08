@@ -26,7 +26,12 @@ try {
   switch (cmd) {
     case "status": {
       const s = await api.status();
-      for (const [k, v] of Object.entries(s)) console.log(`${v.ok ? "✅" : "❌"} ${k.padEnd(8)} ${v.ok ? "متصل" : v.error}`);
+      // المصنع خدمة اختيارية: إن لم تكن مشغّلة نعرض ملاحظة هادئة بدل رسالة خطأ
+      for (const [k, v] of Object.entries(s)) {
+        if (v.ok) console.log(`✅ ${k.padEnd(8)} متصل`);
+        else if (k === "factory") console.log(`⏸ ${k.padEnd(8)} غير مشغّل (اختياري) — شغّله بـ: nawat serve factory`);
+        else console.log(`⏸ ${k.padEnd(8)} غير متاح الآن`);
+      }
       break;
     }
     case "system": out(await api.system()); break;

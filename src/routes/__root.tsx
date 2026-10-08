@@ -27,6 +27,7 @@ import { ProjectSearch } from "@/components/nawat/ProjectSearch";
 import { DiffReview } from "@/components/nawat/DiffReview";
 import { ShortcutLayer } from "@/components/nawat/ShortcutLayer";
 import { PwaUpdatePrompt } from "@/components/nawat/PwaUpdatePrompt";
+import { TableResizeLayer } from "@/components/nawat/TableResizeLayer";
 import "@/lib/nawat/depth";
 import "@/lib/nawat/platform";
 
@@ -174,6 +175,7 @@ function RootComponent() {
             <ShortcutLayer />
             <Toaster position="bottom-center" />
             <PwaUpdatePrompt />
+            <TableResizeLayer />
           </LiveProvider>
         </WorkspaceProvider>
       </TooltipProvider>
