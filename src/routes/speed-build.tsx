@@ -8,6 +8,7 @@ import { useModels } from "@/lib/nawat/useModels";
 import { useVoiceInput, useVoiceReply } from "@/lib/nawat/voice";
 import { extractCode } from "@/components/nawat/LiveCodeStream";
 import { getActiveProject, writeProjectFile } from "@/lib/nawat/projects";
+import { Resizer } from "@/components/nawat/Resizer";
 
 export const Route = createFileRoute("/speed-build")({
   staticData: { sitemap: true },
@@ -61,6 +62,11 @@ function SpeedBuild() {
     try { localStorage.setItem(KEY, JSON.stringify({ model, out, history: history.slice(-12) })); } catch { /* ignore */ }
   }, [model, out, history]);
   useEffect(() => { codeRef.current?.scrollTo({ top: codeRef.current.scrollHeight }); }, [out]);
+  const [layout, setLayout] = useState({ w: 420, h: 520 });
+  useEffect(() => {
+    try { const l = JSON.parse(localStorage.getItem(KEY + ".layout") ?? "null"); if (l?.w && l?.h) setLayout(l); } catch { /* ignore */ }
+  }, []);
+  useEffect(() => { try { localStorage.setItem(KEY + ".layout", JSON.stringify(layout)); } catch { /* ignore */ } }, [layout]);
   useEffect(() => { if (mic.error) toast.error(mic.error); }, [mic.error]);
 
   const step = (label: string) => setSteps((s) => [...s, { label, at: Date.now() }]);
@@ -156,9 +162,12 @@ function SpeedBuild() {
         </span>
       </header>
 
-      <section className="relative z-10 grid flex-1 gap-4 p-4 lg:grid-cols-[1fr_1.1fr] [perspective:1400px]">
+      <section
+        className="relative z-10 flex flex-1 flex-col gap-4 p-4 lg:flex-row lg:gap-1 [perspective:1400px]"
+        style={{ ["--sbw" as string]: `${layout.w}px`, ["--sbh" as string]: `${layout.h}px` }}
+      >
         {/* Voice + steps */}
-        <div className="flex flex-col gap-4">
+        <div className="flex shrink-0 flex-col gap-4 lg:w-[var(--sbw)]">
           <div
             className="rounded-2xl border border-primary/40 bg-background/40 p-5 shadow-[0_0_40px_-10px_var(--color-primary)] backdrop-blur-xl transition-transform duration-200"
             style={{ transform: `rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)` }}
@@ -201,10 +210,14 @@ function SpeedBuild() {
           {talk && <p className="rounded-2xl border border-border bg-background/40 p-3 text-sm backdrop-blur-xl">{talk}</p>}
         </div>
 
+        <div className="hidden lg:flex">
+          <Resizer axis="x" target="before" label="تغيير عرض لوحة الأوامر" min={260} max={900} onResize={(w) => setLayout((l) => ({ ...l, w }))} />
+        </div>
+
         {/* Glass code + preview */}
-        <div className="flex min-h-[520px] flex-col gap-4 [transform-style:preserve-3d]">
+        <div className="flex min-h-[520px] min-w-0 flex-1 flex-col gap-1 [transform-style:preserve-3d]">
           <div
-            className="flex min-h-64 flex-1 flex-col overflow-hidden rounded-2xl border border-primary/50 bg-background/30 shadow-[0_0_50px_-12px_var(--color-primary)] backdrop-blur-2xl transition-transform duration-200"
+            className="flex min-h-64 flex-col overflow-hidden rounded-2xl border border-primary/50 bg-background/30 shadow-[0_0_50px_-12px_var(--color-primary)] backdrop-blur-2xl transition-transform duration-200 lg:h-[var(--sbh)] lg:shrink-0"
             style={{ transform: `rotateX(${tilt.x * 0.6}deg) rotateY(${tilt.y * -0.6}deg) translateZ(20px)` }}
           >
             <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1.5 text-xs">
@@ -216,11 +229,12 @@ function SpeedBuild() {
                 <button aria-label="حفظ في السيرفر" title="حفظ في مشروع السيرفر" onClick={saveServer} disabled={!code}><FolderUp className="size-3.5" /></button>
               </div>
             </div>
-            <pre ref={codeRef} dir="ltr" className="min-h-[60vh] flex-1 overflow-auto whitespace-pre-wrap p-3 text-start font-mono text-[12px] leading-5">
+            <pre ref={codeRef} dir="ltr" className="min-h-[50vh] flex-1 overflow-auto whitespace-pre-wrap p-3 text-start font-mono text-[12px] leading-5 lg:min-h-0">
               {code || <span className="text-muted-foreground">// الكود يظهر هنا لحظة بلحظة</span>}
             </pre>
           </div>
-          <div className="flex-1 overflow-hidden rounded-2xl border border-border bg-background/40 backdrop-blur-xl"
+          <Resizer axis="y" target="before" label="تغيير ارتفاع شاشة الكود" min={160} max={1400} onResize={(h) => setLayout((l) => ({ ...l, h }))} />
+          <div className="mt-3 flex-1 overflow-hidden rounded-2xl border border-border bg-background/40 backdrop-blur-xl"
             style={{ transform: `rotateX(${tilt.x * 0.4}deg) rotateY(${tilt.y * 0.4}deg)` }}>
             {html ? (
               <iframe title="معاينة الموقع" srcDoc={html} sandbox="allow-scripts" className="h-full min-h-72 w-full bg-white" />
