@@ -15,8 +15,8 @@ export function TableResizeLayer() {
       document.querySelectorAll("table").forEach((table, ti) => {
         table.querySelectorAll("thead th").forEach((node, ci) => {
           const th = node as HTMLElement;
-          if (th.dataset.rz || th.querySelector(".cursor-col-resize")) return;
-          th.dataset.rz = "1";
+          if (th.dataset["rz"] || th.querySelector(".cursor-col-resize")) return;
+          th.dataset["rz"] = "1";
           const id = `${ti}:${ci}`;
           if (saved[id]) { th.style.width = `${saved[id]}px`; th.style.minWidth = `${saved[id]}px`; }
           if (getComputedStyle(th).position === "static") th.style.position = "relative";
