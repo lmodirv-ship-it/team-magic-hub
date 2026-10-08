@@ -115,6 +115,8 @@ function McpPage() {
             ))}
           </ul>
         </Panel>
+
+        <DevTools s={s} />
       </div>
     </Page>
   );
