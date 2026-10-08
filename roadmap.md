@@ -21,5 +21,5 @@
 - [x] Speed Build page (/speed-build): voice in/out, 3D glass code, preview
 - [x] Day 1: 20 features (ledger #001-#020)
 
-- [ ] Connect Google Search Console (new workspace)
-- [ ] Speed Build: mouse-resizable panels
+- [ ] Connect Google Search Console (new workspace) — blocked: user skipped connect card
+- [x] Speed Build: mouse-resizable panels
