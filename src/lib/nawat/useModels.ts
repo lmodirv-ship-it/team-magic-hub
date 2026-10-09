@@ -1,10 +1,24 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
 import { listModels, listRunning, type OllamaModel, type RunningModel } from "./bridge";
 import { developmentModels, officialModels, providerModels, subscribeProviders } from "./providers";
+import { discoverLocalModels, getDiscovered } from "./local-discovery";
 
 function availableModels(discovered: OllamaModel[] = []) {
-  const models = [...officialModels, ...developmentModels(), ...providerModels(), ...discovered];
+  const models = [
+    ...officialModels,
+    ...developmentModels(),
+    ...providerModels(),
+    ...getDiscovered(),
+    ...discovered,
+  ];
   return [...new Map(models.map((model) => [model.name, model])).values()];
+}
+
+let lastScan = 0;
+function autoScan() {
+  if (Date.now() - lastScan < 30_000) return;
+  lastScan = Date.now();
+  void discoverLocalModels().then(() => emit({ ...snapshot, models: availableModels(snapshot.models) }));
 }
 
 type ModelsSnapshot = {
@@ -33,6 +47,7 @@ function emit(next: ModelsSnapshot) {
 
 async function refreshModels() {
   if (refreshInFlight) return refreshInFlight;
+  autoScan();
   refreshInFlight = (async () => {
     try {
       const [models, running] = await Promise.all([listModels(), listRunning()]);
