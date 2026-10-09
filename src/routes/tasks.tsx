@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BarChart3, Play, Save } from "lucide-react";
-import { modelChatStream } from "@/lib/nawat/providers";
+import { getProviderForModel, modelChatStream } from "@/lib/nawat/providers";
 import { useModels } from "@/lib/nawat/useModels";
 import { useWorkspace } from "@/lib/nawat/workspace";
 import { addRun, CATEGORIES, categoryOf, rateRun, type ModelCategory } from "@/lib/nawat/model-catalog";
@@ -41,7 +41,9 @@ function TasksPage() {
   const [running, setRunning] = useState(false);
   const [history, setHistory] = useState<{ prompt: string; at: string }[]>([]);
   const [cat, setCat] = useState<ModelCategory | "all">("all");
-  const shown = models.filter((m) => cat === "all" || categoryOf(m.name) === cat);
+  const shown = models.filter((m) =>
+    cat === "all" ? true : cat === "provider" ? !!getProviderForModel(m.name) : categoryOf(m.name) === cat,
+  );
 
   useEffect(() => {
     try {

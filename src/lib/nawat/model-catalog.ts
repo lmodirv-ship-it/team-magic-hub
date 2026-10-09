@@ -1,5 +1,5 @@
 // تصنيف النماذج وتسجيل نتائج الاختبارات لقياس النمو والتطور لكل نموذج.
-export type ModelCategory = "coder" | "think" | "shell" | "agent" | "mini" | "other";
+export type ModelCategory = "coder" | "think" | "shell" | "agent" | "mini" | "provider" | "other";
 
 export const CATEGORIES: { id: ModelCategory | "all"; label: string }[] = [
   { id: "all", label: "الكل" },
@@ -8,6 +8,7 @@ export const CATEGORIES: { id: ModelCategory | "all"; label: string }[] = [
   { id: "shell", label: "طرفية" },
   { id: "agent", label: "وكلاء" },
   { id: "mini", label: "مصغّرة" },
+  { id: "provider", label: "مزوّد خارجي" },
   { id: "other", label: "أخرى" },
 ];
 
