@@ -44,7 +44,13 @@ const COMMANDS: [string, string][] = [
   ["nawat serve mcp", "تشغيل خادم MCP"],
 ];
 
-const TOOLS = ["nawat_status", "nawat_system", "nawat_models", "nawat_chat", "nawat_factory_queue", "nawat_factory_add"];
+const TOOLS = [
+  "nawat_status", "nawat_system", "nawat_models", "nawat_chat", "nawat_factory_queue", "nawat_factory_add",
+  "nawat_ping", "nawat_health", "nawat_version", "nawat_bridge_chat", "nawat_compare", "nawat_image",
+  "nawat_factory_remove", "nawat_factory_clear", "nawat_factory_stats", "nawat_factory_logs", "nawat_factory_datasets", "nawat_factory_test",
+  "nawat_worker", "nawat_projects", "nawat_sync", "nawat_config",
+  "ghn_models", "ghn_queue", "ghn_stats", "ghn_info", "ghn_doctor", "ghn_studio", "ghn_sync",
+];
 
 function copy(t: string) {
   void navigator.clipboard.writeText(t);
