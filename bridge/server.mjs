@@ -244,6 +244,11 @@ const server = http.createServer(async (req, res) => {
     if (p === "/api/update" && req.method === "POST") return send(res, 202, runUpdate());
     if (p === "/api/projects" && req.method === "POST") return send(res, 200, await projects(await readJson(req)));
     if (p === "/api/sync" && req.method === "POST") return send(res, 200, await sync(await readJson(req)));
+    if (p === "/api/config") {
+      const CFG = process.env.NAWAT_CONFIG_PATH || "/data/nawat-config.json";
+      if (req.method === "GET") { try { return send(res, 200, JSON.parse(await readFile(CFG, "utf8"))); } catch { return send(res, 200, { settings: {}, savedAt: null }); } }
+      if (req.method === "POST") { const b = await readJson(req); await mkdir(path.dirname(CFG), { recursive: true }); const data = { settings: b.settings ?? {}, savedAt: new Date().toISOString() }; await writeFile(CFG + ".tmp", JSON.stringify(data, null, 2)); await writeFile(CFG, JSON.stringify(data, null, 2)); return send(res, 200, { ok: true, savedAt: data.savedAt }); }
+    }
     if (p === "/api/models" && req.method === "GET") return send(res, 200, await models());
     if (p === "/api/chat" && req.method === "POST") return await chat(await readJson(req), res);
     if (p === "/api/image" && req.method === "POST") {
