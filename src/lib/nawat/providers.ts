@@ -195,6 +195,19 @@ export function developmentModels(): OllamaModel[] {
   }));
 }
 
+/** The user's own LAN/local Ollama engines, tried directly for NAWAT native models. */
+export const NATIVE_HOSTS = [
+  "http://127.0.0.1:11434",
+  "http://192.168.100.67:11434",
+  "http://192.168.2.4:11434",
+];
+
+/** NAWAT models are the user's own: they never need a bridge or an API key. */
+export function isNativeNawatModel(model: string): boolean {
+  const m = model.toLowerCase();
+  return m.startsWith("nawat") || officialModels.some((o) => o.name === model);
+}
+
 export function getProviderForModel(model: string) {
   return getProviders().find((provider) => provider.models.includes(model));
 }
@@ -204,7 +217,8 @@ export async function* modelChatStream(
   messages: ChatMessage[],
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
-  const provider = getProviderForModel(model);
+  const native = isNativeNawatModel(model);
+  const provider = native ? undefined : getProviderForModel(model);
   if (provider) {
     yield* providerChatStream(provider, model, messages, signal);
     return;
@@ -213,12 +227,14 @@ export async function* modelChatStream(
   const bridgeMode = getBridgeConfig().mode;
   const secure = typeof location !== "undefined" && location.protocol === "https:";
   // Public mode (or a secure page in auto mode): never touch 192.168.*/localhost.
-  if (bridgeMode === "public" || (bridgeMode === "auto" && secure)) {
+  // NAWAT native models always go direct to the user's own engines — no bridge, no keys.
+  if (!native && (bridgeMode === "public" || (bridgeMode === "auto" && secure))) {
     yield await relayChat(model, messages, signal);
     return;
   }
   const { enginesFor } = await import("./engines");
   const hosts = enginesFor(model);
+  if (native) for (const h of NATIVE_HOSTS) if (!hosts.includes(h)) hosts.push(h);
   let lastErr: unknown = null;
   for (const host of hosts) {
     let started = false;
