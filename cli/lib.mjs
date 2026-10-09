@@ -199,14 +199,14 @@ export const ghn = {
     const checks = [];
     const add = (name, ok, detail = "") => checks.push({ name, ok, detail });
     const st = await api.status();
-    add("bridge", st.bridge.ok, st.bridge.error ?? cfg.bridge);
-    add("ollama", st.ollama.ok, st.ollama.error ?? cfg.ollama);
+    add("bridge", st.bridge.ok, st.bridge.ok ? cfg.bridge : `غير متاح الآن — ${cfg.bridge}`);
+    add("ollama", st.ollama.ok, st.ollama.ok ? cfg.ollama : `غير متاح الآن — ${cfg.ollama}`);
     add("factory (اختياري)", true, st.factory.ok ? "متصل" : "غير مشغّل");
     add("model dir", existsSync(cfg.modelDir), cfg.modelDir);
     for (const f of ["bridge/server.mjs", "cli/mcp-server.mjs", "deploy/factory/factory_server.py"]) add(`file ${f}`, existsSync(f), "");
     for (const n of cfg.nodes) {
       const r = await safe(() => call(`http://${n}:11434`, "/api/version", { timeout: 4000 }));
-      add(`node ${n}`, r.ok, r.error ?? "Ollama متاح");
+      add(`node ${n}`, r.ok, r.ok ? "Ollama متاح" : "غير متاح الآن");
     }
     const failed = checks.filter((c) => !c.ok).length;
     return { ok: failed === 0, failed, checks };
