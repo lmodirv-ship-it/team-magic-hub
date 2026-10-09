@@ -128,6 +128,12 @@ function SettingsPage() {
             </Link>
           </Button>
           <Button asChild variant="outline">
+            <Link to="/souk-hn">🧠 SOUK-HN</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/watchdog">🛡️ المراقبة</Link>
+          </Button>
+          <Button asChild variant="outline">
             <Link to="/ledger">📜 سجل الميزات</Link>
           </Button>
           <Button asChild variant="outline">

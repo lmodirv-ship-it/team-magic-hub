@@ -33,11 +33,13 @@ import { Route as ProvidersRouteImport } from './routes/providers'
 import { Route as ResultatsRouteImport } from './routes/resultats'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SoukHnRouteImport } from './routes/souk-hn'
 import { Route as SpeedBuildRouteImport } from './routes/speed-build'
 import { Route as SpyRouteImport } from './routes/spy'
 import { Route as SyncRouteImport } from './routes/sync'
 import { Route as TasksRouteImport } from './routes/tasks'
 import { Route as ToolsRouteImport } from './routes/tools'
+import { Route as WatchdogRouteImport } from './routes/watchdog'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
@@ -163,6 +165,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SoukHnRoute = SoukHnRouteImport.update({
+  id: '/souk-hn',
+  path: '/souk-hn',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SpeedBuildRoute = SpeedBuildRouteImport.update({
   id: '/speed-build',
   path: '/speed-build',
@@ -186,6 +193,11 @@ const TasksRoute = TasksRouteImport.update({
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WatchdogRoute = WatchdogRouteImport.update({
+  id: '/watchdog',
+  path: '/watchdog',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WorkspaceRoute = WorkspaceRouteImport.update({
@@ -234,11 +246,13 @@ export interface FileRoutesByFullPath {
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/souk-hn': typeof SoukHnRoute
   '/speed-build': typeof SpeedBuildRoute
   '/spy': typeof SpyRoute
   '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
+  '/watchdog': typeof WatchdogRoute
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -269,11 +283,13 @@ export interface FileRoutesByTo {
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/souk-hn': typeof SoukHnRoute
   '/speed-build': typeof SpeedBuildRoute
   '/spy': typeof SpyRoute
   '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
+  '/watchdog': typeof WatchdogRoute
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -305,11 +321,13 @@ export interface FileRoutesById {
   '/resultats': typeof ResultatsRoute
   '/settings': typeof SettingsRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/souk-hn': typeof SoukHnRoute
   '/speed-build': typeof SpeedBuildRoute
   '/spy': typeof SpyRoute
   '/sync': typeof SyncRoute
   '/tasks': typeof TasksRoute
   '/tools': typeof ToolsRoute
+  '/watchdog': typeof WatchdogRoute
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
@@ -342,11 +360,13 @@ export interface FileRouteTypes {
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
+    | '/souk-hn'
     | '/speed-build'
     | '/spy'
     | '/sync'
     | '/tasks'
     | '/tools'
+    | '/watchdog'
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
@@ -377,11 +397,13 @@ export interface FileRouteTypes {
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
+    | '/souk-hn'
     | '/speed-build'
     | '/spy'
     | '/sync'
     | '/tasks'
     | '/tools'
+    | '/watchdog'
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
@@ -412,11 +434,13 @@ export interface FileRouteTypes {
     | '/resultats'
     | '/settings'
     | '/sitemap.xml'
+    | '/souk-hn'
     | '/speed-build'
     | '/spy'
     | '/sync'
     | '/tasks'
     | '/tools'
+    | '/watchdog'
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
@@ -448,11 +472,13 @@ export interface RootRouteChildren {
   ResultatsRoute: typeof ResultatsRoute
   SettingsRoute: typeof SettingsRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  SoukHnRoute: typeof SoukHnRoute
   SpeedBuildRoute: typeof SpeedBuildRoute
   SpyRoute: typeof SpyRoute
   SyncRoute: typeof SyncRoute
   TasksRoute: typeof TasksRoute
   ToolsRoute: typeof ToolsRoute
+  WatchdogRoute: typeof WatchdogRoute
   WorkspaceRoute: typeof WorkspaceRoute
   ApiStatsRoute: typeof ApiStatsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
@@ -629,6 +655,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/souk-hn': {
+      id: '/souk-hn'
+      path: '/souk-hn'
+      fullPath: '/souk-hn'
+      preLoaderRoute: typeof SoukHnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/speed-build': {
       id: '/speed-build'
       path: '/speed-build'
@@ -662,6 +695,13 @@ declare module '@tanstack/react-router' {
       path: '/tools'
       fullPath: '/tools'
       preLoaderRoute: typeof ToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/watchdog': {
+      id: '/watchdog'
+      path: '/watchdog'
+      fullPath: '/watchdog'
+      preLoaderRoute: typeof WatchdogRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/workspace': {
@@ -720,11 +760,13 @@ const rootRouteChildren: RootRouteChildren = {
   ResultatsRoute: ResultatsRoute,
   SettingsRoute: SettingsRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  SoukHnRoute: SoukHnRoute,
   SpeedBuildRoute: SpeedBuildRoute,
   SpyRoute: SpyRoute,
   SyncRoute: SyncRoute,
   TasksRoute: TasksRoute,
   ToolsRoute: ToolsRoute,
+  WatchdogRoute: WatchdogRoute,
   WorkspaceRoute: WorkspaceRoute,
   ApiStatsRoute: ApiStatsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
