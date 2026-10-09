@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { PageHead, ToolsView } from "@/components/nawat/StudioViews";
 import { SshPanel } from "@/components/nawat/SshPanel";
 import { ServicesHealth } from "@/components/nawat/ServicesHealth";
+import { DevToolbox } from "@/components/nawat/DevToolbox";
 
 export const Route = createFileRoute("/tools")({
   staticData: { sitemap: true },
@@ -14,6 +15,7 @@ function ToolsPage() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 px-4 pt-4">
         <ServicesHealth />
+        <DevToolbox />
         <SshPanel />
       </div>
       <ToolsView />

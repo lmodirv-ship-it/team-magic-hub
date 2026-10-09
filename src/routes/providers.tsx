@@ -114,6 +114,7 @@ function ProvidersPage() {
 
         <Panel title="إضافة مزوّد" note="OpenAI-compatible API">
           <div className="space-y-3">
+            <p className="rounded-md border border-success/30 bg-success/10 p-2 text-xs">نماذج المزوّد تظهر تلقائيًا في: مساحة العمل · Speed Build · المحادثة · المهام والمقارنة.</p>
             <Field label="اسم المزوّد">
               <input
                 value={name}

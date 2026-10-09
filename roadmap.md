@@ -23,3 +23,7 @@
 
 - [ ] Connect Google Search Console (new workspace) — blocked: user skipped connect card
 - [x] Speed Build: mouse-resizable panels
+- [x] نماذج المزوّدين تظهر تلقائيًا في workspace/speed-build/chat/tasks + تصنيف «مزوّد خارجي»
+- [x] اكتشاف تلقائي للنماذج المحلية (الحاسوب + السيرفرات)
+- [x] Day 2: 20 أداة (#021-#040) في /tools
+- [ ] تعديل ملفات الحاسوب/السيرفر من الطرفية مع اختيار السيرفر — الجولة القادمة
