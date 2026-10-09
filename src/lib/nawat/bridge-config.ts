@@ -19,6 +19,7 @@ export const BUILTIN_BRIDGES: PublicBridge[] = [
   { id: "hnchat", name: "HN Chat Bridge", url: "https://bridge.hnchat.net/index.php", serverKey: true },
   { id: "nawat", name: "نواة الرسمي", url: "https://nawat.groupe-hn.com" },
   { id: "hn-ai-site", name: "نواة — نسخة hn-ai.site", url: "https://hn-ai.site" },
+  { id: "nawat-group", name: "نواة — نسخة nawat-group.com", url: "https://www.nawat-group.com" },
 ];
 
 export type BridgeCheck = {
