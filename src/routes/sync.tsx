@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Page, Panel } from "@/components/nawat/StudioUI";
 import { Button } from "@/components/ui/button";
 import { callConfiguredBridge } from "@/lib/nawat/bridge-config";
+import { loadSyncPeers } from "@/components/nawat/SyncPeersSettings";
 
 export const Route = createFileRoute("/sync")({
   staticData: { sitemap: true },
@@ -59,7 +60,7 @@ function SyncPage() {
 
   const syncCall = async (action: "status" | "update") => {
     setBusy(true);
-    try { setVers((await callConfiguredBridge("sync", { action })) as { self: Ver; peers: Ver[] }); if (action === "update") toast.success("بدأ تحديث كل النسخ"); }
+    try { setVers((await callConfiguredBridge("sync", { action, peers: loadSyncPeers() })) as { self: Ver; peers: Ver[] }); if (action === "update") toast.success("بدأ تحديث كل النسخ"); }
     catch (e) { toast.error(`السيرفر غير متاح: ${(e as Error).message}`); }
     setBusy(false);
   };

@@ -80,7 +80,9 @@ async function projects(b) {
 }
 async function sync(b) {
   const self = await version();
-  const peers = await Promise.all(SYNC_PEERS.map(async (u) => {
+  const extra = (Array.isArray(b.peers) ? b.peers : []).map((s) => String(s).trim().replace(/\/$/, "")).filter((s) => /^https?:\/\//.test(s));
+  const all = [...new Set([...SYNC_PEERS, ...extra])];
+  const peers = await Promise.all(all.map(async (u) => {
     try {
       if (b.action === "update") { const r = await fetch(u + "/api/update", { method: "POST", signal: AbortSignal.timeout(8000) }); return { url: u, ok: r.ok, ...(await r.json().catch(() => ({}))) }; }
       const r = await fetch(u + "/api/version", { signal: AbortSignal.timeout(8000) }); return { url: u, ok: r.ok, ...(await r.json()) };
