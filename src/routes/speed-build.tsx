@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { Copy, Download, FolderUp, Mic, MicOff, Send, Square, Volume2, VolumeX, Zap } from "lucide-react";
+import { Copy, Download, FolderUp, Mic, MicOff, RefreshCw, Send, Square, Volume2, VolumeX, Zap } from "lucide-react";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/nawat/bridge";
 import { modelChatStream } from "@/lib/nawat/providers";
@@ -33,7 +33,7 @@ type Step = { label: string; at: number };
 const DEFAULT_MODEL = "nawat-coder:latest";
 
 function SpeedBuild() {
-  const { models } = useModels();
+  const { models, refresh } = useModels();
   const [model, setModel] = useState("");
   const [input, setInput] = useState("");
   const [history, setHistory] = useState<ChatMessage[]>([]);
@@ -157,6 +157,7 @@ function SpeedBuild() {
         <select value={model} onChange={(e) => setModel(e.target.value)} className="ms-auto rounded-md border border-border bg-background/60 px-2 py-1 text-xs backdrop-blur" aria-label="النموذج">
           {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
         </select>
+        <button onClick={() => void refresh()} aria-label="تحديث النماذج" title="تحديث قائمة النماذج" className="rounded-md border border-border bg-background/60 p-1.5"><RefreshCw className="size-3.5" /></button>
         <span dir="ltr" className="rounded-md border border-primary/40 bg-primary/10 px-2 py-1 font-mono text-[11px] text-primary">
           {stats.tps} tok/s · {stats.secs.toFixed(1)}s
         </span>

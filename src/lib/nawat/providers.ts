@@ -114,7 +114,10 @@ export function saveProvider(provider: ProviderConfig, apiKey?: string) {
   const providers = getProviders();
   const next = [...providers.filter((item) => item.id !== provider.id), provider];
   localStorage.setItem(PROVIDERS_KEY, JSON.stringify(next));
-  if (apiKey) sessionStorage.setItem(`nawat.providerKey.${provider.id}`, apiKey);
+  if (apiKey) {
+    sessionStorage.setItem(`nawat.providerKey.${provider.id}`, apiKey);
+    localStorage.setItem(`nawat.providerKey.${provider.id}`, apiKey);
+  }
   notify();
 }
 
@@ -124,6 +127,7 @@ export function removeProvider(id: string) {
     JSON.stringify(getProviders().filter((item) => item.id !== id)),
   );
   sessionStorage.removeItem(`nawat.providerKey.${id}`);
+  localStorage.removeItem(`nawat.providerKey.${id}`);
   notify();
 }
 
@@ -257,7 +261,9 @@ export async function* providerChatStream(
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
   (await import("./ai-control")).assertAi();
-  const apiKey = sessionStorage.getItem(`nawat.providerKey.${provider.id}`);
+  const apiKey =
+    sessionStorage.getItem(`nawat.providerKey.${provider.id}`) ??
+    localStorage.getItem(`nawat.providerKey.${provider.id}`);
   if (!apiKey) throw new Error("أعد إدخال مفتاح المزوّد في صفحة المزوّدين لهذه الجلسة.");
   const response = await fetch(`${normalizedBaseUrl(provider.baseUrl)}/chat/completions`, {
     method: "POST",
