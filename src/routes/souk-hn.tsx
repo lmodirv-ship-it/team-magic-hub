@@ -20,6 +20,7 @@ export const Route = createFileRoute("/souk-hn")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  staticData: { sitemap: true },
   component: SoukHn,
 });
 

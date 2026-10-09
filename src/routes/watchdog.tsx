@@ -12,6 +12,7 @@ export const Route = createFileRoute("/watchdog")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  staticData: { sitemap: true },
   component: Watchdog,
 });
 
