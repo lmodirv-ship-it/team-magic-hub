@@ -73,6 +73,11 @@ function SpeedBuild() {
     try { const l = JSON.parse(localStorage.getItem(KEY + ".layout") ?? "null"); if (l?.w && l?.h) setLayout(l); } catch { /* ignore */ }
   }, []);
   useEffect(() => { try { localStorage.setItem(KEY + ".layout", JSON.stringify(layout)); } catch { /* ignore */ } }, [layout]);
+  const [panes, setPanes] = useState({ s: 220, o: 260 });
+  useEffect(() => {
+    try { const p = JSON.parse(localStorage.getItem(KEY + ".panes") ?? "null"); if (p?.s && p?.o) setPanes(p); } catch { /* ignore */ }
+  }, []);
+  useEffect(() => { try { localStorage.setItem(KEY + ".panes", JSON.stringify(panes)); } catch { /* ignore */ } }, [panes]);
   useEffect(() => { if (mic.error) toast.error(mic.error); }, [mic.error]);
 
   const step = (label: string) => setSteps((s) => [...s, { label, at: Date.now() }]);
@@ -216,13 +221,33 @@ function SpeedBuild() {
             </form>
           </div>
 
-          <ol className="space-y-1 rounded-2xl border border-border bg-background/40 p-3 text-xs backdrop-blur-xl">
-            {steps.length === 0 && <li className="text-muted-foreground">خطوات التنفيذ تظهر هنا</li>}
-            {steps.map((s, i) => (
-              <li key={i} className="flex justify-between"><span>{s.label}</span>
-                <span dir="ltr" className="font-mono text-muted-foreground">+{((s.at - (steps[0]?.at ?? s.at)) / 1000).toFixed(1)}s</span></li>
-            ))}
-          </ol>
+          <div className="overflow-auto rounded-2xl border border-border bg-background/40 backdrop-blur-xl" style={{ height: panes.s }}>
+            <div className="border-b border-border/50 px-3 py-1.5 text-xs font-semibold">خطوات التنفيذ</div>
+            <table className="w-full text-xs">
+              <thead><tr className="text-muted-foreground"><th className="p-2 text-start">#</th><th className="p-2 text-start">الخطوة</th><th className="p-2 text-start">الوقت</th></tr></thead>
+              <tbody>
+                {steps.length === 0 && <tr><td colSpan={3} className="p-2 text-muted-foreground">خطوات التنفيذ تظهر هنا</td></tr>}
+                {steps.map((s, i) => (
+                  <tr key={i} className="border-t border-border/40"><td className="p-2">{i + 1}</td><td className="p-2">{s.label}</td>
+                    <td dir="ltr" className="p-2 font-mono text-muted-foreground">+{((s.at - (steps[0]?.at ?? s.at)) / 1000).toFixed(1)}s</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <Resizer axis="y" target="before" label="تغيير ارتفاع جدول الخطوات" min={80} max={900} onResize={(s) => setPanes((p) => ({ ...p, s }))} />
+          <div className="flex flex-col overflow-hidden rounded-2xl border border-accent/50 bg-background/40 backdrop-blur-xl" style={{ height: panes.o }}>
+            <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1.5 text-xs">
+              <span className="font-semibold">🧭 النموذج المنسق</span>
+              <select value={orch} onChange={(e) => setOrch(e.target.value)} className="ms-auto max-w-[60%] rounded-md border border-border bg-background/60 px-2 py-1 text-xs" aria-label="النموذج المنسق">
+                <option value="">بدون منسق</option>
+                {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
+              </select>
+            </div>
+            <pre className="flex-1 overflow-auto whitespace-pre-wrap p-3 text-sm">
+              {orchOut || <span className="text-muted-foreground">{orch ? "خطة المنسق تظهر هنا قبل كتابة الكود" : "اختر نموذجًا منسقًا ليقسم المهمة قبل المتخصص"}</span>}
+            </pre>
+          </div>
+          <Resizer axis="y" target="before" label="تغيير ارتفاع لوحة المنسق" min={80} max={900} onResize={(o) => setPanes((p) => ({ ...p, o }))} />
           {talk && <p className="rounded-2xl border border-border bg-background/40 p-3 text-sm backdrop-blur-xl">{talk}</p>}
         </div>
 
@@ -257,31 +282,6 @@ function SpeedBuild() {
             ) : (
               <div className="grid h-full min-h-72 place-items-center text-sm text-muted-foreground">المعاينة الفورية</div>
             )}
-          </div>
-          <div className="mt-3 overflow-auto rounded-2xl border border-border bg-background/40 backdrop-blur-xl">
-            <div className="border-b border-border/50 px-3 py-1.5 text-xs font-semibold">خطوات التنفيذ</div>
-            <table className="w-full text-xs">
-              <thead><tr className="text-muted-foreground"><th className="p-2 text-start">#</th><th className="p-2 text-start">الخطوة</th><th className="p-2 text-start">الوقت</th></tr></thead>
-              <tbody>
-                {steps.length === 0 && <tr><td colSpan={3} className="p-2 text-muted-foreground">خطوات التنفيذ تظهر هنا</td></tr>}
-                {steps.map((s, i) => (
-                  <tr key={i} className="border-t border-border/40"><td className="p-2">{i + 1}</td><td className="p-2">{s.label}</td>
-                    <td dir="ltr" className="p-2 font-mono text-muted-foreground">+{((s.at - (steps[0]?.at ?? s.at)) / 1000).toFixed(1)}s</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-3 overflow-hidden rounded-2xl border border-accent/50 bg-background/40 backdrop-blur-xl">
-            <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1.5 text-xs">
-              <span className="font-semibold">🧭 النموذج المنسق</span>
-              <select value={orch} onChange={(e) => setOrch(e.target.value)} className="ms-auto rounded-md border border-border bg-background/60 px-2 py-1 text-xs" aria-label="النموذج المنسق">
-                <option value="">بدون منسق</option>
-                {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
-              </select>
-            </div>
-            <pre className="max-h-64 min-h-24 overflow-auto whitespace-pre-wrap p-3 text-sm">
-              {orchOut || <span className="text-muted-foreground">{orch ? "خطة المنسق تظهر هنا قبل كتابة الكود" : "اختر نموذجًا منسقًا ليقسم المهمة قبل المتخصص"}</span>}
-            </pre>
           </div>
         </div>
       </section>
