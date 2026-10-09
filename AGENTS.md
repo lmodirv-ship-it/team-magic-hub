@@ -26,3 +26,4 @@
 - Server projects live one folder per project under the bridge's PROJECTS_DIR and are reached only through the bridge "projects" kind (list/create/tree/read/write, path-confined). Why: isolates each project and works over LAN or relay.
 - Copy sync uses the bridge "sync" kind against SYNC_PEERS; the extension merge engine in /sync merges exported nawat.* settings additively and never exports secrets. Why: "add, never remove".
 - Speed Build executes only the model explicitly selected by the user, with no automatic model or cloud fallback. Why: preserve local-model sovereignty and predictable execution.
+- Groupe-HN CLI commands live in cli/groupe-hn.mjs (callable as `groupe-hn` or `nawat ghn`) and share cli/lib.mjs; guide data for /groupe-hn lives in src/lib/nawat/groupe-hn-docs.ts. Why: one source for CLI, MCP and docs.
