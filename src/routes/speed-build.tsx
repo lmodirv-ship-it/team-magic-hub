@@ -31,6 +31,8 @@ const SYSTEM =
 
 type Step = { label: string; at: number };
 const DEFAULT_MODEL = "nawat-coder:latest";
+const ORCH_SYSTEM =
+  "أنت المنسق في NAWAT. لا تكتب كودًا. قسّم طلب المستخدم إلى خطوات تنفيذ قصيرة مرقمة (5 كحد أقصى) للنموذج المتخصص في الكود: البنية، الأقسام، الألوان، التفاعل. أجب بالعربية باختصار.";
 
 function SpeedBuild() {
   const { models, refresh } = useModels();
@@ -61,6 +63,10 @@ function SpeedBuild() {
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify({ model, out, history: history.slice(-12) })); } catch { /* ignore */ }
   }, [model, out, history]);
+  const [orch, setOrch] = useState("");
+  const [orchOut, setOrchOut] = useState("");
+  useEffect(() => { try { setOrch(localStorage.getItem(KEY + ".orch") ?? ""); } catch { /* ignore */ } }, []);
+  useEffect(() => { try { localStorage.setItem(KEY + ".orch", orch); } catch { /* ignore */ } }, [orch]);
   useEffect(() => { codeRef.current?.scrollTo({ top: codeRef.current.scrollHeight }); }, [out]);
   const [layout, setLayout] = useState({ w: 420, h: 520 });
   useEffect(() => {
@@ -84,9 +90,18 @@ function SpeedBuild() {
     const t0 = Date.now();
     let acc = "";
     let spoke = false;
-    step(`● ${model} يكتب…`);
     const signal = abort.current.signal;
+    setOrchOut("");
     try {
+      if (orch) {
+        step(`🧭 المنسق ${orch} يخطط…`);
+        let plan = "";
+        const pm: ChatMessage[] = [{ role: "system", content: ORCH_SYSTEM }, { role: "user", content: text }];
+        for await (const c of modelChatStream(orch, pm, signal)) { plan += c; setOrchOut(plan); }
+        step("🧭 خطة المنسق جاهزة");
+        msgs[msgs.length - 1] = { role: "user", content: `${text}\n\nخطة المنسق:\n${plan.slice(0, 3000)}` };
+      }
+      step(`● ${model} يكتب…`);
       for await (const c of modelChatStream(model, msgs, signal)) {
         acc += c;
         setOut(acc);
@@ -242,6 +257,31 @@ function SpeedBuild() {
             ) : (
               <div className="grid h-full min-h-72 place-items-center text-sm text-muted-foreground">المعاينة الفورية</div>
             )}
+          </div>
+          <div className="mt-3 overflow-auto rounded-2xl border border-border bg-background/40 backdrop-blur-xl">
+            <div className="border-b border-border/50 px-3 py-1.5 text-xs font-semibold">خطوات التنفيذ</div>
+            <table className="w-full text-xs">
+              <thead><tr className="text-muted-foreground"><th className="p-2 text-start">#</th><th className="p-2 text-start">الخطوة</th><th className="p-2 text-start">الوقت</th></tr></thead>
+              <tbody>
+                {steps.length === 0 && <tr><td colSpan={3} className="p-2 text-muted-foreground">خطوات التنفيذ تظهر هنا</td></tr>}
+                {steps.map((s, i) => (
+                  <tr key={i} className="border-t border-border/40"><td className="p-2">{i + 1}</td><td className="p-2">{s.label}</td>
+                    <td dir="ltr" className="p-2 font-mono text-muted-foreground">+{((s.at - (steps[0]?.at ?? s.at)) / 1000).toFixed(1)}s</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 overflow-hidden rounded-2xl border border-accent/50 bg-background/40 backdrop-blur-xl">
+            <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1.5 text-xs">
+              <span className="font-semibold">🧭 النموذج المنسق</span>
+              <select value={orch} onChange={(e) => setOrch(e.target.value)} className="ms-auto rounded-md border border-border bg-background/60 px-2 py-1 text-xs" aria-label="النموذج المنسق">
+                <option value="">بدون منسق</option>
+                {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
+              </select>
+            </div>
+            <pre className="max-h-64 min-h-24 overflow-auto whitespace-pre-wrap p-3 text-sm">
+              {orchOut || <span className="text-muted-foreground">{orch ? "خطة المنسق تظهر هنا قبل كتابة الكود" : "اختر نموذجًا منسقًا ليقسم المهمة قبل المتخصص"}</span>}
+            </pre>
           </div>
         </div>
       </section>
