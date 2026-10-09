@@ -110,12 +110,26 @@ async function j<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 async function tagsOrEmbedded(): Promise<{ models: OllamaModel[] }> {
+  const { EMBEDDED_MODELS } = await import("./embedded-models");
+  const embedded = EMBEDDED_MODELS.map((m) => ({ name: m.name, official: true } as OllamaModel));
+  let live: OllamaModel[] = [];
   try {
-    return await j<{ models: OllamaModel[] }>("/api/tags");
+    live = (await j<{ models: OllamaModel[] }>("/api/tags")).models ?? [];
   } catch {
-    const { EMBEDDED_MODELS } = await import("./embedded-models");
-    return { models: EMBEDDED_MODELS.map((m) => ({ name: m.name } as OllamaModel)) };
+    // Try the user's own LAN engines directly — no bridge needed.
+    for (const h of ["http://192.168.100.67:11434", "http://192.168.2.4:11434"]) {
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 2500);
+        const r = await fetch(h + "/api/tags", { signal: ctrl.signal });
+        clearTimeout(t);
+        if (r.ok) { live = ((await r.json()) as { models?: OllamaModel[] }).models ?? []; break; }
+      } catch { /* next host */ }
+    }
   }
+  // NAWAT models are always built in; live models are added on top.
+  const names = new Set(live.map((m) => m.name));
+  return { models: [...live, ...embedded.filter((m) => !names.has(m.name))] };
 }
 
 export async function listModels(): Promise<OllamaModel[]> {
