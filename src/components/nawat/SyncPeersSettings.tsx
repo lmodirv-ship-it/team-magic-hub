@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export const SYNC_PEERS_KEY = "nawat.sync.peers.v1";
-const DEFAULTS = ["http://192.168.100.67:8788", "https://hn-ai.site/bridge"];
+const DEFAULTS = ["http://192.168.100.67:8788", "https://hn-ai.site/bridge", "https://www.nawat-group.com/bridge"];
+const ADDED = ["https://www.nawat-group.com/bridge"];
 
 export function loadSyncPeers(): string[] {
-  try { const v = JSON.parse(localStorage.getItem(SYNC_PEERS_KEY) ?? "null"); return Array.isArray(v) ? v : DEFAULTS; } catch { return DEFAULTS; }
+  try {
+    const v = JSON.parse(localStorage.getItem(SYNC_PEERS_KEY) ?? "null");
+    if (!Array.isArray(v)) return DEFAULTS;
+    return [...v, ...ADDED.filter((a) => !v.includes(a))];
+  } catch { return DEFAULTS; }
 }
 
 /** قائمة الجسور المرتبطة للمزامنة — تُحفظ تلقائيًا وتُرسل مع كل مزامنة. */
