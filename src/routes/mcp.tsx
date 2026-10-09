@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Copy, Terminal } from "lucide-react";
 import { toast } from "sonner";
@@ -42,9 +42,24 @@ const COMMANDS: [string, string][] = [
   ["nawat worker start", "تشغيل عامل المصنع"],
   ["nawat logs", "السجلات"],
   ["nawat serve mcp", "تشغيل خادم MCP"],
+  ["nawat bchat مرحبا", "سؤال عبر الجسر عن بُعد"],
+  ["nawat image قطة --out cat.png", "توليد صورة عبر ComfyUI"],
+  ["nawat projects list", "مشاريع السيرفر"],
+  ["nawat sync", "مزامنة النسخ"],
+  ["groupe-hn doctor", "فحص شامل للمنصة"],
+  ["groupe-hn models", "كل نماذج المنصة"],
+  ["groupe-hn stats", "القرص والذاكرة وPM2"],
+  ["groupe-hn sync --model m.gguf", "مزامنة GGUF (تجربة)"],
+  ["groupe-hn bridge --port 8795", "جسر المنصة الخفيف"],
 ];
 
-const TOOLS = ["nawat_status", "nawat_system", "nawat_models", "nawat_chat", "nawat_factory_queue", "nawat_factory_add"];
+const TOOLS = [
+  "nawat_status", "nawat_system", "nawat_models", "nawat_chat", "nawat_factory_queue", "nawat_factory_add",
+  "nawat_ping", "nawat_health", "nawat_version", "nawat_bridge_chat", "nawat_compare", "nawat_image",
+  "nawat_factory_remove", "nawat_factory_clear", "nawat_factory_stats", "nawat_factory_logs", "nawat_factory_datasets", "nawat_factory_test",
+  "nawat_worker", "nawat_projects", "nawat_sync", "nawat_config",
+  "ghn_models", "ghn_queue", "ghn_stats", "ghn_info", "ghn_doctor", "ghn_studio", "ghn_sync",
+];
 
 function copy(t: string) {
   void navigator.clipboard.writeText(t);
@@ -95,7 +110,8 @@ function McpPage() {
           ))}
         </div>
 
-        <Panel title="أدوات MCP" note={`${TOOLS.length} أدوات`}>
+        <Panel title="أدوات MCP" note={`${TOOLS.length} أداة`}>
+          <Button className="mb-2" variant="outline" size="sm" asChild><Link to="/groupe-hn">📘 الدليل الكامل Groupe-HN</Link></Button>
           <div className="flex flex-wrap gap-2">
             {TOOLS.map((t) => <code key={t} className="rounded border border-border px-2 py-1 text-xs">{t}</code>)}
           </div>

@@ -109,6 +109,7 @@
   },
   "bin": {
     "nawat": "cli/nawat.mjs",
-    "nawat-mcp": "cli/mcp-server.mjs"
+    "nawat-mcp": "cli/mcp-server.mjs",
+    "groupe-hn": "cli/groupe-hn.mjs"
   }
 }

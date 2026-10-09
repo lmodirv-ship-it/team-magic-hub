@@ -136,6 +136,9 @@ function SettingsPage() {
               MCP + CLI
             </Link>
           </Button>
+          <Button asChild variant="outline">
+            <Link to="/groupe-hn">📘 دليل Groupe-HN</Link>
+          </Button>
           <Button onClick={save}>
             <Save />
             {saved ? "تم الحفظ" : "حفظ التغييرات"}

@@ -18,6 +18,7 @@ import { Route as ComfyuiRouteImport } from './routes/comfyui'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DatabaseRouteImport } from './routes/database'
 import { Route as FactoryRouteImport } from './routes/factory'
+import { Route as GroupeHnRouteImport } from './routes/groupe-hn'
 import { Route as LedgerRouteImport } from './routes/ledger'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MetricsRouteImport } from './routes/metrics'
@@ -85,6 +86,11 @@ const DatabaseRoute = DatabaseRouteImport.update({
 const FactoryRoute = FactoryRouteImport.update({
   id: '/factory',
   path: '/factory',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupeHnRoute = GroupeHnRouteImport.update({
+  id: '/groupe-hn',
+  path: '/groupe-hn',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LedgerRoute = LedgerRouteImport.update({
@@ -213,6 +219,7 @@ export interface FileRoutesByFullPath {
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
   '/factory': typeof FactoryRoute
+  '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
@@ -318,6 +327,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/database'
     | '/factory'
+    | '/groupe-hn'
     | '/ledger'
     | '/mcp'
     | '/metrics'
@@ -352,6 +362,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/database'
     | '/factory'
+    | '/groupe-hn'
     | '/ledger'
     | '/mcp'
     | '/metrics'
@@ -386,6 +397,7 @@ export interface FileRouteTypes {
     | '/connect'
     | '/database'
     | '/factory'
+    | '/groupe-hn'
     | '/ledger'
     | '/mcp'
     | '/metrics'
@@ -421,6 +433,7 @@ export interface RootRouteChildren {
   ConnectRoute: typeof ConnectRoute
   DatabaseRoute: typeof DatabaseRoute
   FactoryRoute: typeof FactoryRoute
+  GroupeHnRoute: typeof GroupeHnRoute
   LedgerRoute: typeof LedgerRoute
   McpRoute: typeof McpRoute
   MetricsRoute: typeof MetricsRoute
@@ -509,6 +522,13 @@ declare module '@tanstack/react-router' {
       path: '/factory'
       fullPath: '/factory'
       preLoaderRoute: typeof FactoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groupe-hn': {
+      id: '/groupe-hn'
+      path: '/groupe-hn'
+      fullPath: '/groupe-hn'
+      preLoaderRoute: typeof GroupeHnRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ledger': {
@@ -685,6 +705,7 @@ const rootRouteChildren: RootRouteChildren = {
   ConnectRoute: ConnectRoute,
   DatabaseRoute: DatabaseRoute,
   FactoryRoute: FactoryRoute,
+  GroupeHnRoute: GroupeHnRoute,
   LedgerRoute: LedgerRoute,
   McpRoute: McpRoute,
   MetricsRoute: MetricsRoute,
