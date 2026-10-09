@@ -22,6 +22,7 @@ import { ThemeGallery } from "@/components/nawat/ThemeGallery";
 import { DepthGallery } from "@/components/nawat/DepthGallery";
 import { PlatformGallery } from "@/components/nawat/PlatformGallery";
 import { PageHead } from "@/components/nawat/StudioViews";
+import { SyncPeersSettings } from "@/components/nawat/SyncPeersSettings";
 import {
   isDesktop,
   modelPrefix,
@@ -404,6 +405,9 @@ function SettingsPage() {
         </Panel>
       </div>
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
+        <Panel title="ربط الجسور للمزامنة (SYNC_PEERS)" note="يُحفظ تلقائيًا — يربط جسر حاسوبك بجسر السيرفر">
+          <SyncPeersSettings />
+        </Panel>
         <Panel title="خوادم النماذج وComfyUI ومجلد النماذج" note="يُحفظ تلقائيًا عند كل تغيير">
           <ServerModelSettings />
         </Panel>
