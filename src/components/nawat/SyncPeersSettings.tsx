@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export const SYNC_PEERS_KEY = "nawat.sync.peers.v1";
-const DEFAULTS = ["http://192.168.100.67:8788", "https://hn-ai.site/bridge", "https://www.nawat-group.com/bridge"];
-const ADDED = ["https://www.nawat-group.com/bridge"];
+const DEFAULTS = ["http://192.168.100.67:8788", "http://192.168.100.66:8085", "https://hn-ai.site/bridge", "https://www.nawat-group.com/bridge"];
+const ADDED = ["http://192.168.100.66:8085", "https://www.nawat-group.com/bridge"];
 
 export function loadSyncPeers(): string[] {
   try {
