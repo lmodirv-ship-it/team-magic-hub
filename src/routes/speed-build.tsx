@@ -258,6 +258,31 @@ function SpeedBuild() {
               <div className="grid h-full min-h-72 place-items-center text-sm text-muted-foreground">المعاينة الفورية</div>
             )}
           </div>
+          <div className="mt-3 overflow-auto rounded-2xl border border-border bg-background/40 backdrop-blur-xl">
+            <div className="border-b border-border/50 px-3 py-1.5 text-xs font-semibold">خطوات التنفيذ</div>
+            <table className="w-full text-xs">
+              <thead><tr className="text-muted-foreground"><th className="p-2 text-start">#</th><th className="p-2 text-start">الخطوة</th><th className="p-2 text-start">الوقت</th></tr></thead>
+              <tbody>
+                {steps.length === 0 && <tr><td colSpan={3} className="p-2 text-muted-foreground">خطوات التنفيذ تظهر هنا</td></tr>}
+                {steps.map((s, i) => (
+                  <tr key={i} className="border-t border-border/40"><td className="p-2">{i + 1}</td><td className="p-2">{s.label}</td>
+                    <td dir="ltr" className="p-2 font-mono text-muted-foreground">+{((s.at - (steps[0]?.at ?? s.at)) / 1000).toFixed(1)}s</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 overflow-hidden rounded-2xl border border-accent/50 bg-background/40 backdrop-blur-xl">
+            <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1.5 text-xs">
+              <span className="font-semibold">🧭 النموذج المنسق</span>
+              <select value={orch} onChange={(e) => setOrch(e.target.value)} className="ms-auto rounded-md border border-border bg-background/60 px-2 py-1 text-xs" aria-label="النموذج المنسق">
+                <option value="">بدون منسق</option>
+                {models.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
+              </select>
+            </div>
+            <pre className="max-h-64 min-h-24 overflow-auto whitespace-pre-wrap p-3 text-sm">
+              {orchOut || <span className="text-muted-foreground">{orch ? "خطة المنسق تظهر هنا قبل كتابة الكود" : "اختر نموذجًا منسقًا ليقسم المهمة قبل المتخصص"}</span>}
+            </pre>
+          </div>
         </div>
       </section>
     </main>
