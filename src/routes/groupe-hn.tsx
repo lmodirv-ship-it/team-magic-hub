@@ -48,7 +48,7 @@ function GuidePage() {
   const pick = (l: "ar" | "fr") => { setLang(l); localStorage.setItem(LKEY, l); };
   const t = (o: L) => o[lang] ?? o.ar;
   const ar = lang === "ar";
-  const best = COMPARE[task];
+  const best = COMPARE[task] ?? COMPARE[0]!;
 
   return (
     <div dir={ar ? "rtl" : "ltr"}>
