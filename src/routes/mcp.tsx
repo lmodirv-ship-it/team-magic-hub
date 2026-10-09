@@ -42,6 +42,15 @@ const COMMANDS: [string, string][] = [
   ["nawat worker start", "تشغيل عامل المصنع"],
   ["nawat logs", "السجلات"],
   ["nawat serve mcp", "تشغيل خادم MCP"],
+  ["nawat bchat مرحبا", "سؤال عبر الجسر عن بُعد"],
+  ["nawat image قطة --out cat.png", "توليد صورة عبر ComfyUI"],
+  ["nawat projects list", "مشاريع السيرفر"],
+  ["nawat sync", "مزامنة النسخ"],
+  ["groupe-hn doctor", "فحص شامل للمنصة"],
+  ["groupe-hn models", "كل نماذج المنصة"],
+  ["groupe-hn stats", "القرص والذاكرة وPM2"],
+  ["groupe-hn sync --model m.gguf", "مزامنة GGUF (تجربة)"],
+  ["groupe-hn bridge --port 8795", "جسر المنصة الخفيف"],
 ];
 
 const TOOLS = [
@@ -101,7 +110,8 @@ function McpPage() {
           ))}
         </div>
 
-        <Panel title="أدوات MCP" note={`${TOOLS.length} أدوات`}>
+        <Panel title="أدوات MCP" note={`${TOOLS.length} أداة`}>
+          <Button className="mb-2" variant="outline" size="sm" asChild><Link to="/groupe-hn">📘 الدليل الكامل Groupe-HN</Link></Button>
           <div className="flex flex-wrap gap-2">
             {TOOLS.map((t) => <code key={t} className="rounded border border-border px-2 py-1 text-xs">{t}</code>)}
           </div>
