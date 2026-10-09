@@ -27,6 +27,8 @@ const KIND_LABEL: Record<Kind, string> = { site: "موقع", chat: "دردشة",
 
 export const BUILTIN_CONNECTORS: Connector[] = [
   { id: "nawat", name: "NAWAT Studio", url: "https://nawat.groupe-hn.com", kind: "site", builtin: true, note: "المنظومة الرسمية" },
+  { id: "hn-ai-site", name: "NAWAT — hn-ai.site", url: "https://hn-ai.site", kind: "site", builtin: true, note: "نسخة السيرفر 213.156.133.94" },
+  { id: "comfy-hn", name: "ComfyUI — السيرفر العام", url: "http://213.156.132.166/comfy/ui/1/", kind: "site", builtin: true, note: "مولّد الصور على السيرفر" },
   { id: "hncode", name: "HN Code", url: "https://hncode.hnchat.net", kind: "site", builtin: true, note: "محرر الأكواد" },
   { id: "hnstudio", name: "HN Studio", url: "https://studio.hnchat.net/", kind: "chat", builtin: true, note: "استوديو الدردشة" },
   { id: "tvcc", name: "tvcc", url: "", kind: "chat", builtin: true, note: "موصل دردشة خاص — أضف عنوانه" },
