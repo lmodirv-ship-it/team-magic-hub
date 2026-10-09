@@ -23,6 +23,7 @@ export const DEFAULT_SERVER_SETTINGS: ServerSettings = {
   comfyInstances: [
     { id: "c1", name: "ComfyUI 1", url: "http://192.168.2.4:8188", task: "عام" },
     { id: "c-hn", name: "ComfyUI السيرفر العام", url: "http://213.156.132.166/comfy/ui/1", task: "عام" },
+    { id: "c-local", name: "ComfyUI حاسوبي", url: "http://127.0.0.1:8188", task: "إنتاج سريع" },
   ],
   modelStoragePath: "/data/model",
   updatedAt: "",
