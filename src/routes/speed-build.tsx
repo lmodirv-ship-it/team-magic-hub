@@ -31,6 +31,8 @@ const SYSTEM =
 
 type Step = { label: string; at: number };
 const DEFAULT_MODEL = "nawat-coder:latest";
+const ORCH_SYSTEM =
+  "أنت المنسق في NAWAT. لا تكتب كودًا. قسّم طلب المستخدم إلى خطوات تنفيذ قصيرة مرقمة (5 كحد أقصى) للنموذج المتخصص في الكود: البنية، الأقسام، الألوان، التفاعل. أجب بالعربية باختصار.";
 
 function SpeedBuild() {
   const { models, refresh } = useModels();
@@ -61,6 +63,10 @@ function SpeedBuild() {
   useEffect(() => {
     try { localStorage.setItem(KEY, JSON.stringify({ model, out, history: history.slice(-12) })); } catch { /* ignore */ }
   }, [model, out, history]);
+  const [orch, setOrch] = useState("");
+  const [orchOut, setOrchOut] = useState("");
+  useEffect(() => { try { setOrch(localStorage.getItem(KEY + ".orch") ?? ""); } catch { /* ignore */ } }, []);
+  useEffect(() => { try { localStorage.setItem(KEY + ".orch", orch); } catch { /* ignore */ } }, [orch]);
   useEffect(() => { codeRef.current?.scrollTo({ top: codeRef.current.scrollHeight }); }, [out]);
   const [layout, setLayout] = useState({ w: 420, h: 520 });
   useEffect(() => {
@@ -84,9 +90,18 @@ function SpeedBuild() {
     const t0 = Date.now();
     let acc = "";
     let spoke = false;
-    step(`● ${model} يكتب…`);
     const signal = abort.current.signal;
+    setOrchOut("");
     try {
+      if (orch) {
+        step(`🧭 المنسق ${orch} يخطط…`);
+        let plan = "";
+        const pm: ChatMessage[] = [{ role: "system", content: ORCH_SYSTEM }, { role: "user", content: text }];
+        for await (const c of modelChatStream(orch, pm, signal)) { plan += c; setOrchOut(plan); }
+        step("🧭 خطة المنسق جاهزة");
+        msgs[msgs.length - 1] = { role: "user", content: `${text}\n\nخطة المنسق:\n${plan.slice(0, 3000)}` };
+      }
+      step(`● ${model} يكتب…`);
       for await (const c of modelChatStream(model, msgs, signal)) {
         acc += c;
         setOut(acc);
