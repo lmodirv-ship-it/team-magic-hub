@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Bot, FileCode2, FolderPlus, Play, RefreshCw, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Page, Panel } from "@/components/nawat/StudioUI";
@@ -192,11 +192,18 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
     const ok = startBgBuild({ project, goal, builders: builders.map((b) => ({ id: b.id, file: b.file, lang: b.lang, model: b.model })), coordinator: models.coordinator, debugger: models.debugger, reviewer: models.reviewer });
     if (!ok) toast.error("بناء آخر يعمل في الخلفية");
   };
+  const writtenRef = useRef(onWritten); writtenRef.current = onWritten;
   useEffect(() => {
-    const show = (s: BgBuild | null) => { if (s && s.project === project) { setRoles(s.roles); if (!s.running) onWritten(); } };
+    let seen = 0;
+    const show = (s: BgBuild | null) => {
+      if (!s || s.project !== project) return;
+      setRoles(s.roles);
+      const done = s.roles.filter((r) => r.status === "done").length;
+      if (done !== seen) { seen = done; writtenRef.current(); }
+    };
     show(getBgBuild());
     return subscribeBgBuild(show);
-  }, [project, onWritten]);
+  }, [project]);
 
   return (
     <Panel title="النموذج المنسّق" note={project ? `المشروع: ${project}` : "اختر مشروعًا"}>
