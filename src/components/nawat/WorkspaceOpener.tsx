@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useWorkspace } from "@/lib/nawat/workspace";
+import { PY_PACKS, notebook, pipfile, pyprojectToml, requirementsTxt } from "@/lib/nawat/python-libs";
 
 const SKIP_DIRS = /(^|\/)(node_modules|\.git|dist|build|\.next|\.venv|__pycache__|\.cache)(\/|$)/;
 const TEXT_EXT =
@@ -37,6 +38,25 @@ const TEMPLATES: Record<string, (n: string) => Record<string, string>> = {
   agent: (n) => ({
     [`${n}/profile.json`]: `{\n  "name": "${n}",\n  "role": "",\n  "task": ""\n}\n`,
     [`${n}/agent.py`]: `def plan(goal: str) -> list[str]:\n    return [goal]\n\n\ndef learn(event: dict) -> None:\n    pass\n`,
+  }),
+  "python-api": (n) => ({
+    [`${n}/README.md`]: `# ${n}\n\nAPI FastAPI.\n\n    pip install -r requirements.txt\n    uvicorn app:app --reload\n`,
+    [`${n}/app.py`]: `from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI()\napp.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])\n\n\n@app.get("/api/hello")\ndef hello():\n    return {"message": "Bonjour depuis Python"}\n`,
+    [`${n}/requirements.txt`]: requirementsTxt(PY_PACKS[0].pkgs),
+    [`${n}/pyproject.toml`]: pyprojectToml(n, PY_PACKS[0].pkgs),
+  }),
+  "python-ai": (n) => ({
+    [`${n}/README.md`]: `# ${n}\n\nIA locale + données.\n\n    pip install -r requirements.txt\n    python main.py\n`,
+    [`${n}/main.py`]: `import ollama\nimport pandas as pd\n\nr = ollama.chat(model="nawat-coder:latest", messages=[{"role": "user", "content": "Bonjour"}])\nprint(r["message"]["content"])\nprint(pd.DataFrame({"a": [1, 2, 3]}).describe())\n`,
+    [`${n}/analyse.ipynb`]: notebook(n),
+    [`${n}/requirements.txt`]: requirementsTxt(PY_PACKS[1].pkgs),
+  }),
+  "python-full": (n) => ({
+    [`${n}/README.md`]: `# ${n}\n\nWeb + IA + automatisation.\n\n    pip install -r requirements.txt\n`,
+    [`${n}/main.py`]: `def main():\n    print("${n}")\n\n\nif __name__ == "__main__":\n    main()\n`,
+    [`${n}/requirements.txt`]: requirementsTxt(),
+    [`${n}/pyproject.toml`]: pyprojectToml(n),
+    [`${n}/Pipfile`]: pipfile(),
   }),
 };
 
