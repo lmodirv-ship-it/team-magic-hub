@@ -62,7 +62,7 @@ export function startBgBuild(o: { project: string; goal: string; builders: BgBui
           files[b.file] = stripFence(out);
           await writeProjectFile(project, b.file, files[b.file]!);
           live(files[b.file]!, b.model);
-          upd(i, { status: "done", output: files[b.file] });
+          upd(i, { status: "done", output: files[b.file] ?? "" });
         } catch (e) { upd(i, { status: "fail", output: (e as Error).message }); }
       }));
       const di = builders.length + 1; upd(di, { status: "run" });
