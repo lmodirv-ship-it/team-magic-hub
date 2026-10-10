@@ -3,7 +3,10 @@ import dictionary from "./i18n-dict.json";
 export type UiLang = "fr" | "ar" | "en";
 export const ARABIC_TEXT = /[\u0600-\u06FF]/;
 const entries: Record<string, [string, string]> = {
-  ...(dictionary as Record<string, [string, string]>),
+  ...Object.fromEntries(Object.entries(dictionary).flatMap(([key, values]) => {
+    const [fr, en] = values;
+    return typeof fr === "string" && typeof en === "string" ? [[key, [fr, en] as [string, string]]] : [];
+  })),
   "API وWebSocket": ["API et WebSocket", "API and WebSocket"],
   "،": [",", ","],
   "شعار نواة": ["Logo NAWAT", "NAWAT logo"],

@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { useLang } from "@/lib/nawat/i18n";
 import { translateUi, type UiLang } from "@/lib/nawat/ui-translation";
 
@@ -41,27 +42,27 @@ function walk(root: Node, lang: UiLang) {
 
 export function PageTranslator() {
   const { lang } = useLang();
+  const loading = useRouterState({ select: (state) => state.isLoading });
   useEffect(() => {
+    if (loading) return;
     let title: Saved | undefined;
     const translateTitle = () => {
       title = update(document.title, title, lang);
       if (document.title !== title.rendered) document.title = title.rendered;
     };
-    // Effects run after hydration. Do not wait for a load event that may already have fired.
-    walk(document.body, lang);
-    translateTitle();
+    // Lazy route boundaries may hydrate after the root effect. Wait for route settlement,
+    // without depending on a window load event which might already have fired.
+    let timer = window.setTimeout(() => { walk(document.body, lang); translateTitle(); }, 1200);
     const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === "childList") mutation.addedNodes.forEach((node) => walk(node, lang));
-        else walk(mutation.target, lang);
-      }
-      translateTitle();
+      if (!mutations.length) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => { walk(document.body, lang); translateTitle(); }, 1200);
     });
     observer.observe(document.body, {
       subtree: true, childList: true, characterData: true,
       attributes: true, attributeFilter: [...ATTRS],
     });
-    return () => observer.disconnect();
-  }, [lang]);
+    return () => { window.clearTimeout(timer); observer.disconnect(); };
+  }, [lang, loading]);
   return null;
 }
