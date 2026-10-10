@@ -89,7 +89,8 @@ export function PageTranslator() {
       docTitle();
     });
     // Wait for hydration to finish before touching the page.
-    const start = window.setTimeout(() => {
+    let start = 0;
+    const begin = () => {
       run(document.body);
       docTitle();
       mo.observe(document.body, {
@@ -99,8 +100,12 @@ export function PageTranslator() {
       attributes: true,
       attributeFilter: [...ATTRS],
       });
-    }, 900);
+    };
+    const schedule = () => { start = window.setTimeout(begin, 1200); };
+    if (document.readyState === "complete") schedule();
+    else window.addEventListener("load", schedule, { once: true });
     return () => {
+      window.removeEventListener("load", schedule);
       window.clearTimeout(start);
       mo.disconnect();
     };
