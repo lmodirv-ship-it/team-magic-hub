@@ -17,6 +17,7 @@ const entries: Record<string, [string, string]> = {
   "حفظ الناتج في ملف": ["Enregistrer le résultat dans un fichier", "Save output to file"],
   "الإنتاج السريع": ["Production rapide", "Speed Build"],
   "الاستوديو": ["STUDIO", "STUDIO"],
+  "الدليل المصور": ["Guide illustré", "Illustrated guide"],
 };
 const arabicKeys = Object.keys(entries).sort((a, b) => b.length - a.length);
 const reverse = new Map<string, string>();
