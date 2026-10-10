@@ -218,9 +218,10 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
         ))}
       </div>
       <textarea rows={3} className="control mt-2" placeholder="الهدف: مثلاً موقع تعريفي لمطعم في طنجة" value={goal} onChange={(e) => setGoal(e.target.value)} />
-      <div className="mt-2 flex gap-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         <Button disabled={busy} onClick={() => void plan()}><Bot />وزّع الأدوار</Button>
         <Button disabled={busy || !roles.length} variant="outline" onClick={() => void execute()}><Play />نفّذ واكتب الملفات</Button>
+        <Button disabled={busy} variant="secondary" onClick={() => void runTeam()}><Play />فريق متخصص (HTML · CSS · JS + تصحيح + مراجعة)</Button>
       </div>
       {roles.length > 0 && (
         <ol className="mt-3 grid gap-2">
