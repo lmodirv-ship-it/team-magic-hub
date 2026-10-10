@@ -29,6 +29,7 @@ import { ShortcutLayer } from "@/components/nawat/ShortcutLayer";
 import { PwaUpdatePrompt } from "@/components/nawat/PwaUpdatePrompt";
 import { TableResizeLayer } from "@/components/nawat/TableResizeLayer";
 import { AutoSync } from "@/components/nawat/AutoSync";
+import { PageTranslator } from "@/components/nawat/PageTranslator";
 import "@/lib/nawat/depth";
 import "@/lib/nawat/platform";
 
@@ -179,6 +180,7 @@ function RootComponent() {
             <PwaUpdatePrompt />
             <TableResizeLayer />
             <AutoSync />
+          <PageTranslator />
           </LiveProvider>
         </WorkspaceProvider>
       </TooltipProvider>
