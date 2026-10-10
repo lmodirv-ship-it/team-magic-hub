@@ -3,7 +3,9 @@ import dictionary from "./i18n-dict.json";
 export type UiLang = "fr" | "ar" | "en";
 export const ARABIC_TEXT = /[\u0600-\u06FF]/;
 const entries: Record<string, [string, string]> = {
-  ...dictionary,
+  ...(dictionary as Record<string, [string, string]>),
+  "API وWebSocket": ["API et WebSocket", "API and WebSocket"],
+  "،": [",", ","],
   "شعار نواة": ["Logo NAWAT", "NAWAT logo"],
   "شعار نواة الرئيسي": ["Logo principal NAWAT", "Main NAWAT logo"],
   "الطرفية": ["Terminal", "Terminal"],
@@ -37,7 +39,8 @@ export function translateUi(source: string, lang: UiLang): string {
       translated = entries[arabic]?.[i] ?? arabic;
       if (translated === arabic) {
         for (const key of arabicKeys) {
-          if (translated.includes(key)) translated = translated.split(key).join(entries[key][i]);
+          const replacement = entries[key]?.[i];
+          if (replacement && translated.includes(key)) translated = translated.split(key).join(replacement);
         }
       }
       // Arabic vowel marks and tatweel may remain after a compound-label replacement.
