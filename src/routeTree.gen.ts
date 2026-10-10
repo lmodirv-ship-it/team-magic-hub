@@ -20,6 +20,7 @@ import { Route as DatabaseRouteImport } from './routes/database'
 import { Route as FactoryRouteImport } from './routes/factory'
 import { Route as GroupeHnRouteImport } from './routes/groupe-hn'
 import { Route as LedgerRouteImport } from './routes/ledger'
+import { Route as ManualRouteImport } from './routes/manual'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MetricsRouteImport } from './routes/metrics'
 import { Route as MobileRouteImport } from './routes/mobile'
@@ -98,6 +99,11 @@ const GroupeHnRoute = GroupeHnRouteImport.update({
 const LedgerRoute = LedgerRouteImport.update({
   id: '/ledger',
   path: '/ledger',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManualRoute = ManualRouteImport.update({
+  id: '/manual',
+  path: '/manual',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/factory': typeof FactoryRoute
   '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
+  '/manual': typeof ManualRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
@@ -270,6 +277,7 @@ export interface FileRoutesByTo {
   '/factory': typeof FactoryRoute
   '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
+  '/manual': typeof ManualRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
@@ -308,6 +316,7 @@ export interface FileRoutesById {
   '/factory': typeof FactoryRoute
   '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
+  '/manual': typeof ManualRoute
   '/mcp': typeof McpRoute
   '/metrics': typeof MetricsRoute
   '/mobile': typeof MobileRoute
@@ -347,6 +356,7 @@ export interface FileRouteTypes {
     | '/factory'
     | '/groupe-hn'
     | '/ledger'
+    | '/manual'
     | '/mcp'
     | '/metrics'
     | '/mobile'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/factory'
     | '/groupe-hn'
     | '/ledger'
+    | '/manual'
     | '/mcp'
     | '/metrics'
     | '/mobile'
@@ -421,6 +432,7 @@ export interface FileRouteTypes {
     | '/factory'
     | '/groupe-hn'
     | '/ledger'
+    | '/manual'
     | '/mcp'
     | '/metrics'
     | '/mobile'
@@ -459,6 +471,7 @@ export interface RootRouteChildren {
   FactoryRoute: typeof FactoryRoute
   GroupeHnRoute: typeof GroupeHnRoute
   LedgerRoute: typeof LedgerRoute
+  ManualRoute: typeof ManualRoute
   McpRoute: typeof McpRoute
   MetricsRoute: typeof MetricsRoute
   MobileRoute: typeof MobileRoute
@@ -562,6 +575,13 @@ declare module '@tanstack/react-router' {
       path: '/ledger'
       fullPath: '/ledger'
       preLoaderRoute: typeof LedgerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/manual': {
+      id: '/manual'
+      path: '/manual'
+      fullPath: '/manual'
+      preLoaderRoute: typeof ManualRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -747,6 +767,7 @@ const rootRouteChildren: RootRouteChildren = {
   FactoryRoute: FactoryRoute,
   GroupeHnRoute: GroupeHnRoute,
   LedgerRoute: LedgerRoute,
+  ManualRoute: ManualRoute,
   McpRoute: McpRoute,
   MetricsRoute: MetricsRoute,
   MobileRoute: MobileRoute,
