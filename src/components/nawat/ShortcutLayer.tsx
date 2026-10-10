@@ -23,8 +23,33 @@ export function ShortcutLayer() {
       const mod = event.ctrlKey || event.metaKey;
       const focused = document.activeElement;
       const inTerminal = focused instanceof Element && Boolean(focused.closest('[data-nawat-terminal]'));
-      if (inTerminal && !(mod && event.key.toLowerCase() === "s")) return;
-      if (mod && event.key.toLowerCase() === "s") {
+      const key = event.key.toLowerCase();
+      // Layout switches stay live even while the terminal has focus.
+      const layoutSwitch =
+        (mod && !event.altKey && !event.shiftKey && (key === "b" || key === "j" || key === "`")) ||
+        (mod && event.altKey && key === "f");
+      if (inTerminal && !(mod && key === "s") && !layoutSwitch) return;
+      if (mod && !event.altKey && !event.shiftKey && key === "b") {
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("nawat:toggle-panel", { detail: "explorer" }));
+        return;
+      }
+      if (mod && !event.altKey && !event.shiftKey && key === "j") {
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("nawat:toggle-panel", { detail: "chat" }));
+        return;
+      }
+      if (mod && !event.altKey && !event.shiftKey && key === "`") {
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("nawat:toggle-panel", { detail: "term" }));
+        return;
+      }
+      if (mod && event.altKey && key === "f") {
+        event.preventDefault();
+        window.dispatchEvent(new CustomEvent("nawat:focus-mode"));
+        return;
+      }
+      if (mod && key === "s") {
         event.preventDefault();
         if (active) {
           if (saveNow()) toast.success(`تم الحفظ: ${active}`);
@@ -34,12 +59,12 @@ export function ShortcutLayer() {
         }
         return;
       }
-      if (mod && event.shiftKey && event.key.toLowerCase() === "f") {
+      if (mod && event.shiftKey && key === "f") {
         event.preventDefault();
         window.dispatchEvent(new CustomEvent("nawat:project-search"));
         return;
       }
-      if (mod && event.key.toLowerCase() === "n") {
+      if (mod && key === "n") {
         event.preventDefault();
         const path = window.prompt("مسار الملف الجديد", "my-app/nouveau.md");
         if (path?.trim()) createFile(path.trim(), "", { source: "manuel" });
