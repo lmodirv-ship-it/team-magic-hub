@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Panel } from "@/components/nawat/StudioUI";
 import { Button } from "@/components/ui/button";
 import { PY_ALL, PY_PACKS, requirementsTxt } from "@/lib/nawat/python-libs";
+import { FFMPEG_HELPER, JS_ALL, JS_PACKS, packageJson } from "@/lib/nawat/js-media-libs";
 
 const KEY = "nawat.devtools.v1";
 type D = { ssh: string; project: string; pkgs: string; pip: string };
@@ -57,6 +58,11 @@ export function DevTools({ s }: { s: { path: string; ollama: string } }) {
             <Button key={p.id} size="sm" variant="outline" onClick={() => setD({ ...d, pip: Array.from(new Set([...d.pip.split(/\s+/).filter(Boolean), ...p.pkgs])).join(" ") })}>🐍 {p.label}</Button>
           ))}
           <Button size="sm" variant="outline" onClick={() => download("requirements.txt", requirementsTxt(d.pip ? d.pip.split(/\s+/) : PY_ALL))}><Download />requirements.txt</Button>
+          {JS_PACKS.map((p) => (
+            <Button key={p.id} size="sm" variant="outline" onClick={() => setD({ ...d, pkgs: Array.from(new Set([...d.pkgs.split(/\s+/).filter(Boolean), ...p.pkgs])).join(" ") })}>🎬 {p.label}</Button>
+          ))}
+          <Button size="sm" variant="outline" onClick={() => download("package.json", packageJson(d.project, d.pkgs ? d.pkgs.split(/\s+/) : JS_ALL))}><Download />package.json</Button>
+          <Button size="sm" variant="outline" onClick={() => download("media.js", FFMPEG_HELPER)}><Download />media.js (FFmpeg)</Button>
         </div>
         <ul className="mt-2 grid gap-1">
           {([["نشر", deploy], ["مزامنة تراكمية", sync], ["تثبيت npm", npm], ["تثبيت pip", pip]] as [string, string][]).map(([t, c]) => (
