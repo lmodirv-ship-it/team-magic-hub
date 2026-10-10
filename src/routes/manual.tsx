@@ -55,7 +55,7 @@ function ManualReader() {
     Promise.all([import("pdfjs-dist"), import("pdfjs-dist/build/pdf.worker.min.mjs?url")]).then(([pdf, worker]) => {
       if (disposed) return;
       pdf.GlobalWorkerOptions.workerSrc = worker.default;
-      task = pdf.getDocument({ url });
+      task = pdf.getDocument({ url, disableFontFace: true });
       return task.promise.then((doc) => { if (!disposed) setDocument(doc); });
     }).catch((cause: unknown) => { if (!disposed) { console.error("Manual PDF loading failed", cause); setError(true); setLoading(false); } });
     return () => { disposed = true; void task?.destroy(); };
