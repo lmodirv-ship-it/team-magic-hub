@@ -60,6 +60,10 @@ const FORMATS: { id: string; file: string; lang: string; group: string }[] = [
   { id: "php", file: "api/index.php", lang: "php", group: "خادم" },
   { id: "py", file: "server/app.py", lang: "python", group: "خادم" },
   { id: "go", file: "server/main.go", lang: "go", group: "خادم" },
+  { id: "pyapi", file: "server/api.py", lang: "python fastapi", group: "خادم" },
+  { id: "reqs", file: "requirements.txt", lang: "pip requirements (fastapi flask numpy pandas ollama requests)", group: "خادم" },
+  { id: "pyproject", file: "pyproject.toml", lang: "toml pyproject", group: "خادم" },
+  { id: "ipynb", file: "notebooks/analyse.ipynb", lang: "jupyter notebook json", group: "خادم" },
 ];
 const FORMATS_KEY = "nawat.orchestrator.formats.v1";
 const stripFence = (t: string) => (t.match(/```[\w-]*[^\n]*\n([\s\S]*?)```/)?.[1] ?? t).trim();
