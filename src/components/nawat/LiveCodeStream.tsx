@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Code2, Copy, Trash2 } from "lucide-react";
+import { useLang } from "@/lib/nawat/i18n";
 
 export type StreamDetail = { text: string; model?: string; started: number; done: boolean };
 
@@ -20,6 +21,7 @@ export function extractCode(text: string) {
 }
 
 export function LiveCodeStream() {
+  const { t } = useLang();
   const [s, setS] = useModelStream();
   const ref = useRef<HTMLPreElement>(null);
   useEffect(() => {
@@ -49,7 +51,7 @@ export function LiveCodeStream() {
         dir="ltr"
         className="min-h-0 flex-1 overflow-auto whitespace-pre-wrap p-3 text-start font-mono text-[12px] leading-5 text-foreground"
       >
-        {code || <span className="text-muted-foreground">// اسأل النموذج في المحادثة وسيظهر الكود هنا لحظيًا</span>}
+        {code || <span className="text-muted-foreground">{t("اسأل النموذج في المحادثة وسيظهر الكود هنا لحظيًا")}</span>}
       </pre>
     </div>
   );
