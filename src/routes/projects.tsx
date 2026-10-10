@@ -42,6 +42,25 @@ const TEAM: { role: "html" | "css" | "js"; file: string; lang: string }[] = [
   { role: "css", file: "style.css", lang: "css" },
   { role: "js", file: "app.js", lang: "javascript" },
 ];
+/** All text formats a builder can produce (binary media like png/mp4 cannot be written by a text model). */
+const FORMATS: { id: string; file: string; lang: string; group: string }[] = [
+  ...TEAM.map((t) => ({ id: t.role, file: t.file, lang: t.lang, group: "واجهة" })),
+  { id: "ts", file: "src/main.ts", lang: "typescript", group: "واجهة" },
+  { id: "jsx", file: "src/App.jsx", lang: "react jsx", group: "إطارات" },
+  { id: "tsx", file: "src/App.tsx", lang: "react tsx", group: "إطارات" },
+  { id: "vue", file: "src/App.vue", lang: "vue", group: "إطارات" },
+  { id: "svg", file: "assets/logo.svg", lang: "svg", group: "أصول" },
+  { id: "ico", file: "assets/favicon.svg", lang: "svg icon", group: "أصول" },
+  { id: "json", file: "package.json", lang: "json", group: "إعدادات" },
+  { id: "env", file: ".env.example", lang: "dotenv (بدون أسرار حقيقية)", group: "إعدادات" },
+  { id: "md", file: "README.md", lang: "markdown", group: "إعدادات" },
+  { id: "gitignore", file: ".gitignore", lang: "gitignore", group: "إعدادات" },
+  { id: "sql", file: "db/schema.sql", lang: "sql", group: "خادم" },
+  { id: "php", file: "api/index.php", lang: "php", group: "خادم" },
+  { id: "py", file: "server/app.py", lang: "python", group: "خادم" },
+  { id: "go", file: "server/main.go", lang: "go", group: "خادم" },
+];
+const FORMATS_KEY = "nawat.orchestrator.formats.v1";
 const stripFence = (t: string) => (t.match(/```[\w-]*[^\n]*\n([\s\S]*?)```/)?.[1] ?? t).trim();
 
 async function ask(model: string, system: string, user: string) {
@@ -119,7 +138,11 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
   const [goal, setGoal] = useState("");
   const [roles, setRoles] = useState<Role[]>([]);
   const [busy, setBusy] = useState(false);
+  const [formats, setFormats] = useState<string[]>(["html", "css", "js"]);
   useEffect(() => { try { setModels({ ...DEFAULT_ROLES, ...JSON.parse(localStorage.getItem(ORCH_KEY) ?? "{}") }); } catch { /* */ } }, []);
+  useEffect(() => { try { const f = JSON.parse(localStorage.getItem(FORMATS_KEY) ?? "null"); if (Array.isArray(f) && f.length) setFormats(f); } catch { /* */ } }, []);
+  const toggleFormat = (id: string) => setFormats((v) => { const n = v.includes(id) ? v.filter((x) => x !== id) : [...v, id]; localStorage.setItem(FORMATS_KEY, JSON.stringify(n)); return n; });
+  const builders = FORMATS.filter((f) => formats.includes(f.id)).map((f) => ({ ...f, model: (models as Record<string, string>)[f.id] ?? models.coder }));
   const setModel = (k: keyof typeof DEFAULT_ROLES, v: string) => { const n = { ...models, [k]: v }; setModels(n); localStorage.setItem(ORCH_KEY, JSON.stringify(n)); };
 
   const plan = async () => {
@@ -168,7 +191,7 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
     setBusy(true);
     const list: Role[] = [
       { role: "coordinator", model: models.coordinator, task: "تقسيم المشروع وتحديد العقد بين الملفات", status: "run" },
-      ...TEAM.map((t) => ({ role: t.role, model: models[t.role], task: t.file, status: "wait" as const })),
+      ...builders.map((t) => ({ role: t.id, model: t.model, task: t.file, status: "wait" as const })),
       { role: "debugger", model: models.debugger, task: "تصحيح الملفات مباشرة", status: "wait" },
       { role: "reviewer", model: models.reviewer, task: "مراجعة الجودة", status: "wait" },
     ];
@@ -177,21 +200,21 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
     const live = (text: string, model: string) => window.dispatchEvent(new CustomEvent("nawat:stream", { detail: { text, model, started: Date.now(), done: true } }));
     try {
       const spec = await ask(models.coordinator,
-        "أنت المنسّق. اكتب مواصفات قصيرة للمشروع: الأقسام، أسماء الـ id والـ class، والدوال، حتى تتوافق ملفات index.html وstyle.css وapp.js. لا تكتب كودًا.", goal);
+        `أنت المنسّق. اكتب مواصفات قصيرة للمشروع: الأقسام، أسماء الـ id والـ class، والدوال، والجداول والمسارات، حتى تتوافق هذه الملفات: ${builders.map((b) => b.file).join("، ")}. لا تكتب كودًا.`, goal);
       upd(0, { status: "done", output: spec });
       const files: Record<string, string> = {};
-      await Promise.all(TEAM.map(async (t, k) => {
+      await Promise.all(builders.map(async (t, k) => {
         const i = k + 1;
         upd(i, { status: "run" });
         try {
-          const out = await ask(models[t.role], `أنت متخصص ${t.lang} فقط. اكتب محتوى الملف ${t.file} كاملًا داخل كتلة كود واحدة، دون شرح. index.html يربط style.css وapp.js.`, `الهدف: ${goal}\nالمواصفات:\n${spec}`);
+          const out = await ask(t.model, `أنت متخصص ${t.lang} فقط. اكتب محتوى الملف ${t.file} كاملًا داخل كتلة كود واحدة، دون شرح. ملفات المشروع: ${builders.map((b) => b.file).join("، ")} — اربط بينها بشكل صحيح.`, `الهدف: ${goal}\nالمواصفات:\n${spec}`);
           files[t.file] = stripFence(out);
           await writeProjectFile(project, t.file, files[t.file]!);
-          onWritten(); live(files[t.file]!, models[t.role]);
+          onWritten(); live(files[t.file]!, t.model);
           upd(i, { status: "done", output: files[t.file] ?? "" });
         } catch (e) { upd(i, { status: "fail", output: (e as Error).message }); }
       }));
-      const di = TEAM.length + 1;
+      const di = builders.length + 1;
       upd(di, { status: "run" });
       const all = Object.entries(files).map(([f, c]) => `--- ${f}\n${c}`).join("\n\n");
       for (const [f, c] of Object.entries(files)) {
@@ -216,6 +239,17 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
             <input className="control font-mono text-xs" dir="ltr" value={models[k]} onChange={(e) => setModel(k, e.target.value)} />
           </label>
         ))}
+      </div>
+      <div className="mt-2 rounded-md border border-border p-2">
+        <p className="mb-1 text-xs text-muted-foreground">صيغ الملفات التي ينشئها البناؤون ({formats.length})</p>
+        <div className="flex flex-wrap gap-1">
+          {FORMATS.map((f) => (
+            <button type="button" key={f.id} aria-pressed={formats.includes(f.id)} onClick={() => toggleFormat(f.id)}
+              className={cn("rounded border px-2 py-0.5 font-mono text-[11px]", formats.includes(f.id) ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground")}
+              title={f.group}>{f.file}</button>
+          ))}
+        </div>
+        <p className="mt-1 text-[10px] text-muted-foreground">الصور والفيديو والصوت (png، jpg، mp4، mp3) تُنتج عبر ComfyUI وليس عبر نماذج الكود.</p>
       </div>
       <textarea rows={3} className="control mt-2" placeholder="الهدف: مثلاً موقع تعريفي لمطعم في طنجة" value={goal} onChange={(e) => setGoal(e.target.value)} />
       <div className="mt-2 flex flex-wrap gap-2">
