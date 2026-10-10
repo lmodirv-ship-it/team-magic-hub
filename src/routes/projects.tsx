@@ -28,7 +28,21 @@ export const Route = createFileRoute("/projects")({
 
 type Role = { role: string; model: string; task: string; status?: "wait" | "run" | "done" | "fail"; output?: string };
 const ORCH_KEY = "nawat.orchestrator.v1";
-const DEFAULT_ROLES = { coordinator: "qwen3.5:9b", planner: "qwen3.5:9b", coder: "qwen3:4b", reviewer: "qwen3.5:9b" };
+const DEFAULT_ROLES = {
+  coordinator: "qwen3.5:9b", planner: "qwen3.5:9b", coder: "qwen3:4b", reviewer: "qwen3.5:9b",
+  html: "nawat-coder:latest", css: "nawat-coder:latest", js: "nawat-coder:latest", debugger: "qwen3.5:9b",
+};
+const ROLE_LABELS: Record<keyof typeof DEFAULT_ROLES, string> = {
+  coordinator: "المنسّق", planner: "المخطط", coder: "المبرمج", reviewer: "المراجع",
+  html: "باني HTML", css: "باني CSS", js: "باني JS", debugger: "المصحّح",
+};
+/** Specialist team: each builder owns one file and writes it directly in the project. */
+const TEAM: { role: "html" | "css" | "js"; file: string; lang: string }[] = [
+  { role: "html", file: "index.html", lang: "html" },
+  { role: "css", file: "style.css", lang: "css" },
+  { role: "js", file: "app.js", lang: "javascript" },
+];
+const stripFence = (t: string) => (t.match(/```[\w-]*[^\n]*\n([\s\S]*?)```/)?.[1] ?? t).trim();
 
 async function ask(model: string, system: string, user: string) {
   const d = (await callConfiguredBridge("chat", { model, stream: false, messages: [{ role: "system", content: system }, { role: "user", content: user }] })) as { message?: { content?: string } };
