@@ -5,6 +5,7 @@ import type { FitAddon } from "@xterm/addon-fit";
 import "@xterm/xterm/css/xterm.css";
 import { bridgePing, sshBridgeUrl, sshExec, sshHosts, type SshHost } from "@/lib/nawat/bridge";
 import { Button } from "@/components/ui/button";
+import { createTerminalNoticeGate } from "@/lib/nawat/terminal-notices";
 
 const TARGET_KEY = "nawat.terminal.target";
 const DANGEROUS = /(^|[;&|\s])(?:rm\s+-[^\n]*r|rmdir\b|del\s+\/|format\b|Remove-Item\b|mkfs\b|dd\s+if=)/i;
@@ -21,6 +22,8 @@ export function TerminalPanel() {
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef(0);
   const hostsRef = useRef<SshHost[]>([]);
+  const noticeGate = useRef(createTerminalNoticeGate());
+  const probingRef = useRef(false);
   const [target, setTarget] = useState("");
   const [hosts, setHosts] = useState<SshHost[]>([]);
   const [bridgeOk, setBridgeOk] = useState<boolean | null>(null);
@@ -32,6 +35,8 @@ export function TerminalPanel() {
   }, []);
 
   const probe = useCallback(async () => {
+    if (probingRef.current || !terminalRef.current) return;
+    probingRef.current = true;
     try {
       await bridgePing();
       const available = await sshHosts();
@@ -47,16 +52,29 @@ export function TerminalPanel() {
       if (targetRef.current !== next) {
         targetRef.current = next;
         setTarget(next);
-        if (next) terminalRef.current?.writeln(`\r\nاتصلت بالجسر ${sshBridgeUrl()} — الهدف ${next}`);
+        if (next) terminalRef.current?.writeln(`\r\nConnected to bridge ${sshBridgeUrl()} - target ${next}`);
         prompt();
       }
       readyRef.current = !!next && available.some((host) => host.host === next && host.online !== false);
-      if (!available.length) terminalRef.current?.writeln("\r\nلا يوجد مضيف SSH في الجسر. أضف مضيفًا ثم أعد الاتصال.");
+      if (readyRef.current) {
+        noticeGate.current.reset();
+      } else if (noticeGate.current.shouldEmit(`${sshBridgeUrl()}:${next || "no-hosts"}`)) {
+        terminalRef.current?.writeln(next
+          ? `\r\nSSH target ${next} is offline. Check the host, then reconnect.`
+          : "\r\nNo SSH host configured in the bridge. Add a host, then reconnect.");
+        prompt();
+      }
     } catch {
       readyRef.current = false;
       setBridgeOk(false);
       setHosts([]);
-      terminalRef.current?.writeln(`\r\nتعذر الوصول إلى الجسر ${sshBridgeUrl()}. شغّل الجسر على 8787 ثم أعد الاتصال.`);
+      hostsRef.current = [];
+      if (noticeGate.current.shouldEmit(`unreachable:${sshBridgeUrl()}`)) {
+        terminalRef.current?.writeln(`\r\nBridge unreachable at ${sshBridgeUrl()}. Check the configured bridge URL and reconnect.`);
+        prompt();
+      }
+    } finally {
+      probingRef.current = false;
     }
   }, [prompt]);
 
@@ -87,9 +105,10 @@ export function TerminalPanel() {
       observer = new ResizeObserver(() => fit.fit());
       observer.observe(container);
       // ASCII first: monospace output renders Arabic commands and paths in reversed order.
-      terminal.writeln("NAWAT SSH - bridge :8787");
+      noticeGate.current.reset();
+      terminal.writeln(`NAWAT SSH - bridge ${sshBridgeUrl()}`);
       terminal.writeln("Type help for the command list. Commands run on the selected host.");
-      terminal.writeln("لا توجد جلسة PTY مستمرة — الأوامر تُنفّذ مرة واحدة على المضيف المختار.");
+      terminal.writeln("One-shot SSH execution on the selected host, not a persistent PTY session.");
       terminal.write("\x1b[32mbridge>\x1b[0m ");
 
       const replaceLine = (next: string) => {
@@ -104,7 +123,7 @@ export function TerminalPanel() {
           terminal.write("\r\n");
           lineRef.current = "";
           if (!cmd) { prompt(); return; }
-          if (cmd === "clear") { terminal.clear(); prompt(); return; }
+          if (cmd === "clear") { terminal.clear(); noticeGate.current.reset(); prompt(); return; }
           // Local commands answer without a host, so they also work when the bridge is down.
           if (cmd === "help") {
             terminal.writeln("commands: help | clear | targets | ping | <any shell command>");
@@ -137,20 +156,20 @@ export function TerminalPanel() {
             return;
           }
           if (!readyRef.current || !targetRef.current) {
-            terminal.writeln("لا يوجد مضيف SSH متصل. تحقق من الجسر والمضيف المختار.");
+            terminal.writeln("No connected SSH host. Check the bridge and selected host.");
             prompt();
             return;
           }
           if (DANGEROUS.test(cmd) && !window.confirm(`قد يغيّر هذا الأمر الملفات أو يحذفها. هل تريد المتابعة؟\n${cmd}`)) {
-            terminal.writeln("أُلغي الأمر."); prompt(); return;
+            terminal.writeln("Command cancelled."); prompt(); return;
           }
           historyRef.current.push(cmd);
           historyIndexRef.current = historyRef.current.length;
           busyRef.current = true;
           const host = targetRef.current;
           void sshExec(host, cmd).then(
-            (output) => terminal?.writeln(output.replace(/\r?\n/g, "\r\n") || "(لا يوجد خرج)"),
-            (error: unknown) => terminal?.writeln(`خطأ: ${error instanceof Error ? error.message : String(error)}`),
+            (output) => terminal?.writeln(output.replace(/\r?\n/g, "\r\n") || "(no output)"),
+            (error: unknown) => terminal?.writeln(`SSH execution failed: ${error instanceof Error ? error.message : String(error)}`),
           ).finally(() => { busyRef.current = false; prompt(); });
         } else if (data === "\u007f") {
           if (lineRef.current) { lineRef.current = lineRef.current.slice(0, -1); terminal.write("\b \b"); }
@@ -191,7 +210,7 @@ export function TerminalPanel() {
     setTarget(host);
     readyRef.current = bridgeOk === true && hosts.some((item) => item.host === host && item.online !== false);
     window.localStorage.setItem(TARGET_KEY, host);
-    terminalRef.current?.writeln(`\r\nالهدف: ${host}`);
+    terminalRef.current?.writeln(`\r\nTarget: ${host}`);
     prompt();
     terminalRef.current?.focus();
   };
@@ -211,7 +230,7 @@ export function TerminalPanel() {
         </span>
         <div className="flex-1" />
         <Button variant="ghost" size="icon-sm" title="إعادة الاتصال" aria-label="إعادة الاتصال بالجسر" onClick={() => { void probe(); }}><RefreshCw className="size-3.5" /></Button>
-        <Button variant="ghost" size="icon-sm" title="مسح الشاشة" aria-label="مسح الطرفية" onClick={() => { terminalRef.current?.clear(); terminalRef.current?.focus(); }}><Trash2 className="size-3.5" /></Button>
+        <Button variant="ghost" size="icon-sm" title="مسح الشاشة" aria-label="مسح الطرفية" onClick={() => { terminalRef.current?.clear(); noticeGate.current.reset(); terminalRef.current?.focus(); }}><Trash2 className="size-3.5" /></Button>
       </header>
       <div ref={containerRef} className="min-h-0 flex-1 overflow-hidden bg-background p-2 text-foreground" aria-label="طرفية SSH" />
     </div>
