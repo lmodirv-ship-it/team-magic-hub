@@ -6,11 +6,14 @@ import { Page, Panel } from "@/components/nawat/StudioUI";
 import { PageHead } from "@/components/nawat/StudioViews";
 import { GroupeHnPlatform } from "@/components/nawat/GroupeHnPlatform";
 import {
+  activeProviderModels,
   discoverProviderModels,
   getProviders,
   officialModels,
+  PROVIDER_PRESETS,
   removeProvider,
   saveProvider,
+  setProviderModelEnabled,
   subscribeProviders,
   type ProviderConfig,
 } from "@/lib/nawat/providers";
@@ -57,12 +60,13 @@ function ProvidersPage() {
           models,
           connected: true,
           updatedAt: new Date().toISOString(),
+          enabled: [],
         },
         apiKey,
       );
       setName("");
       setApiKey("");
-      setNotice(`تم الاتصال وإضافة ${models.length} نموذج.`);
+      setNotice(`تم الاتصال: ${models.length} نموذج — فعّل ما تريد أدناه.`);
     } catch (error) {
       setNotice((error as Error).message);
     } finally {
@@ -115,6 +119,18 @@ function ProvidersPage() {
         <Panel title="إضافة مزوّد" note="OpenAI-compatible API">
           <div className="space-y-3">
             <p className="rounded-md border border-success/30 bg-success/10 p-2 text-xs">نماذج المزوّد تظهر تلقائيًا في: مساحة العمل · Speed Build · المحادثة · المهام والمقارنة.</p>
+            <div className="flex flex-wrap gap-1.5">
+              {PROVIDER_PRESETS.map((p) => (
+                <button
+                  type="button"
+                  key={p.id}
+                  onClick={() => { setName(p.name); setBaseUrl(p.baseUrl); }}
+                  className={`rounded-md border px-2 py-1 text-[11px] ${baseUrl === p.baseUrl ? "border-primary bg-primary/10" : "border-border"}`}
+                >
+                  {p.name}
+                </button>
+              ))}
+            </div>
             <Field label="اسم المزوّد">
               <input
                 value={name}
@@ -178,17 +194,24 @@ function ProvidersPage() {
             }
           >
             <div className="mb-3 flex items-center gap-2 text-xs text-success">
-              <Server className="size-4" /> متصل
+              <Server className="size-4" /> متصل · {activeProviderModels(provider).length} مفعّل
             </div>
-            <div className="flex flex-wrap gap-2">
-              {provider.models.map((model) => (
-                <span
-                  key={model}
-                  className="rounded-md border border-border bg-background px-2 py-1 font-mono text-[11px]"
-                >
-                  {model}
-                </span>
-              ))}
+            <p className="mb-2 text-[11px] text-muted-foreground">اضغط على نموذج لتفعيله أو إيقافه. المفعّل فقط يظهر في مساحة العمل.</p>
+            <div className="flex max-h-64 flex-wrap gap-2 overflow-auto">
+              {provider.models.map((model) => {
+                const on = activeProviderModels(provider).includes(model);
+                return (
+                  <button
+                    type="button"
+                    key={model}
+                    aria-pressed={on}
+                    onClick={() => setProviderModelEnabled(provider.id, model, !on)}
+                    className={`rounded-md border px-2 py-1 font-mono text-[11px] ${on ? "border-success/40 bg-success/10 text-success" : "border-border bg-background text-muted-foreground"}`}
+                  >
+                    {on ? "✓ " : ""}{model}
+                  </button>
+                );
+              })}
             </div>
           </Panel>
         ))}

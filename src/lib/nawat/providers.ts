@@ -10,7 +10,33 @@ export type ProviderConfig = {
   models: string[];
   connected: boolean;
   updatedAt: string;
+  /** Models the user activated; undefined keeps the legacy "all models active". */
+  enabled?: string[];
 };
+
+/** Ready-made cloud providers (OpenAI-compatible). Local Ollama/NAWAT stay primary. */
+export const PROVIDER_PRESETS: Array<{ id: string; name: string; baseUrl: string }> = [
+  { id: "openrouter", name: "OpenRouter", baseUrl: "https://openrouter.ai/api/v1" },
+  { id: "openai", name: "OpenAI", baseUrl: "https://api.openai.com/v1" },
+  { id: "deepseek", name: "DeepSeek", baseUrl: "https://api.deepseek.com/v1" },
+  { id: "groq", name: "Groq", baseUrl: "https://api.groq.com/openai/v1" },
+  { id: "mistral", name: "Mistral", baseUrl: "https://api.mistral.ai/v1" },
+  { id: "together", name: "Together", baseUrl: "https://api.together.xyz/v1" },
+  { id: "gemini", name: "Google Gemini", baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai" },
+  { id: "xai", name: "xAI Grok", baseUrl: "https://api.x.ai/v1" },
+];
+
+export function activeProviderModels(provider: ProviderConfig): string[] {
+  return provider.enabled ? provider.models.filter((m) => provider.enabled!.includes(m)) : provider.models;
+}
+
+export function setProviderModelEnabled(id: string, model: string, on: boolean) {
+  const p = getProviders().find((x) => x.id === id);
+  if (!p) return;
+  const cur = new Set(activeProviderModels(p));
+  if (on) cur.add(model); else cur.delete(model);
+  saveProvider({ ...p, enabled: p.models.filter((m) => cur.has(m)) });
+}
 
 export type DevelopmentModel = {
   name: string;
@@ -173,7 +199,7 @@ export async function discoverProviderModels(baseUrl: string, apiKey: string): P
 
 export function providerModels(): OllamaModel[] {
   return getProviders().flatMap((provider) =>
-    provider.models.map((name) => ({
+    activeProviderModels(provider).map((name) => ({
       name,
       model: name,
       size: 0,
