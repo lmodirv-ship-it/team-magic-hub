@@ -188,7 +188,7 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
           files[t.file] = stripFence(out);
           await writeProjectFile(project, t.file, files[t.file]!);
           onWritten(); live(files[t.file]!, models[t.role]);
-          upd(i, { status: "done", output: files[t.file] });
+          upd(i, { status: "done", output: files[t.file] ?? "" });
         } catch (e) { upd(i, { status: "fail", output: (e as Error).message }); }
       }));
       const di = TEAM.length + 1;
