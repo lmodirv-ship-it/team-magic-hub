@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { useWorkspace } from "@/lib/nawat/workspace";
 import { PY_PACKS, notebook, pipfile, pyprojectToml, requirementsTxt } from "@/lib/nawat/python-libs";
+import { JS_ALL, JS_PACKS, FFMPEG_CLI, FFMPEG_HELPER, MEDIA_AI, MEDIA_SERVER, packageJson } from "@/lib/nawat/js-media-libs";
 
 const SKIP_DIRS = /(^|\/)(node_modules|\.git|dist|build|\.next|\.venv|__pycache__|\.cache)(\/|$)/;
 const TEXT_EXT =
@@ -57,6 +58,26 @@ const TEMPLATES: Record<string, (n: string) => Record<string, string>> = {
     [`${n}/requirements.txt`]: requirementsTxt(),
     [`${n}/pyproject.toml`]: pyprojectToml(n),
     [`${n}/Pipfile`]: pipfile(),
+  }),
+  "node-media": (n) => ({
+    [`${n}/README.md`]: `# ${n}\n\nFFmpeg (fluent-ffmpeg).\n\n    npm install\n    node converter.js audio video.mp4 audio.mp3\n`,
+    [`${n}/package.json`]: packageJson(n, [...JS_PACKS[0]!.pkgs], "converter.js"),
+    [`${n}/media.js`]: FFMPEG_HELPER,
+    [`${n}/converter.js`]: FFMPEG_CLI,
+  }),
+  "node-api": (n) => ({
+    [`${n}/README.md`]: `# ${n}\n\nAPI médias Express + FFmpeg.\n\n    npm install\n    npm start\n`,
+    [`${n}/package.json`]: packageJson(n, [...JS_PACKS[0]!.pkgs, ...JS_PACKS[1]!.pkgs], "server.js"),
+    [`${n}/media.js`]: FFMPEG_HELPER,
+    [`${n}/server.js`]: MEDIA_SERVER,
+  }),
+  "node-ai-media": (n) => ({
+    [`${n}/README.md`]: `# ${n}\n\nFFmpeg + IA locale.\n\n    npm install\n    node ai.js video.mp4\n`,
+    [`${n}/package.json`]: packageJson(n, JS_ALL.filter((p) => !p.startsWith("@ffmpeg/")), "ai.js"),
+    [`${n}/media.js`]: FFMPEG_HELPER,
+    [`${n}/converter.js`]: FFMPEG_CLI,
+    [`${n}/server.js`]: MEDIA_SERVER,
+    [`${n}/ai.js`]: MEDIA_AI,
   }),
 };
 
