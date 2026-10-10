@@ -161,11 +161,58 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
     toast.success("انتهى المنسّق");
   };
 
+  /** Coordinator → parallel HTML/CSS/JS builders → debugger fixes each file → reviewer notes. */
+  const runTeam = async () => {
+    if (!project) { toast.error("اختر مشروعًا أولًا"); return; }
+    if (!goal.trim()) { toast.error("اكتب الهدف"); return; }
+    setBusy(true);
+    const list: Role[] = [
+      { role: "coordinator", model: models.coordinator, task: "تقسيم المشروع وتحديد العقد بين الملفات", status: "run" },
+      ...TEAM.map((t) => ({ role: t.role, model: models[t.role], task: t.file, status: "wait" as const })),
+      { role: "debugger", model: models.debugger, task: "تصحيح الملفات مباشرة", status: "wait" },
+      { role: "reviewer", model: models.reviewer, task: "مراجعة الجودة", status: "wait" },
+    ];
+    setRoles(list);
+    const upd = (i: number, p: Partial<Role>) => setRoles((l) => l.map((x, j) => (j === i ? { ...x, ...p } : x)));
+    const live = (text: string, model: string) => window.dispatchEvent(new CustomEvent("nawat:stream", { detail: { text, model, started: Date.now(), done: true } }));
+    try {
+      const spec = await ask(models.coordinator,
+        "أنت المنسّق. اكتب مواصفات قصيرة للمشروع: الأقسام، أسماء الـ id والـ class، والدوال، حتى تتوافق ملفات index.html وstyle.css وapp.js. لا تكتب كودًا.", goal);
+      upd(0, { status: "done", output: spec });
+      const files: Record<string, string> = {};
+      await Promise.all(TEAM.map(async (t, k) => {
+        const i = k + 1;
+        upd(i, { status: "run" });
+        try {
+          const out = await ask(models[t.role], `أنت متخصص ${t.lang} فقط. اكتب محتوى الملف ${t.file} كاملًا داخل كتلة كود واحدة، دون شرح. index.html يربط style.css وapp.js.`, `الهدف: ${goal}\nالمواصفات:\n${spec}`);
+          files[t.file] = stripFence(out);
+          await writeProjectFile(project, t.file, files[t.file]!);
+          onWritten(); live(files[t.file]!, models[t.role]);
+          upd(i, { status: "done", output: files[t.file] });
+        } catch (e) { upd(i, { status: "fail", output: (e as Error).message }); }
+      }));
+      const di = TEAM.length + 1;
+      upd(di, { status: "run" });
+      const all = Object.entries(files).map(([f, c]) => `--- ${f}\n${c}`).join("\n\n");
+      for (const [f, c] of Object.entries(files)) {
+        const fixed = stripFence(await ask(models.debugger, `أنت المصحّح. أصلح الأخطاء وعدم التوافق في ${f} مع بقية الملفات. أعد الملف كاملًا داخل كتلة كود واحدة.`, `${all}\n\nالملف المطلوب: ${f}\n${c}`));
+        if (fixed.length > 20) { await writeProjectFile(project, f, fixed); files[f] = fixed; live(fixed, models.debugger); }
+      }
+      onWritten();
+      upd(di, { status: "done", output: "صُحّحت: " + Object.keys(files).join("، ") });
+      upd(di + 1, { status: "run" });
+      const review = await ask(models.reviewer, "أنت المراجع. قيّم الجودة من 10 واذكر أهم 5 ملاحظات باختصار.", Object.entries(files).map(([f, c]) => `--- ${f}\n${c}`).join("\n\n"));
+      upd(di + 1, { status: "done", output: review });
+      toast.success("أنجز الفريق المشروع");
+    } catch (e) { toast.error((e as Error).message); }
+    setBusy(false);
+  };
+
   return (
     <Panel title="النموذج المنسّق" note={project ? `المشروع: ${project}` : "اختر مشروعًا"}>
       <div className="grid gap-2 sm:grid-cols-4">
         {(Object.keys(DEFAULT_ROLES) as (keyof typeof DEFAULT_ROLES)[]).map((k) => (
-          <label key={k} className="text-xs text-muted-foreground">{({ coordinator: "المنسّق", planner: "المخطط", coder: "المبرمج", reviewer: "المراجع" })[k]}
+          <label key={k} className="text-xs text-muted-foreground">{ROLE_LABELS[k]}
             <input className="control font-mono text-xs" dir="ltr" value={models[k]} onChange={(e) => setModel(k, e.target.value)} />
           </label>
         ))}
