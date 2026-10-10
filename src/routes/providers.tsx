@@ -60,12 +60,13 @@ function ProvidersPage() {
           models,
           connected: true,
           updatedAt: new Date().toISOString(),
+          enabled: [],
         },
         apiKey,
       );
       setName("");
       setApiKey("");
-      setNotice(`تم الاتصال وإضافة ${models.length} نموذج.`);
+      setNotice(`تم الاتصال: ${models.length} نموذج — فعّل ما تريد أدناه.`);
     } catch (error) {
       setNotice((error as Error).message);
     } finally {
