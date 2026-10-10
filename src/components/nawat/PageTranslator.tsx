@@ -11,13 +11,13 @@ const KEYS = Object.keys(D).sort((a, b) => b.length - a.length);
 const AR = /[\u0600-\u06FF]/;
 const ATTRS = ["title", "placeholder", "aria-label"] as const;
 const SKIP = ".monaco-editor, .xterm, pre, code, textarea, [contenteditable='true'], [data-no-translate]";
-const cache: Record<string, Map<string, string>> = { fr: new Map(), en: new Map() };
+const cache = { fr: new Map<string, string>(), en: new Map<string, string>() };
 const origText = new WeakMap<Text, string>();
 const origAttr = new WeakMap<Element, Record<string, string>>();
 
 function tr(s: string, l: Lang): string {
   if (l === "ar" || !AR.test(s)) return s;
-  const c = cache[l];
+  const c = cache[l as "fr" | "en"];
   const hit = c.get(s);
   if (hit !== undefined) return hit;
   const core = s.trim();
@@ -28,7 +28,7 @@ function tr(s: string, l: Lang): string {
   else if (D[core]) out = s.replace(core, D[core][i]);
   else {
     out = s;
-    for (const k of KEYS) if (out.includes(k)) out = out.split(k).join(D[k][i]);
+    for (const k of KEYS) if (out.includes(k)) out = out.split(k).join(D[k]?.[i] ?? k);
   }
   c.set(s, out);
   return out;
@@ -72,12 +72,10 @@ export function PageTranslator() {
       walk(n, lang);
       busy = false;
     };
-    run(document.body);
     const docTitle = () => {
       const t = document.title;
       if (AR.test(t) && lang !== "ar") document.title = tr(t, lang);
     };
-    docTitle();
     const mo = new MutationObserver((ms) => {
       if (busy) return;
       for (const m of ms) {
@@ -90,14 +88,22 @@ export function PageTranslator() {
       }
       docTitle();
     });
-    mo.observe(document.body, {
+    // Wait for hydration to finish before touching the page.
+    const start = window.setTimeout(() => {
+      run(document.body);
+      docTitle();
+      mo.observe(document.body, {
       subtree: true,
       childList: true,
       characterData: true,
       attributes: true,
       attributeFilter: [...ATTRS],
-    });
-    return () => mo.disconnect();
+      });
+    }, 900);
+    return () => {
+      window.clearTimeout(start);
+      mo.disconnect();
+    };
   }, [lang]);
   return null;
 }
