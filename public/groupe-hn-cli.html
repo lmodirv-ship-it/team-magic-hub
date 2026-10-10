@@ -33,7 +33,7 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:24px}
 </head>
 <body>
 <header>
-<h1><span class="ar">Groupe-HN</span> — CLI + MCP <span class="badge ok">v1.1.0</span></h1>
+<h1><span class="ar">Groupe-HN</span> — CLI + MCP <span class="badge ok">v2.2.0</span></h1>
 <p class="sub" data-ar="التحكم الكامل بالمنصة من سطر الأوامر ومساعدي الذكاء الاصطناعي — نماذج نواة" data-fr="Contrôle total de la plateforme depuis le terminal et les assistants IA — modèles noyau"></p>
 <div class="langbar"><button id="bAr" class="on" onclick="setLang('ar')">العربية</button><button id="bFr" onclick="setLang('fr')">Français</button></div>
 </header>
@@ -44,6 +44,8 @@ footer{text-align:center;color:var(--mut);font-size:12px;padding:24px}
 <a href="#mcp" data-ar="أدوات MCP" data-fr="Outils MCP"></a>
 <a href="#models" data-ar="نماذج نواة" data-fr="Modèles noyau"></a>
 <a href="#ex" data-ar="أمثلة" data-fr="Exemples"></a>
+<a href="#links" data-ar="الروابط" data-fr="Liens"></a>
+<a href="#dev" data-ar="تطورات 09/10" data-fr="Nouveautés"></a>
 </nav>
 <main>
 
@@ -86,8 +88,17 @@ groupe-hn doctor</pre>
 <div class="grid" id="exGrid"></div>
 </section>
 
+<section id="links"><h2 data-ar="7) الروابط الكاملة — السيرفران" data-fr="7) Liens complets — deux serveurs"></h2>
+<table><thead><tr><th data-ar="الرابط" data-fr="Lien"></th><th data-ar="الشرح" data-fr="Description"></th><th data-ar="السيرفر" data-fr="Serveur"></th></tr></thead><tbody id="linkBody"></tbody></table>
+</section>
+
+<section id="dev"><h2 data-ar="8) تطورات 09/10/2026 — الإنتاج الحقيقي" data-fr="8) Nouveautés — production réelle"></h2>
+<p data-ar="كل ما أُضيف بعد التحليل: تدريب LoRA حقيقي، نماذج جديدة، صفحات وقدرات." data-fr="Ajouts après analyse : entraînement LoRA réel, nouveaux modèles, pages et capacités."></p>
+<table><thead><tr><th data-ar="التطور" data-fr="Nouveauté"></th><th data-ar="التفاصيل" data-fr="Détails"></th><th data-ar="الأمر / المسار" data-fr="Commande"></th></tr></thead><tbody id="devBody"></tbody></table>
+</section>
+
 </main>
-<footer>Groupe-HN · NAWAT Studio · CLI v1.1.0 · <span data-ar="صفر اعتماديات — Node 18+" data-fr="Zéro dépendance — Node 18+"></span></footer>
+<footer>Groupe-HN · NAWAT Studio · CLI v2.2.0 · <span data-ar="صفر اعتماديات — Node 18+" data-fr="Zéro dépendance — Node 18+"></span></footer>
 
 <script>
 let LANG='ar';
@@ -116,7 +127,14 @@ const CLI=[
 ["chat <model> <نص> [--think] [--max-tokens N] [--temperature T]",{ar:"سؤال نموذج عبر Ollama مباشرة",fr:"Question modèle via Ollama direct"},"nawat chat qwen3:4b مرحبا"],
 ["bchat [model] <نص> [--think]",{ar:"سؤال عبر الجسر — يعمل عن بُعد (Relay)",fr:"Via bridge — à distance (Relay)"},"nawat bchat مرحبا"],
 ["compare <m1> <m2> [نص]",{ar:"مقارنة نموذجين على نفس السؤال",fr:"Comparer 2 modèles, même question"},"nawat compare r16 r17"],
-["image <وصف> [--width W --height H --steps S --out f.png]",{ar:"توليد صورة عبر ComfyUI",fr:"Générer image via ComfyUI"},"nawat image قطة --out cat.png"],
+["image <وصف> [--out ملف]",{ar:"توليد صورة عبر السحابة (Muse Image — مدفوعة)",fr:"Générer image via cloud (Muse Image — payant)"},"nawat image زليج مغربي --out z.png"],
+["image <وصف> [--width W --height H --steps S --out f.png]",{ar:"توليد صورة عبر ComfyUI المحلي",fr:"Générer image via ComfyUI local"},"nawat image قطة --out cat.png"],
+["pic <وصف> [--dir مجلد]",{ar:"توليد ComfyUI + تقييم رؤيا تلقائي qwen2.5vl يعيد التوليد عند أقل من 3/5",fr:"ComfyUI + jury vision auto (régénère si < 3/5)"},"nawat pic صياد الصويرة"],
+["code [--team] [--model M] <المهمة>",{ar:"وكيل متكامل: ملفات/بناء/تدقيق/نشر — الفريق يوزع ويراجع",fr:"Agent complet : fichiers/build/audit/deploy — équipe + relecture"},"nawat code --team --model nawat-fast ابن موقعا"],
+["cchat",{ar:"قناة الوكيل: JSON عبر stdin (النموذج + الرسائل)",fr:"Canal agent : JSON via stdin"},"echo {…} | nawat cchat"],
+["cloud on|off|status",{ar:"السحابة (مفتاح البرنامج، سياق 1M) أو المحلي المجاني",fr:"Cloud (clé, ctx 1M) ou local gratuit"},"nawat cloud status"],
+["worktree add <فرع> | list | remove",{ar:"عزل التغييرات git worktree",fr:"Isoler changements git worktree"},"nawat worktree add feat-x"],
+["ci init [--dir D]",{ar:"توليد GitHub Action يشغّل الوكيل",fr:"Générer Action GitHub pour l'agent"},"nawat ci init"],
 ["queue / stats / datasets / logs [--tail N]",{ar:"طابور المصنع / إحصائيات / مجموعات / سجلات",fr:"File factory / stats / datasets / logs"},"nawat logs --tail 50"],
 ["train --teacher X --version v18 [--type ...]",{ar:"إضافة مهمة تدريب",fr:"Ajouter tâche entraînement"},"nawat train --teacher nawat-think:v17-anon --version v18"],
 ["deploy <version> / test-teacher / task-rm / queue-clear",{ar:"نشر / اختبار معلم / حذف مهمة / تفريغ",fr:"Déployer / tester prof / supprimer / vider"},"nawat deploy v18"],
@@ -185,6 +203,13 @@ const CORE=[
 ["nawat-mm:1.5b-r5","3.10 GB",{ar:"متعدد الوسائط",fr:"Multimodal"}],
 ["nawat-cloud / test / review / web / max / gold / v40 / v41","2.50-4.70 GB",{ar:"إصدارات بيئية",fr:"Versions environnements"}],
 ["nawat-10000 / r31-vps","1.10 GB",{ar:"نسخ خوادم",fr:"Versions serveurs"}],
+["nawat-fast:r1","986 MB",{ar:"أول إنتاج HN حقيقي: LoRA 20 خطوة + Q4",fr:"1re production HN : LoRA + Q4"}],
+["nawat-fast:r2 (V16)","986 MB",{ar:"الجيل الثاني: LoRA 100 خطوة + ترسيم نسبي 17.7%",fr:"Génération 2 : LoRA 100 + promo relative"}],
+["nawat-cloud:r1","986 MB",{ar:"أول نواة مدربة: LoRA 30 خطوة على كل الدفعات",fr:"1er noyau entraîné : LoRA 30"}],
+["nawat-judge / sec / translate / arab","986 MB",{ar:"حكم · أمن · ترجمة FR/AR · فصحى (سياق 32k)",fr:"Juge · sécu · trad · arabe (ctx 32k)"}],
+["nawat-arch","1.90 GB",{ar:"معمارية ADR + Mermaid (سياق 32k)",fr:"Archi ADR + Mermaid (ctx 32k)"}],
+["nawat-care / video / audio","986 / 986 / 397 MB",{ar:"صيانة مواقع · سكريبتات (7 أنماط + 7 عناصر) · صوت",fr:"Maintenance · scripts (7 styles) · audio"}],
+["nawat-v40-coder V40 / v41-think / v45-memory","4.70 / 2.50 / 1.10 GB",{ar:"متخصصات القطار (v42 رؤية موقوفة مؤقتا)",fr:"Spécialistes du pipeline"}],
 ];
 const OTHER=[
 ["qwen2.5-coder:7b / :1.5b","4.70 GB / 986 MB",{ar:"قاعدة البرمجة",fr:"Base du code"}],
@@ -225,11 +250,68 @@ const COMPARE=[
 [{ar:"أقصى جودة بلا حدود",fr:"Qualité max"}, "nemotron-3-nano 24GB","qwen3.5:9b","يحتاج VRAM ضخمة"],
 [{ar:"SQL",fr:"SQL"},"nawat-sql 2.3GB","nawat-code","—"],
 ];
+const LINKS=[
+["http://192.168.100.67:8084/",{ar:"الاستوديو الكامل + كل الصفحات",fr:"Studio complet + toutes les pages"},{ar:".67",fr:".67"}],
+["http://192.168.100.67:8084/ledger",{ar:"سجل الميزات #021-#040 وفحص البقاء",fr:"Registre features + survie"},{ar:".67",fr:".67"}],
+["http://192.168.100.67:8084/docs/groupe-hn-cli.html",{ar:"هذه الصفحة (التوثيق)",fr:"Cette page (docs)"},{ar:".67",fr:".67"}],
+["http://192.168.100.67:8788/api/health",{ar:"صحة الجسر: Ollama وComfyUI",fr:"Santé bridge"},{ar:".67",fr:".67"}],
+["http://192.168.100.67:8788/api/models",{ar:"نماذج السيرفر",fr:"Modèles serveur"},{ar:".67",fr:".67"}],
+["http://192.168.100.67:11434",{ar:"Ollama مباشرة",fr:"Ollama direct"},{ar:".67",fr:".67"}],
+["http://192.168.100.66:8085/",{ar:"الاستوديو (نسخة .66)",fr:"Studio (copie .66)"},{ar:".66",fr:".66"}],
+["http://192.168.100.66:8788/api/health",{ar:"صحة جسر .66",fr:"Santé bridge .66"},{ar:".66",fr:".66"}],
+["http://192.168.100.66:8795/api/models",{ar:"جسر المنصة: النماذج",fr:"Bridge plateforme : modèles"},{ar:".66",fr:".66"}],
+["http://192.168.100.66:8795/api/stats",{ar:"جسر المنصة: الإحصائيات",fr:"Bridge plateforme : stats"},{ar:".66",fr:".66"}],
+["http://192.168.100.66:11434",{ar:"Ollama .66 مباشرة",fr:"Ollama .66 direct"},{ar:".66",fr:".66"}],
+["https://bridge.nawat.pro",{ar:"الجسر العام",fr:"Bridge public"},{ar:"عام",fr:"public"}],
+["https://nawat.groupe-hn.com",{ar:"المنصة الرسمية",fr:"Plateforme officielle"},{ar:"عام",fr:"public"}],
+["https://hn-ai.site",{ar:"نسخة hn-ai.site (213.156.133.94)",fr:"Copie hn-ai.site"},{ar:"عام",fr:"public"}],
+["https://hn-ai.site/bridge",{ar:"جسر hn-ai.site للمزامنة",fr:"Bridge hn-ai.site (sync)"},{ar:"عام",fr:"public"}],
+["https://hn-ai.site/api/public/relay",{ar:"قناة الوكيل الصادرة (cloud-agent) — بلا فتح منافذ",fr:"Relais sortant (cloud-agent)"},{ar:"عام",fr:"public"}],
+["https://hn-ai.site/comfy-hn",{ar:"ComfyUI السيرفر المحمي",fr:"ComfyUI serveur protégé"},{ar:"عام",fr:"public"}],
+["https://www.nawat-group.com/bridge",{ar:"جسر nawat-group.com للمزامنة",fr:"Bridge nawat-group.com"},{ar:"عام",fr:"public"}],
+["http://192.168.100.67:8789",{ar:"المصنع (تدريب النماذج)",fr:"Usine (entraînement)"},{ar:".67",fr:".67"}],
+["http://127.0.0.1:8188",{ar:"ComfyUI على حاسوبي — إنتاج سريع",fr:"ComfyUI local"},{ar:"محلي",fr:"local"}],
+["http://192.168.2.4:8188",{ar:"ComfyUI على GPU المحلي",fr:"ComfyUI GPU LAN"},{ar:"محلي",fr:"local"}],
+];
 const EX=[
 [{ar:"فحص صباحي",fr:"Check matinal"},"groupe-hn doctor && groupe-hn queue"],
 [{ar:"نموذج جديد للخدمة",fr:"Nouveau modèle"} ,"nawat ghn sync --model m.gguf\nnawat models | grep m.gguf"],
 [{ar:"جسر للمنصة",fr:"Bridge plateforme"},"groupe-hn bridge --port 8795"],
 [{ar:"مساعد ذكي مربوط",fr:"Assistant connecté"},"nawat serve mcp  # ثم إعداد Claude/Cursor من /mcp"],
+[{ar:"صورة بتقييم ذاتي",fr:"Image auto-évaluée"},"nawat pic صياد الصويرة فجرا  # ComfyUI + حكم رؤيا حتى 3/5"],
+[{ar:"موقع بالفريق",fr:"Site par l'équipe"},"nawat code --team --model nawat-fast:r2 ابن صفحة هبوط"],
+[{ar:"تدريب + ترسيم نسبي",fr:"Entraînement + promo"},"python scripts/nightly.py --config config/prod-fast.yaml --only nawat-fast --max-steps 100"],
+[{ar:"تعدين بيانات SFT",fr:"Miner des données"},"python scripts/mine_sft.py  # 328 ← 668 سطر"],
+];
+const DEV=[
+[{ar:"أول ترسيم حقيقي",fr:"1re vraie promotion"},"nawat-fast V15 ← V16 (تحسن 17.7% — LoRA 100 خطوة، loss 3.65←1.64)","registry/models.json"],
+[{ar:"الترسيم النسبي",fr:"Promotion relative"},"تحسن ≥3% عن أحسن نتيجة يرقّي (للصغار تحت العتبة 0.30)","config: eval.relative_factor 0.97"],
+[{ar:"إكمال الجلسات",fr:"Reprise session"},"تقييم+ترسيم+تقرير في عملية جديدة (يفصل ذاكرة التدريب)","scripts/eval_session.py <run_dir>"],
+[{ar:"الفحص المسبق",fr:"Pré-vol"},"يتحقق من القاعدة محليًا قبل التدريب (يفشل بثوانٍ بدل 26 دقيقة)","step03_train.py"],
+[{ar:"تعدين SFT",fr:"Mining SFT"},"مواقع publish + إعادة صياغة عبر nawat-fast: 328 ← 668 سطر","scripts/mine_sft.py"],
+[{ar:"حلقة الصور",fr:"Boucle images"},"توليد DreamShaper + حكم qwen2.5vl:3b (5/5 من أول محاولة)","nawat pic …"],
+[{ar:"سياق 32k",fr:"Contexte 32k"},"كل النماذج الجديدة + fast/r1/r2 من 8k إلى 32768","Modelfiles"],
+[{ar:"كاش G: الثابت",fr:"Cache G: stable"},"الهجرة من J: المتقطع (يفصل mid-run) إلى G: + setx دائم","run_weekly.bat"],
+[{ar:"صفحات جديدة",fr:"Nouvelles pages"},"/schedule (مهام ساعة/يوم/أسبوع) + /plugins (توليد ذاتي) + 🎯 وضع التصميم","ActivityBar"],
+[{ar:"دفعة Java",fr:"Lot Java"},"20 تقنية Java تدخل التدريب (v46_java)","data/raw/v46_java.jsonl"],
+[{ar:"أرشيف J",fr:"Archive J"},"64 نموذجًا + adapters + GGUFs (~49GB) — يتسنى رجوع القرص","J:/09102026 + J:/model"],
+[{ar:"قاعدة bnb المسمومة",fr:"Règle anti-bnb"},"لا تكميم bitsandbytes تحت 5.5GB حرة (موت torch_cpu.dll)","step03 + step04"],
+[{ar:"مختبر النماذج",fr:"Labo modèles"},"صفحة /model-lab: جدول (تخصص/قوة/سرعة/تدريبات/حجم/سياق) + 3 مبيانات حية تتحدث تلقائيًا","src/routes/model-lab.tsx"],
+[{ar:"تخصص حقيقي",fr:"Spécialisation réelle"},"ربط config.paths.data_raw بخط الدفعات: كل متخصص بمجلده (raw-fast: 25 مثال كود+هوية)","step02_prepare + raw-fast/raw-cloud"],
+[{ar:"جلسة 10 نماذج",fr:"Session 10 modèles"},"تدريب كامل على G: (10/10 بلا موت) — كشف التخصص الوهمي: نفس البيانات = نفس الأوزان","runs/2026-10-09_231750/report.md"],
+[{ar:"تنظيف r19",fr:"Nettoyage r19"},"تحليل r19-f16 (7.5GB): بلا هوية HN + بطيء → حذف → I: من 0 إلى 19GB","I:/Intel + ollama rm r19-test"],
+[{ar:"نسخة J:model",fr:"Copie J:model"},"75 نموذجًا كل بمجلده (Modelfile+info) + GGUFs المحلية — يتسنى رجوع قرص J","J:/model"],
+[{ar:"السياق الموحد",fr:"Contexte unifié"},"32k لكل الجديد + fast/r1/r2 (مؤكد num_ctx) — 100k عبر RAG والمليون سحابة","Modelfiles"],
+[{ar:"مزامنة 5 نسخ",fr:"Sync 5 copies"},"SYNC_PEERS: .67:8788 + .66:8085 + hn-ai.site + nawat-group.com — تُحفظ في الإعدادات وتُرسل مع «مزامنة الكل»","/settings → ربط الجسور"],
+[{ar:"الوكيل الصادر",fr:"Agent sortant"},"السيرفر المحلي يسحب المهام من hn-ai.site — لا منافذ ولا IP عام","RELAY_URL=… pm2 start bridge/cloud-agent.mjs"],
+[{ar:"الحفظ المزدوج",fr:"Double sauvegarde"},"إعدادات nawat.* على الجهاز + /data/nawat-config.json على السيرفر (بلا أسرار، استرجاع إضافي)","POST /api/config"],
+[{ar:"المنسق + خطوات التنفيذ",fr:"Orchestrateur"},"Speed Build: نموذج منسق يخطط ≤5 خطوات ثم المتخصص يكتب الكود — جدول خطوات قابل للسحب","/speed-build"],
+[{ar:"SOUK-HN",fr:"SOUK-HN"},"5 عائلات نماذج، فحص بنقرة وتعيين افتراضي لكل بيئة","/souk-hn"],
+[{ar:"المراقبة الذاتية",fr:"Watchdog"},"فحص كل 30 ثانية: Ollama والجسر والمصنع وComfyUI 8188–8192 مع أمر إصلاح","/watchdog"],
+[{ar:"ComfyUI متعدد",fr:"ComfyUI multi"},"عدة منافذ/روابط: حاسوبي، GPU المحلي، السيرفر المحمي","/comfyui"],
+[{ar:"تكبير الجداول",fr:"Tables redimensionnables"},"سحب أعمدة كل جدول في كل الصفحات بالفأرة، محفوظ لكل صفحة","TableResizeLayer"],
+[{ar:"بلا جسر",fr:"Sans bridge"},"46 نموذجًا مدمجًا — تعمل مباشرة مع Ollama حتى دون جسر","embedded-models"],
+[{ar:"روابط في الإعدادات",fr:"Liens dans réglages"},"لوحة «روابط الخوادم» في الإعدادات: فتح ونسخ كل رابط","/settings"],
 ];
 function row(cells){return "<tr>"+cells.map(c=>"<td>"+c+"</td>").join("")+"</tr>";}
 function render(){
@@ -243,6 +325,8 @@ document.getElementById("othBody").innerHTML=OTHER.map(m=>row([`<code class="cmd
 document.getElementById("capBody").innerHTML=CAPS.map(c=>row([`<code class="cmd">nawat-${c[0]}</code>`,T(c[1]),c[2],c[3],c[4],c[5],c[6],c[7]])).join("");
 document.getElementById("cmpBody").innerHTML=COMPARE.map(c=>row([T(c[0]),`<code class="cmd">${c[1]}</code>`,`<code class="cmd">${c[2]}</code>`,c[3]??"—"])).join("");
 document.getElementById("exGrid").innerHTML=EX.map(e=>`<div class="card"><h3>${T(e[0])}</h3><pre>${e[1]}</pre></div>`).join("");
+document.getElementById("devBody").innerHTML=DEV.map(d=>row([T(d[0]),T(d[1]),`<code class="cmd">${d[2]}</code>`])).join("");
+document.getElementById("linkBody").innerHTML=LINKS.map(l=>row([`<a href="${l[0]}" dir="ltr" style="color:#7dd3fc;font-family:Consolas,monospace;font-size:12px">${l[0]}</a>`,T(l[1]),T(l[2])])).join("");
 document.getElementById("bAr").classList.toggle("on",LANG==="ar");
 document.getElementById("bFr").classList.toggle("on",LANG==="fr");
 }
