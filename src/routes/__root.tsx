@@ -130,9 +130,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="ar" dir="rtl">
+    <html lang="fr" dir="ltr" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: `try{var l=localStorage.getItem("nawat.lang.v1")||"fr";document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr"}catch(e){}` }} />
       </head>
       <body>
         {children}

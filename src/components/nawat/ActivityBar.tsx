@@ -23,6 +23,7 @@ import {
   GitMerge,
   Zap,
 } from "lucide-react";
+import { useLang } from "@/lib/nawat/i18n";
 
 const items = [
   { to: "/", icon: LayoutDashboard, label: "نظرة عامة" },
@@ -55,6 +56,7 @@ const items = [
 ] as const;
 
 export function ActivityBar() {
+  const { t } = useLang();
   const path = useRouterState({ select: (r) => r.location.pathname });
   return (
     <nav className="flex w-[68px] shrink-0 flex-col items-center border-e border-border bg-rail py-3">
@@ -66,7 +68,8 @@ export function ActivityBar() {
         <img src="/nawat-logo.jpg" alt="شعار نواة الرئيسي" className="size-full object-cover" />
       </Link>
       <div className="flex min-h-0 flex-1 flex-col gap-1 overflow-y-auto px-2">
-        {items.map(({ to, icon: Icon, label }) => {
+        {items.map(({ to, icon: Icon, label: raw }) => {
+          const label = t(raw);
           const active =
             to === "/"
               ? path === "/"
