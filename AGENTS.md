@@ -14,6 +14,7 @@
 - Load Monaco and its workers client-side from the installed package, not a CDN, so workspace editing remains local and SSR avoids browser-only CSS imports.
 - Keep browser workspace persistence explicitly distinct from desktop filesystem writes; browser storage cannot guarantee atomic disk writes or unlimited recovery.
 - Render the workspace terminal with local xterm.js and route browser commands only through the bridge's documented SSH exec endpoint; do not present one-shot HTTP execution as a persistent PTY session.
+- Gate recurring terminal connection notices by connection condition and reset on recovery; prevent overlapping probes so periodic checks do not flood terminal output.
 - Cloud relay: phone/site submit jobs to /api/public/relay; bridge/cloud-agent.mjs on the LAN server pulls them outbound — no inbound ports or tunnels needed.
 - Bridge connection settings use the versioned shared profile in bridge-config.ts; relay secrets remain in device-only storage and are excluded from exports.
 - Live status uses LAN WebSocket only on non-secure local pages and same-origin polling on HTTPS, because browsers block insecure WebSocket from secure pages.
