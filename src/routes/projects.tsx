@@ -10,6 +10,7 @@ import {
   setActiveProject, writeProjectFile, type ProjectFile, type ServerProject,
 } from "@/lib/nawat/projects";
 import { cn } from "@/lib/utils";
+import { getBgBuild, startBgBuild, subscribeBgBuild, type BgBuild } from "@/lib/nawat/bg-build";
 
 export const Route = createFileRoute("/projects")({
   staticData: { sitemap: true },
@@ -184,52 +185,18 @@ function Orchestrator({ project, onWritten }: { project: string; onWritten: () =
     toast.success("انتهى المنسّق");
   };
 
-  /** Coordinator → parallel HTML/CSS/JS builders → debugger fixes each file → reviewer notes. */
-  const runTeam = async () => {
+  /** Coordinator → parallel builders → debugger → reviewer, running in the background (continues across pages). */
+  const runTeam = () => {
     if (!project) { toast.error("اختر مشروعًا أولًا"); return; }
     if (!goal.trim()) { toast.error("اكتب الهدف"); return; }
-    setBusy(true);
-    const list: Role[] = [
-      { role: "coordinator", model: models.coordinator, task: "تقسيم المشروع وتحديد العقد بين الملفات", status: "run" },
-      ...builders.map((t) => ({ role: t.id, model: t.model, task: t.file, status: "wait" as const })),
-      { role: "debugger", model: models.debugger, task: "تصحيح الملفات مباشرة", status: "wait" },
-      { role: "reviewer", model: models.reviewer, task: "مراجعة الجودة", status: "wait" },
-    ];
-    setRoles(list);
-    const upd = (i: number, p: Partial<Role>) => setRoles((l) => l.map((x, j) => (j === i ? { ...x, ...p } : x)));
-    const live = (text: string, model: string) => window.dispatchEvent(new CustomEvent("nawat:stream", { detail: { text, model, started: Date.now(), done: true } }));
-    try {
-      const spec = await ask(models.coordinator,
-        `أنت المنسّق. اكتب مواصفات قصيرة للمشروع: الأقسام، أسماء الـ id والـ class، والدوال، والجداول والمسارات، حتى تتوافق هذه الملفات: ${builders.map((b) => b.file).join("، ")}. لا تكتب كودًا.`, goal);
-      upd(0, { status: "done", output: spec });
-      const files: Record<string, string> = {};
-      await Promise.all(builders.map(async (t, k) => {
-        const i = k + 1;
-        upd(i, { status: "run" });
-        try {
-          const out = await ask(t.model, `أنت متخصص ${t.lang} فقط. اكتب محتوى الملف ${t.file} كاملًا داخل كتلة كود واحدة، دون شرح. ملفات المشروع: ${builders.map((b) => b.file).join("، ")} — اربط بينها بشكل صحيح.`, `الهدف: ${goal}\nالمواصفات:\n${spec}`);
-          files[t.file] = stripFence(out);
-          await writeProjectFile(project, t.file, files[t.file]!);
-          onWritten(); live(files[t.file]!, t.model);
-          upd(i, { status: "done", output: files[t.file] ?? "" });
-        } catch (e) { upd(i, { status: "fail", output: (e as Error).message }); }
-      }));
-      const di = builders.length + 1;
-      upd(di, { status: "run" });
-      const all = Object.entries(files).map(([f, c]) => `--- ${f}\n${c}`).join("\n\n");
-      for (const [f, c] of Object.entries(files)) {
-        const fixed = stripFence(await ask(models.debugger, `أنت المصحّح. أصلح الأخطاء وعدم التوافق في ${f} مع بقية الملفات. أعد الملف كاملًا داخل كتلة كود واحدة.`, `${all}\n\nالملف المطلوب: ${f}\n${c}`));
-        if (fixed.length > 20) { await writeProjectFile(project, f, fixed); files[f] = fixed; live(fixed, models.debugger); }
-      }
-      onWritten();
-      upd(di, { status: "done", output: "صُحّحت: " + Object.keys(files).join("، ") });
-      upd(di + 1, { status: "run" });
-      const review = await ask(models.reviewer, "أنت المراجع. قيّم الجودة من 10 واذكر أهم 5 ملاحظات باختصار.", Object.entries(files).map(([f, c]) => `--- ${f}\n${c}`).join("\n\n"));
-      upd(di + 1, { status: "done", output: review });
-      toast.success("أنجز الفريق المشروع");
-    } catch (e) { toast.error((e as Error).message); }
-    setBusy(false);
+    const ok = startBgBuild({ project, goal, builders: builders.map((b) => ({ id: b.id, file: b.file, lang: b.lang, model: b.model })), coordinator: models.coordinator, debugger: models.debugger, reviewer: models.reviewer });
+    if (!ok) toast.error("بناء آخر يعمل في الخلفية");
   };
+  useEffect(() => {
+    const show = (s: BgBuild | null) => { if (s && s.project === project) { setRoles(s.roles); if (!s.running) onWritten(); } };
+    show(getBgBuild());
+    return subscribeBgBuild(show);
+  }, [project, onWritten]);
 
   return (
     <Panel title="النموذج المنسّق" note={project ? `المشروع: ${project}` : "اختر مشروعًا"}>
