@@ -23,6 +23,7 @@ import { DepthGallery } from "@/components/nawat/DepthGallery";
 import { PlatformGallery } from "@/components/nawat/PlatformGallery";
 import { PageHead } from "@/components/nawat/StudioViews";
 import { SyncPeersSettings } from "@/components/nawat/SyncPeersSettings";
+import { ServerLinksSettings } from "@/components/nawat/ServerLinksSettings";
 import {
   isDesktop,
   modelPrefix,
@@ -407,6 +408,9 @@ function SettingsPage() {
       <div className="mt-4 grid gap-4 xl:grid-cols-2">
         <Panel title="ربط الجسور للمزامنة (SYNC_PEERS)" note="يُحفظ تلقائيًا — يربط جسر حاسوبك بجسر السيرفر">
           <SyncPeersSettings />
+        </Panel>
+        <Panel title="روابط الخوادم (دليل Groupe-HN v2.2)" note="فتح ونسخ كل رابط">
+          <ServerLinksSettings />
         </Panel>
         <Panel title="خوادم النماذج وComfyUI ومجلد النماذج" note="يُحفظ تلقائيًا عند كل تغيير">
           <ServerModelSettings />
