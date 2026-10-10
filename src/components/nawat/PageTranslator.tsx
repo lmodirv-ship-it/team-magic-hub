@@ -52,16 +52,24 @@ export function PageTranslator() {
     };
     // Lazy route boundaries may hydrate after the root effect. Wait for route settlement,
     // without depending on a window load event which might already have fired.
-    let timer = window.setTimeout(() => { walk(document.body, lang); translateTitle(); }, 1200);
-    const observer = new MutationObserver((mutations) => {
-      if (!mutations.length) return;
-      window.clearTimeout(timer);
-      timer = window.setTimeout(() => { walk(document.body, lang); translateTitle(); }, 1200);
-    });
-    observer.observe(document.body, {
+    const options = {
       subtree: true, childList: true, characterData: true,
       attributes: true, attributeFilter: [...ATTRS],
+    };
+    const observer = new MutationObserver((mutations) => {
+      observer.disconnect();
+      for (const mutation of mutations) {
+        if (mutation.type === "childList") mutation.addedNodes.forEach((node) => walk(node, lang));
+        else walk(mutation.target, lang);
+      }
+      translateTitle();
+      observer.observe(document.body, options);
     });
+    const timer = window.setTimeout(() => {
+      walk(document.body, lang);
+      translateTitle();
+      observer.observe(document.body, options);
+    }, 1200);
     return () => { window.clearTimeout(timer); observer.disconnect(); };
   }, [lang, loading]);
   return null;
