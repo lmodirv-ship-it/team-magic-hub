@@ -40,4 +40,4 @@
 - [ ] ComfyUI على 213.156.132.166 لا يجيب بعد تسجيل الدخول — يحتاج تشغيله على ذلك الجهاز
 - [x] تجربة مستخدم /workspace: طي اللوحات (Ctrl+B / Ctrl+J / Ctrl+`)، وضع التركيز، حفظ المقاسات، لوحة الاختصارات، أوامر طرفية إنجليزية (#081-#090)
 - [ ] رفع نسخة /workspace المحدّثة إلى hn-ai.site عند طلب المستخدم
-- [ ] Car platform UX test on 213.156.133.94 (speed+quality)
+- [x] Car platform UX test on 213.156.133.94 — result: 0.27 tok/s, queue full; server too busy for code generation
