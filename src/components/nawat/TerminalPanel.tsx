@@ -20,6 +20,7 @@ export function TerminalPanel() {
   const lineRef = useRef("");
   const historyRef = useRef<string[]>([]);
   const historyIndexRef = useRef(0);
+  const hostsRef = useRef<SshHost[]>([]);
   const [target, setTarget] = useState("");
   const [hosts, setHosts] = useState<SshHost[]>([]);
   const [bridgeOk, setBridgeOk] = useState<boolean | null>(null);
@@ -34,6 +35,7 @@ export function TerminalPanel() {
     try {
       await bridgePing();
       const available = await sshHosts();
+      hostsRef.current = available;
       setHosts(available);
       setBridgeOk(true);
       const stored = window.localStorage.getItem(TARGET_KEY);
@@ -84,8 +86,10 @@ export function TerminalPanel() {
       requestAnimationFrame(() => { if (!disposed) fit.fit(); });
       observer = new ResizeObserver(() => fit.fit());
       observer.observe(container);
-      terminal.writeln("NAWAT · SSH عبر الجسر :8787");
-      terminal.writeln("الأوامر تُنفّذ على المضيف المختار؛ لا توجد جلسة PTY مستمرة.");
+      // ASCII first: monospace output renders Arabic commands and paths in reversed order.
+      terminal.writeln("NAWAT SSH - bridge :8787");
+      terminal.writeln("Type help for the command list. Commands run on the selected host.");
+      terminal.writeln("لا توجد جلسة PTY مستمرة — الأوامر تُنفّذ مرة واحدة على المضيف المختار.");
       terminal.write("\x1b[32mbridge>\x1b[0m ");
 
       const replaceLine = (next: string) => {
@@ -101,6 +105,37 @@ export function TerminalPanel() {
           lineRef.current = "";
           if (!cmd) { prompt(); return; }
           if (cmd === "clear") { terminal.clear(); prompt(); return; }
+          // Local commands answer without a host, so they also work when the bridge is down.
+          if (cmd === "help") {
+            terminal.writeln("commands: help | clear | targets | ping | <any shell command>");
+            terminal.writeln("shell commands run on the selected host through the bridge (one-shot exec, no PTY).");
+            terminal.writeln("panel switches: Ctrl+B explorer, Ctrl+J chat, Ctrl+` terminal, Ctrl+Alt+F focus.");
+            prompt();
+            return;
+          }
+          if (cmd === "targets") {
+            const list = hostsRef.current;
+            const term = terminal;
+            if (!list.length) terminal.writeln("no SSH host in the bridge");
+            else
+              list.forEach((host) =>
+                term.writeln(
+                  `${host.user ? `${host.user}@` : ""}${host.host}:${host.port ?? 22}` +
+                    ` ${host.online === false ? "offline" : "online"}`,
+                ),
+              );
+            prompt();
+            return;
+          }
+          if (cmd === "ping") {
+            const t0 = performance.now();
+            void bridgePing().then(
+              () => terminal?.writeln(`bridge ok in ${Math.round(performance.now() - t0)} ms`),
+              () => terminal?.writeln(`bridge unreachable at ${sshBridgeUrl()}`),
+            );
+            prompt();
+            return;
+          }
           if (!readyRef.current || !targetRef.current) {
             terminal.writeln("لا يوجد مضيف SSH متصل. تحقق من الجسر والمضيف المختار.");
             prompt();
