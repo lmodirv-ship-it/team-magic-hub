@@ -3,6 +3,7 @@ import { Copy, Download } from "lucide-react";
 import { toast } from "sonner";
 import { Panel } from "@/components/nawat/StudioUI";
 import { Button } from "@/components/ui/button";
+import { PY_ALL, PY_PACKS, requirementsTxt } from "@/lib/nawat/python-libs";
 
 const KEY = "nawat.devtools.v1";
 type D = { ssh: string; project: string; pkgs: string; pip: string };
@@ -50,6 +51,12 @@ export function DevTools({ s }: { s: { path: string; ollama: string } }) {
               <input dir="ltr" value={d[k]} onChange={(e) => setD({ ...d, [k]: e.target.value })} className="control font-mono" />
             </label>
           ))}
+        </div>
+        <div className="mt-2 flex flex-wrap gap-1">
+          {PY_PACKS.map((p) => (
+            <Button key={p.id} size="sm" variant="outline" onClick={() => setD({ ...d, pip: Array.from(new Set([...d.pip.split(/\s+/).filter(Boolean), ...p.pkgs])).join(" ") })}>🐍 {p.label}</Button>
+          ))}
+          <Button size="sm" variant="outline" onClick={() => download("requirements.txt", requirementsTxt(d.pip ? d.pip.split(/\s+/) : PY_ALL))}><Download />requirements.txt</Button>
         </div>
         <ul className="mt-2 grid gap-1">
           {([["نشر", deploy], ["مزامنة تراكمية", sync], ["تثبيت npm", npm], ["تثبيت pip", pip]] as [string, string][]).map(([t, c]) => (
