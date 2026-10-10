@@ -115,10 +115,11 @@ export function TerminalPanel() {
           }
           if (cmd === "targets") {
             const list = hostsRef.current;
+            const term = terminal;
             if (!list.length) terminal.writeln("no SSH host in the bridge");
             else
               list.forEach((host) =>
-                terminal.writeln(
+                term.writeln(
                   `${host.user ? `${host.user}@` : ""}${host.host}:${host.port ?? 22}` +
                     ` ${host.online === false ? "offline" : "online"}`,
                 ),
