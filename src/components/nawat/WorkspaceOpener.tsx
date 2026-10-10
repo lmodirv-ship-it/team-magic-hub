@@ -42,14 +42,14 @@ const TEMPLATES: Record<string, (n: string) => Record<string, string>> = {
   "python-api": (n) => ({
     [`${n}/README.md`]: `# ${n}\n\nAPI FastAPI.\n\n    pip install -r requirements.txt\n    uvicorn app:app --reload\n`,
     [`${n}/app.py`]: `from fastapi import FastAPI\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp = FastAPI()\napp.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])\n\n\n@app.get("/api/hello")\ndef hello():\n    return {"message": "Bonjour depuis Python"}\n`,
-    [`${n}/requirements.txt`]: requirementsTxt(PY_PACKS[0].pkgs),
-    [`${n}/pyproject.toml`]: pyprojectToml(n, PY_PACKS[0].pkgs),
+    [`${n}/requirements.txt`]: requirementsTxt(PY_PACKS[0]!.pkgs),
+    [`${n}/pyproject.toml`]: pyprojectToml(n, PY_PACKS[0]!.pkgs),
   }),
   "python-ai": (n) => ({
     [`${n}/README.md`]: `# ${n}\n\nIA locale + données.\n\n    pip install -r requirements.txt\n    python main.py\n`,
     [`${n}/main.py`]: `import ollama\nimport pandas as pd\n\nr = ollama.chat(model="nawat-coder:latest", messages=[{"role": "user", "content": "Bonjour"}])\nprint(r["message"]["content"])\nprint(pd.DataFrame({"a": [1, 2, 3]}).describe())\n`,
     [`${n}/analyse.ipynb`]: notebook(n),
-    [`${n}/requirements.txt`]: requirementsTxt(PY_PACKS[1].pkgs),
+    [`${n}/requirements.txt`]: requirementsTxt(PY_PACKS[1]!.pkgs),
   }),
   "python-full": (n) => ({
     [`${n}/README.md`]: `# ${n}\n\nWeb + IA + automatisation.\n\n    pip install -r requirements.txt\n`,
