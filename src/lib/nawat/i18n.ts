@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { translateUi } from "./ui-translation";
 
 export type Lang = "fr" | "ar" | "en";
 export const LANG_KEY = "nawat.lang.v1";
@@ -68,7 +69,7 @@ const DICT: Record<string, [string, string]> = {
 export function translate(text: string, l: Lang): string {
   if (l === "ar") return text;
   const e = DICT[text];
-  return e ? (l === "fr" ? e[0] : e[1]) : text;
+  return e ? (l === "fr" ? e[0] : e[1]) : translateUi(text, l);
 }
 
 export function useLang() {
