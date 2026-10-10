@@ -6,7 +6,7 @@ import { translate, useLang, type Lang } from "@/lib/nawat/i18n";
  * Translates every Arabic text and label on every page (FR/EN), keeping the
  * original Arabic so switching back to AR restores it. Code editors and terminals are skipped.
  */
-const D = dict as Record<string, [string, string]>;
+const D = dict as unknown as Record<string, [string, string]>;
 const KEYS = Object.keys(D).sort((a, b) => b.length - a.length);
 const AR = /[\u0600-\u06FF]/;
 const ATTRS = ["title", "placeholder", "aria-label"] as const;
