@@ -48,6 +48,7 @@ export function translateUi(source: string, lang: UiLang): string {
       }
       // Arabic vowel marks and tatweel may remain after a compound-label replacement.
       translated = translated.replace(/[\u064B-\u065F\u0640]/g, "");
+      translated = translated.replace(/(\d:\d{2}(?::\d{2})?)\s*م/g, "$1 PM").replace(/(\d:\d{2}(?::\d{2})?)\s*ص/g, "$1 AM");
     }
     result = source.replace(core, translated);
   } else if (lang === "ar") {

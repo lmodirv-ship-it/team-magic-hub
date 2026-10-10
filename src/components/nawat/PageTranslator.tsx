@@ -42,9 +42,8 @@ function walk(root: Node, lang: UiLang) {
 
 export function PageTranslator() {
   const { lang } = useLang();
-  const loading = useRouterState({ select: (state) => state.isLoading });
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   useEffect(() => {
-    if (loading) return;
     let title: Saved | undefined;
     const translateTitle = () => {
       title = update(document.title, title, lang);
@@ -71,6 +70,6 @@ export function PageTranslator() {
       observer.observe(document.body, options);
     }, 1200);
     return () => { window.clearTimeout(timer); observer.disconnect(); };
-  }, [lang, loading]);
+  }, [lang, pathname]);
   return null;
 }
