@@ -69,7 +69,6 @@ for %%P in (%NAWAT_PORT% 8788 8790 8791 8792 8793 8794 8795 8796 8797 8798 8799)
 if not defined BRIDGE_PORT set "BRIDGE_PORT=8800"
 echo %BRIDGE_PORT%> "%ROOT%bridge-port.txt"
 echo [NAWAT] Starting bridge on %BRIDGE_PORT%...  (http://127.0.0.1:%BRIDGE_PORT%)
-start "" "http://127.0.0.1:%BRIDGE_PORT%/api/health"
 node bridge\server.mjs
 echo [NAWAT] Bridge stopped. Merging updates, restarting in 5 seconds...
 timeout /t 5 >nul
