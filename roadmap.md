@@ -66,3 +66,4 @@
 - [x] التحقق: الطرفية في المعاينة وعلى hn-ai.site تستخدم 8788 فعلًا.
 - [x] تجهيز مثبت NAWAT Code جديد يحمل ترتيب العناوين الجديد (hn-ai.site أولًا) — النسخة الحالية عندك ما زالت تفتح نسخة الشبكة القديمة.
 - [x] تجهيز مثبت/نسخة محمولة جديدة من NAWAT Code: hn-ai.site أولًا، الفرنسية أساسًا، وإمكانية الاختيار عبر NAWAT_URL.
+- [ ] START-STUDIO-ALWAYS: open bridge on a free alternate port when 8788 busy
