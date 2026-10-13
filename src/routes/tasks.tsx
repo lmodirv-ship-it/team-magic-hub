@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { askNotificationPermission, getTaskRun, notifyTask, setTaskRun, subscribeTaskRun, updateTaskResults } from "@/lib/nawat/tasks-runner";
 import { BarChart3, Play, Save } from "lucide-react";
 import { getProviderForModel, modelChatStream } from "@/lib/nawat/providers";
 import { useModels } from "@/lib/nawat/useModels";
@@ -55,8 +56,10 @@ function TasksPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [prompt, setPrompt] = useState("اكتب مكوّن React لبطاقة منتج مع Tailwind.");
   const [contextFile, setContextFile] = useState("");
-  const [results, setResults] = useState<Result[]>([]);
-  const [running, setRunning] = useState(false);
+  const runState = useSyncExternalStore(subscribeTaskRun, getTaskRun, getTaskRun);
+  const results: Result[] = runState.results;
+  const running = runState.running;
+  const setResults = updateTaskResults;
   const [history, setHistory] = useState<{ prompt: string; at: string }[]>([]);
   const [cat, setCat] = useState<ModelCategory | "all">("all");
   const [engine, setEngine] = useState<"ghn" | "local">("ghn");
@@ -83,12 +86,13 @@ function TasksPage() {
     setSelected((s) => (s.includes(name) ? s.filter((x) => x !== name) : [...s, name]));
 
   const run = async () => {
-    if (!selected.length || !prompt.trim()) return;
-    setRunning(true);
+    if (!selected.length || !prompt.trim() || getTaskRun().running) return;
+    void askNotificationPermission();
+    setTaskRun({ running: true, prompt });
     const full = contextFile
       ? `${prompt}\n\n--- ${contextFile} ---\n${(vfs[contextFile] ?? "").slice(0, 8000)}`
       : prompt;
-    setResults(selected.map((m) => ({ model: m, output: "", ms: 0, done: false })));
+    updateTaskResults(() => selected.map((m) => ({ model: m, output: "", ms: 0, done: false })));
     const round = new Date().toISOString();
     const stream = engine === "ghn" ? ghnChatStream : modelChatStream;
     const previous: { model: string; text: string }[] = [];
@@ -103,7 +107,7 @@ function TasksPage() {
           for await (const c of stream(m, [{ role: "user", content }])) {
             if (ttft === null) ttft = performance.now() - t0;
             acc += c;
-            setResults((rs) =>
+            updateTaskResults((rs) =>
               rs.map((r) =>
                 r.model === m ? { ...r, output: acc, ms: performance.now() - t0 } : r,
               ),
@@ -125,17 +129,21 @@ function TasksPage() {
           round,
           ...(ttft ? { inTps: full.length / Math.max(ttft / 1000, 0.001) } : {}),
         });
-        setResults((rs) =>
+        updateTaskResults((rs) =>
           rs.map((r) => (r.model === m ? { ...r, output: acc, ms, done: true, at } : r)),
         );
+        notifyTask(`NAWAT — ${m}`, acc.includes("⚠️") ? "Erreur pendant la tâche" : `Terminé en ${(ms / 1000).toFixed(1)} s`);
         if (!acc.includes("⚠️")) previous.push({ model: m, text: acc });
     };
     if (chain) { for (const m of selected) await one(m); }
     else await Promise.all(selected.map(one));
-    const next = [{ prompt, at: new Date().toISOString() }, ...history].slice(0, 30);
-    setHistory(next);
+    let hist: { prompt: string; at: string }[] = [];
+    try { hist = JSON.parse(localStorage.getItem(HISTORY_KEY) ?? "[]"); } catch { /* ignore */ }
+    const next = [{ prompt, at: new Date().toISOString() }, ...hist].slice(0, 30);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
-    setRunning(false);
+    setHistory(next);
+    setTaskRun({ running: false });
+    notifyTask("NAWAT — Tâche terminée", `${selected.length} modèle(s) ont répondu.`);
   };
 
   return (
