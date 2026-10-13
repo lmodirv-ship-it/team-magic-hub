@@ -50,3 +50,33 @@ export function useGhn(): GhnState {
   }, []);
   return s;
 }
+
+/** Stream a chat from the Groupe-HN platform (OpenAI-compatible SSE); key optional during the free period. */
+export async function* ghnChatStream(model: string, messages: { role: string; content: string }[], signal?: AbortSignal): AsyncGenerator<string> {
+  const key = typeof window === "undefined" ? "" : (localStorage.getItem(KEY) ?? "");
+  const res = await fetch(GHN_PLATFORM.endpoint, {
+    method: "POST", signal,
+    headers: { "content-type": "application/json", ...(key ? { authorization: `Bearer ${key}` } : {}) },
+    body: JSON.stringify({ model, messages, stream: true }),
+  });
+  if (!res.ok || !res.body) throw new Error(`Groupe-HN ${res.status}`);
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = "";
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split("\n");
+    buf = lines.pop() ?? "";
+    for (const l of lines) {
+      const s = l.replace(/^data:\s*/, "").trim();
+      if (!s || s === "[DONE]") continue;
+      try {
+        const j = JSON.parse(s);
+        const t = j.choices?.[0]?.delta?.content ?? j.choices?.[0]?.message?.content ?? j.message?.content ?? "";
+        if (t) yield t;
+      } catch { /* partial line */ }
+    }
+  }
+}

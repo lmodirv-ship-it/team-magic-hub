@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { chatStream, listAllModels } from "@/lib/nawat/bridge";
 import { officialModels } from "@/lib/nawat/providers";
+import { ghnChatStream } from "@/lib/nawat/groupe-hn-platform";
 import {
   DEFAULT_ENVIRONMENT, environmentPrompt, loadEnvironmentOrDefault, saveEnvironment, type AgentEnvironment,
 } from "@/lib/nawat/agent-environment";
@@ -36,7 +37,8 @@ const FIELDS: { key: keyof AgentEnvironment; title: string; hint: string; tone: 
 function EnvironmentPage() {
   const [env, setEnv] = useState<AgentEnvironment>(DEFAULT_ENVIRONMENT);
   const [models, setModels] = useState<string[]>(officialModels.map((m) => m.name));
-  const [model, setModel] = useState("nawat-coder:latest");
+  const [engine, setEngine] = useState<"ghn" | "ollama">("ghn");
+  const [model, setModel] = useState("nawat-chat");
   const [task, setTask] = useState("");
   const [out, setOut] = useState("");
   const [busy, setBusy] = useState(false);
@@ -53,12 +55,13 @@ function EnvironmentPage() {
     setOut(""); setBusy(true);
     abort.current = new AbortController();
     try {
-      for await (const chunk of chatStream(model, [
+      const stream = engine === "ghn" ? ghnChatStream : chatStream;
+      for await (const chunk of stream(model, [
         { role: "system", content: environmentPrompt(env) + "Tu es un agent NAWAT invité dans cet environnement. Respecte-le strictement." },
         { role: "user", content: task },
       ], abort.current.signal)) setOut((o) => o + chunk);
     } catch (e) {
-      if (!abort.current?.signal.aborted) setOut((o) => o + `\n\n[Modèle injoignable : vérifiez qu'Ollama tourne (port 11434) sur votre ordinateur.]`);
+      if (!abort.current?.signal.aborted) setOut((o) => o + (engine === "ghn" ? "\n\n[Plateforme Groupe-HN momentanément indisponible — réessayez dans un instant.]" : "\n\n[Modèle injoignable : vérifiez qu'Ollama tourne (port 11434) sur votre ordinateur.]"));
     } finally { setBusy(false); }
   }
 
@@ -85,6 +88,11 @@ function EnvironmentPage() {
           <div className="flex flex-col items-center gap-2 py-2">
             <div className="grid size-20 place-items-center rounded-full border-2 border-primary bg-primary/10"><Bot className="size-8 text-primary" /></div>
             <span className="text-xs text-muted-foreground">← invité dans l'environnement</span>
+          </div>
+          <label className="text-xs font-medium">Moteur</label>
+          <div className="mb-2 mt-1 grid grid-cols-2 gap-1">
+            <Button size="sm" variant={engine === "ghn" ? "default" : "outline"} onClick={() => { setEngine("ghn"); setModel("nawat-chat"); }}>Groupe-HN</Button>
+            <Button size="sm" variant={engine === "ollama" ? "default" : "outline"} onClick={() => { setEngine("ollama"); setModel("nawat-coder:latest"); }}>Ollama local</Button>
           </div>
           <label className="text-xs font-medium">Agent (modèle)</label>
           <Input aria-label="Agent" list="env-models" value={model} onChange={(e) => setModel(e.target.value)} />
