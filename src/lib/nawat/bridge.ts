@@ -360,8 +360,22 @@ export type SshConfig = {
 export type SshFile = { name: string; size: number; dir: boolean };
 export type SshHost = { host: string; user?: string; port?: number; online?: boolean };
 
-// The bridge really listens on :8788; :8787 stays as the older fallback.
-export const SSH_BRIDGE_CANDIDATES = ["http://127.0.0.1:8788", "http://127.0.0.1:8787"];
+// Server bridge on hn-ai.site first (behind a private key), then the local :8788 and older :8787.
+export const SERVER_BRIDGE = "https://hn-ai.site/bridge";
+export const SSH_BRIDGE_CANDIDATES = [SERVER_BRIDGE, "http://127.0.0.1:8788", "http://127.0.0.1:8787"];
+
+/** Private key for the server bridge, kept only on this device. */
+export function bridgeToken(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem("nawat.bridgeToken") ?? "";
+}
+export function setBridgeToken(t: string) {
+  localStorage.setItem("nawat.bridgeToken", t.trim());
+}
+function authHeaders(): Record<string, string> {
+  const t = bridgeToken();
+  return t ? { Authorization: `Bearer ${t}` } : {};
+}
 const DEFAULT_SSH_BRIDGE = "http://127.0.0.1:8788";
 
 export function sshBridgeUrl(): string {
@@ -395,8 +409,8 @@ async function bridge<T>(path: string, body?: unknown): Promise<T> {
     res = await fetch(sshBridgeUrl() + path, {
       method: body === undefined ? "GET" : "POST",
       ...(body === undefined
-        ? {}
-        : { headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }),
+        ? { headers: authHeaders() }
+        : { headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify(body) }),
     });
   } catch {
     throw new Error(`لا يمكن الوصول إلى الجسر على ${sshBridgeUrl()} — شغّل start-all.`);

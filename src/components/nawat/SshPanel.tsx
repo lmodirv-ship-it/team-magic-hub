@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Plug, RefreshCw, RotateCcw, Send } from "lucide-react";
 import {
   bridgePing,
+  bridgeToken,
+  setBridgeToken,
   setSshBridgeUrl,
   sshAudit,
   sshBridgeUrl,
@@ -99,6 +101,17 @@ export function SshPanel() {
           onChange={(e) => setBridgeUrl(e.target.value)}
           onBlur={() => {
             setSshBridgeUrl(bridgeUrl);
+            void load();
+          }}
+        />
+        <input
+          className={`${field} w-40`}
+          dir="ltr"
+          type="password"
+          placeholder="Clé du pont serveur"
+          ref={(el) => { if (el && !el.value) el.value = bridgeToken(); }}
+          onBlur={(e) => {
+            setBridgeToken(e.target.value);
             void load();
           }}
         />
