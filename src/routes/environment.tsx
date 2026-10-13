@@ -48,7 +48,7 @@ function EnvironmentPage() {
   }, []);
 
   async function invite() {
-    if (!task.trim()) return toast.message("Écrivez d'abord la tâche de l'agent.");
+    if (!task.trim()) { toast.message("Écrivez d'abord la tâche de l'agent."); return; }
     saveEnvironment(env);
     setOut(""); setBusy(true);
     abort.current = new AbortController();
