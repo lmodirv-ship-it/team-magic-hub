@@ -10,7 +10,7 @@ const Input = z.object({
 export const ghnServerChat = createServerFn({ method: "POST" })
   .inputValidator((d) => Input.parse(d))
   .handler(async ({ data }) => {
-    const key = process.env.GHN_API_KEY;
+    const key = process.env['GHN_API_KEY'];
     if (!key) return { ok: false as const, error: "NO_KEY", text: "" };
     const r = await fetch("https://platform.groupe-hn.com/api/public/v1/chat/completions", {
       method: "POST",
