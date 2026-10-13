@@ -66,6 +66,14 @@ export function useGhn(): GhnState {
 /** Stream a chat from the Groupe-HN platform (OpenAI-compatible SSE); key optional during the free period. */
 export async function* ghnChatStream(model: string, messages: { role: string; content: string }[], signal?: AbortSignal): AsyncGenerator<string> {
   const key = typeof window === "undefined" ? "" : (localStorage.getItem(KEY) ?? "");
+  if (!key) {
+    // No key on this device: use the key saved on the server.
+    const { ghnServerChat } = await import("./ghn.functions");
+    const r = await ghnServerChat({ data: { model, messages: messages as { role: "system" | "user" | "assistant"; content: string }[] } });
+    if (!r.ok) throw new Error(r.error === "GHN_KEY" || r.error === "NO_KEY" ? "GHN_KEY" : `Groupe-HN ${r.error}`);
+    yield r.text;
+    return;
+  }
   let res: Response | null = null;
   for (const base of [GHN_PLATFORM.officialBaseUrl, GHN_PLATFORM.baseUrl]) {
     try {
