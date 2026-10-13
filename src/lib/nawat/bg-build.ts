@@ -29,7 +29,7 @@ export function subscribeBgBuild(f: (s: BgBuild | null) => void) { subs.add(f); 
 
 const stripFence = (t: string) => (t.match(/```[\w-]*[^\n]*\n([\s\S]*?)```/)?.[1] ?? t).trim();
 async function ask(model: string, system: string, user: string) {
-  const d = (await callConfiguredBridge("chat", { model, stream: false, messages: [{ role: "system", content: system }, { role: "user", content: user }] })) as { message?: { content?: string } };
+  const d = (await callConfiguredBridge("chat", { model, stream: false, messages: [{ role: "system", content: environmentPrompt() + system }, { role: "user", content: user }] })) as { message?: { content?: string } };
   return d.message?.content ?? "";
 }
 
