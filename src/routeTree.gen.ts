@@ -17,6 +17,7 @@ import { Route as AtelierRouteImport } from './routes/atelier'
 import { Route as ComfyuiRouteImport } from './routes/comfyui'
 import { Route as ConnectRouteImport } from './routes/connect'
 import { Route as DatabaseRouteImport } from './routes/database'
+import { Route as EnvironmentRouteImport } from './routes/environment'
 import { Route as FactoryRouteImport } from './routes/factory'
 import { Route as GroupeHnRouteImport } from './routes/groupe-hn'
 import { Route as LedgerRouteImport } from './routes/ledger'
@@ -84,6 +85,11 @@ const ConnectRoute = ConnectRouteImport.update({
 const DatabaseRoute = DatabaseRouteImport.update({
   id: '/database',
   path: '/database',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnvironmentRoute = EnvironmentRouteImport.update({
+  id: '/environment',
+  path: '/environment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FactoryRoute = FactoryRouteImport.update({
@@ -236,6 +242,7 @@ export interface FileRoutesByFullPath {
   '/comfyui': typeof ComfyuiRoute
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
+  '/environment': typeof EnvironmentRoute
   '/factory': typeof FactoryRoute
   '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/comfyui': typeof ComfyuiRoute
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
+  '/environment': typeof EnvironmentRoute
   '/factory': typeof FactoryRoute
   '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/comfyui': typeof ComfyuiRoute
   '/connect': typeof ConnectRoute
   '/database': typeof DatabaseRoute
+  '/environment': typeof EnvironmentRoute
   '/factory': typeof FactoryRoute
   '/groupe-hn': typeof GroupeHnRoute
   '/ledger': typeof LedgerRoute
@@ -353,6 +362,7 @@ export interface FileRouteTypes {
     | '/comfyui'
     | '/connect'
     | '/database'
+    | '/environment'
     | '/factory'
     | '/groupe-hn'
     | '/ledger'
@@ -391,6 +401,7 @@ export interface FileRouteTypes {
     | '/comfyui'
     | '/connect'
     | '/database'
+    | '/environment'
     | '/factory'
     | '/groupe-hn'
     | '/ledger'
@@ -429,6 +440,7 @@ export interface FileRouteTypes {
     | '/comfyui'
     | '/connect'
     | '/database'
+    | '/environment'
     | '/factory'
     | '/groupe-hn'
     | '/ledger'
@@ -468,6 +480,7 @@ export interface RootRouteChildren {
   ComfyuiRoute: typeof ComfyuiRoute
   ConnectRoute: typeof ConnectRoute
   DatabaseRoute: typeof DatabaseRoute
+  EnvironmentRoute: typeof EnvironmentRoute
   FactoryRoute: typeof FactoryRoute
   GroupeHnRoute: typeof GroupeHnRoute
   LedgerRoute: typeof LedgerRoute
@@ -554,6 +567,13 @@ declare module '@tanstack/react-router' {
       path: '/database'
       fullPath: '/database'
       preLoaderRoute: typeof DatabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/environment': {
+      id: '/environment'
+      path: '/environment'
+      fullPath: '/environment'
+      preLoaderRoute: typeof EnvironmentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/factory': {
@@ -764,6 +784,7 @@ const rootRouteChildren: RootRouteChildren = {
   ComfyuiRoute: ComfyuiRoute,
   ConnectRoute: ConnectRoute,
   DatabaseRoute: DatabaseRoute,
+  EnvironmentRoute: EnvironmentRoute,
   FactoryRoute: FactoryRoute,
   GroupeHnRoute: GroupeHnRoute,
   LedgerRoute: LedgerRoute,

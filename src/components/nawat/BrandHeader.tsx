@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { BookOpen, CircleDot, Search, ShieldCheck } from "lucide-react";
+import { Boxes, BookOpen, CircleDot, Search, ShieldCheck } from "lucide-react";
 import { ChatStatsWidget } from "@/components/nawat/ChatStatsWidget";
 import { NotificationCenter } from "@/components/nawat/NotificationCenter";
 import { ThemeToggle } from "@/components/nawat/ThemeToggle";
@@ -44,6 +44,9 @@ export function BrandHeader() {
       </div>
       <Button asChild variant="ghost" size="icon" title={t("الدليل المصور")} aria-label={t("الدليل المصور")}>
         <Link to="/manual"><BookOpen className="size-4" /></Link>
+      </Button>
+      <Button asChild variant="ghost" size="icon" title="Environnement" aria-label="Environnement">
+        <Link to="/environment"><Boxes className="size-4" /></Link>
       </Button>
       <LanguageSwitcher />
       <NotificationCenter />
