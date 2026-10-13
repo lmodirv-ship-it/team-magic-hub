@@ -25,6 +25,10 @@ export const DEFAULT_SERVER_SETTINGS: ServerSettings = {
     { id: "c-hn", name: "ComfyUI السيرفر العام", url: "http://213.156.132.166/comfy/ui/1", task: "عام" },
     { id: "c-local", name: "ComfyUI حاسوبي", url: "http://127.0.0.1:8188", task: "إنتاج سريع" },
     { id: "c-hn-secure", name: "ComfyUI السيرفر (محمي عبر hn-ai.site)", url: "https://hn-ai.site/comfy-hn", task: "عام" },
+    { id: "c2", name: "ComfyUI 2", url: "http://192.168.2.4:8189", task: "" },
+    { id: "c3", name: "ComfyUI 3", url: "http://192.168.2.4:8190", task: "" },
+    { id: "c4", name: "ComfyUI 4", url: "http://192.168.2.4:8191", task: "" },
+    { id: "c5", name: "ComfyUI 5", url: "http://192.168.2.4:8192", task: "" },
   ],
   modelStoragePath: "/data/model",
   updatedAt: "",
@@ -44,7 +48,7 @@ function load() {
       ...raw,
       ollamaFallbacks: Array.isArray(raw.ollamaFallbacks) ? raw.ollamaFallbacks.map(String) : DEFAULT_SERVER_SETTINGS.ollamaFallbacks,
       comfyInstances: Array.isArray(raw.comfyInstances) && raw.comfyInstances.length
-        ? raw.comfyInstances
+        ? [...raw.comfyInstances, ...DEFAULT_SERVER_SETTINGS.comfyInstances.filter((d) => !raw.comfyInstances!.some((i) => i.id === d.id || i.url === d.url))]
         : [{ id: "c1", name: "ComfyUI 1", url: raw.comfyUrl ?? DEFAULT_SERVER_SETTINGS.comfyUrl, task: "عام" }],
     };
   } catch { /* defaults */ }

@@ -61,6 +61,13 @@ export const DEFAULT_PORTS: PortEntry[] = [
   p("containerd", "32871", S, "public", "docker", "containerd", "containerd", "واجهة containerd", ["/architecture"]),
   p("dns", "53", "127.0.0.53", "local", "infra", "systemd-resolved", "systemd", "DNS محلي داخل الخادم (127.0.0.53/54)", ["/settings"]),
   p("comfyui", "8188", "192.168.2.4", "public", "ai", "ComfyUI — مولّد الصور", "docker", "يغذّي «ارسم…» وأزرار التكبير والتوسيع والتعبئة", ["/atelier", "/models"]),
+  p("comfy-local", "8188", "127.0.0.1", "local", "ai", "ComfyUI حاسوبي — المنفذ السريع", "local", "إنتاج سريع على حاسوب المستخدم", ["/comfyui", "/atelier", "/settings"]),
+  p("comfy-8189", "8189", "192.168.2.4", "public", "ai", "ComfyUI 2", "docker", "نسخة ComfyUI ثانية", ["/comfyui", "/atelier"]),
+  p("comfy-8190", "8190", "192.168.2.4", "public", "ai", "ComfyUI 3", "docker", "نسخة ComfyUI ثالثة", ["/comfyui", "/atelier"]),
+  p("comfy-8191", "8191", "192.168.2.4", "public", "ai", "ComfyUI 4", "docker", "نسخة ComfyUI رابعة", ["/comfyui", "/atelier"]),
+  p("comfy-8192", "8192", "192.168.2.4", "public", "ai", "ComfyUI 5", "docker", "نسخة ComfyUI خامسة", ["/comfyui", "/atelier"]),
+  p("comfy-public", "80", "213.156.132.166", "public", "ai", "ComfyUI السيرفر العام (/comfy/ui/1)", "nginx", "مولّد الصور على السيرفر العام", ["/comfyui", "/connect"]),
+  p("comfy-hn-secure", "443", "hn-ai.site", "public", "ai", "ComfyUI محمي عبر hn-ai.site (/comfy-hn)", "nginx", "وصول آمن HTTPS", ["/comfyui", "/connect"]),
   p("published-app", "443", "nawat.groupe-hn.com", "public", "web", "NAWAT Studio المنشور", "cloud", "الرابط الرسمي بين خدمات تطبيق الهاتف — يفتح من أي مكان بالإنترنت", ["/ports"], ["bridge-models", "comfyui", "search-gateway"]),
   p("bridge-models", "8788", S, "public", "ai", "الجسر — نماذج الخادم", "local", "للمهام الصعبة: برمجة، رؤية، استدلال طويل (تطبيق الهاتف)", ["/models", "/atelier"], ["ollama"]),
   p("search-gateway", "443", "ntapi.hn-dbpro.com", "public", "web", "بوابة البحث السحابية", "cloud", "ويب · أخبار · صور · فيديو · ويكيبيديا · أسئلة", ["/atelier"]),
@@ -102,14 +109,14 @@ function load() {
       // ترحيل: كل المنافذ على الخادم 192.168.100.66 (باستثناء DNS المحلي داخل الخادم)
       let changed = false;
       const migrated = stored.map((x) => {
-        if (x.id !== "dns" && (x.host === "localhost" || x.host === "127.0.0.1")) {
+        if (x.id !== "dns" && x.id !== "comfy-local" && (x.host === "localhost" || x.host === "127.0.0.1")) {
           changed = true;
           return { ...x, host: S, bind: "public" as const };
         }
         return x;
       });
       // إضافة منافذ الهاتف الجديدة للبيانات المحفوظة سابقًا
-      for (const id of ["published-app", "bridge-models", "search-gateway"]) {
+      for (const id of ["published-app", "bridge-models", "search-gateway", "comfy-local", "comfy-8189", "comfy-8190", "comfy-8191", "comfy-8192", "comfy-public", "comfy-hn-secure"]) {
         if (!migrated.some((x) => x.id === id)) { const d = DEFAULT_PORTS.find((x) => x.id === id); if (d) migrated.push({ ...d }); }
       }
       const coded = withCodes(migrated);
