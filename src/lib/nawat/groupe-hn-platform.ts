@@ -11,6 +11,11 @@ export const GHN_PLATFORM = {
 };
 
 export async function ghnListModels(): Promise<string[]> {
+  // Same-origin server sync first (works behind HTTPS/CORS on every visit).
+  try {
+    const r = await fetch("/api/public/sync", { cache: "no-store" });
+    if (r.ok) { const j = (await r.json()) as { models?: string[] }; if (j.models?.length) return j.models; }
+  } catch { /* fall back to direct platform */ }
   for (const base of [GHN_PLATFORM.officialBaseUrl, GHN_PLATFORM.baseUrl]) {
     try {
       const r = await fetch(`${base}/models`);

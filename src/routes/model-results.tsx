@@ -9,6 +9,7 @@ import {
   categoryOf,
   familyOf,
   getRuns,
+  getAllRuns,
   growth,
   statsFor,
   versionRank,
@@ -46,7 +47,14 @@ function ResultsPage() {
   const { models } = useModels();
   const [runs, setRuns] = useState<TestRun[]>([]);
   const [cat, setCat] = useState<ModelCategory | "all">("all");
-  useEffect(() => setRuns(getRuns()), []);
+  useEffect(() => {
+    setRuns(getRuns());
+    let alive = true;
+    const load = () => getAllRuns().then((r) => alive && setRuns(r));
+    load();
+    const id = setInterval(load, 10000);
+    return () => { alive = false; clearInterval(id); };
+  }, []);
 
   const families = useMemo(() => {
     const map = new Map<string, typeof models>();

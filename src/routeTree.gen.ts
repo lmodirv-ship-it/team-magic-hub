@@ -45,6 +45,7 @@ import { Route as WatchdogRouteImport } from './routes/watchdog'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
+import { Route as ApiPublicSyncRouteImport } from './routes/api/public/sync'
 import { Route as ApiPublicRelaySplatRouteImport } from './routes/api/public/relay/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -227,6 +228,11 @@ const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
   path: '/chat/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSyncRoute = ApiPublicSyncRouteImport.update({
+  id: '/api/public/sync',
+  path: '/api/public/sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicRelaySplatRoute = ApiPublicRelaySplatRouteImport.update({
   id: '/api/public/relay/$',
   path: '/api/public/relay/$',
@@ -270,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/sync': typeof ApiPublicSyncRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
 export interface FileRoutesByTo {
@@ -309,6 +316,7 @@ export interface FileRoutesByTo {
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/sync': typeof ApiPublicSyncRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
 export interface FileRoutesById {
@@ -349,6 +357,7 @@ export interface FileRoutesById {
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/sync': typeof ApiPublicSyncRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
 export interface FileRouteTypes {
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
+    | '/api/public/sync'
     | '/api/public/relay/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -429,6 +439,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
+    | '/api/public/sync'
     | '/api/public/relay/$'
   id:
     | '__root__'
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
+    | '/api/public/sync'
     | '/api/public/relay/$'
   fileRoutesById: FileRoutesById
 }
@@ -508,6 +520,7 @@ export interface RootRouteChildren {
   WorkspaceRoute: typeof WorkspaceRoute
   ApiStatsRoute: typeof ApiStatsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
+  ApiPublicSyncRoute: typeof ApiPublicSyncRoute
   ApiPublicRelaySplatRoute: typeof ApiPublicRelaySplatRoute
 }
 
@@ -765,6 +778,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sync': {
+      id: '/api/public/sync'
+      path: '/api/public/sync'
+      fullPath: '/api/public/sync'
+      preLoaderRoute: typeof ApiPublicSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/relay/$': {
       id: '/api/public/relay/$'
       path: '/api/public/relay/$'
@@ -812,6 +832,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkspaceRoute: WorkspaceRoute,
   ApiStatsRoute: ApiStatsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
+  ApiPublicSyncRoute: ApiPublicSyncRoute,
   ApiPublicRelaySplatRoute: ApiPublicRelaySplatRoute,
 }
 export const routeTree = rootRouteImport
