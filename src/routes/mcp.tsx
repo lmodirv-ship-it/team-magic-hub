@@ -64,6 +64,39 @@ const TOOLS = [
   "ghn_models", "ghn_queue", "ghn_stats", "ghn_info", "ghn_doctor", "ghn_studio", "ghn_sync",
 ];
 
+const SECTIONS = ["Overview", "Plugins", "MCP Servers", "Skills", "Instructions", "Agents", "Hooks", "Tools", "Migrations"] as const;
+type Sec = (typeof SECTIONS)[number];
+/** Starter entries per section; the user's own entries are added on top (add, never remove). */
+const SEEDS: Partial<Record<Sec, string[]>> = {
+  Plugins: ["Groupe-HN Platform", "Continue (VS Code)", "OpenCode", "Cursor"],
+  "MCP Servers": ["nawat — node cli/mcp-server.mjs", "groupe-hn — https://platform.groupe-hn.com/api/public/v1"],
+  Skills: ["Build HTML/CSS/JS", "Code review", "Debug / fix", "Translate FR/AR/EN"],
+  Instructions: ["Add, never remove existing features", "French UI by default", "Local models first"],
+  Agents: ["Coordinator", "HTML builder", "CSS builder", "JS builder", "Fixer", "Reviewer"],
+  Hooks: ["before-run: read /environment", "after-run: save result to /model-results"],
+  Migrations: ["192.168.100.67 → 127.0.0.1 + Groupe-HN"],
+};
+
+function SectionList({ sec }: { sec: Sec }) {
+  const k = `nawat.mcp.section.${sec}`;
+  const [items, setItems] = useState<string[]>([]);
+  const [v, setV] = useState("");
+  useEffect(() => { try { setItems(JSON.parse(localStorage.getItem(k) ?? "[]") as string[]); } catch { /* ignore */ } }, [k]);
+  const save = (n: string[]) => { setItems(n); localStorage.setItem(k, JSON.stringify(n)); };
+  const all = [...(SEEDS[sec] ?? []), ...items];
+  return (
+    <Panel title={sec} note={`${all.length}`}>
+      <ul className="grid gap-1 md:grid-cols-2">
+        {all.map((t, i) => <li key={`${t}-${i}`} className="rounded border border-border p-2 text-xs" dir="ltr">{t}</li>)}
+      </ul>
+      <form className="mt-2 flex gap-2" onSubmit={(e) => { e.preventDefault(); if (v.trim()) { save([...items, v.trim()]); setV(""); } }}>
+        <input dir="ltr" value={v} onChange={(e) => setV(e.target.value)} className="control flex-1 font-mono" placeholder={`+ ${sec}`} />
+        <Button size="sm" type="submit">+</Button>
+      </form>
+    </Panel>
+  );
+}
+
 function copy(t: string) {
   void navigator.clipboard.writeText(t);
   toast.success("تم النسخ");
@@ -72,6 +105,7 @@ function copy(t: string) {
 function McpPage() {
   const [s, setS] = useState<S>(DEF);
   const [ready, setReady] = useState(false);
+  const [sec, setSec] = useState<Sec>("Overview");
   useEffect(() => {
     try {
       const v = localStorage.getItem(KEY);
@@ -92,7 +126,15 @@ function McpPage() {
 
   return (
     <Page eyebrow="MCP + CLI" title="العقل واللسان" description="اربط مساعدات الذكاء الاصطناعي بمنظومة NAWAT، وتحكّم بكل شيء بأمر واحد. تُحفظ الإعدادات تلقائيًا.">
+      <div className="grid gap-4 md:grid-cols-[180px_1fr]">
+        <nav className="flex flex-row flex-wrap gap-1 md:flex-col" aria-label="MCP sections">
+          {SECTIONS.map((x) => (
+            <button key={x} type="button" onClick={() => setSec(x)} className={`rounded px-3 py-1.5 text-start text-sm ${sec === x ? "bg-muted font-semibold" : "text-muted-foreground hover:bg-muted/50"} ${x === "Migrations" ? "md:mt-3" : ""}`}>{x}</button>
+          ))}
+        </nav>
       <div className="grid gap-4">
+        {sec !== "Overview" && sec !== "Tools" && <SectionList sec={sec} />}
+        {(sec === "Overview" || sec === "MCP Servers") && <>
         <Panel title="الإعدادات">
           <div className="grid gap-2 md:grid-cols-2">
             {(["path", "ghn", "bridge", "factory", "ollama"] as const).map((k) => (
@@ -116,7 +158,9 @@ function McpPage() {
             </Panel>
           ))}
         </div>
+        </>}
 
+        {(sec === "Overview" || sec === "Tools") && <>
         <Panel title="أدوات MCP" note={`${TOOLS.length} أداة`}>
           <Button className="mb-2" variant="outline" size="sm" asChild><Link to="/groupe-hn">📘 الدليل الكامل Groupe-HN</Link></Button>
           <div className="flex flex-wrap gap-2">
@@ -141,6 +185,8 @@ function McpPage() {
         </Panel>
 
         <DevTools s={s} />
+        </>}
+      </div>
       </div>
     </Page>
   );
