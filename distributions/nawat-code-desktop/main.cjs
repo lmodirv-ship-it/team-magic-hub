@@ -4,11 +4,13 @@ const { app, BrowserWindow, shell, Menu, session } = require("electron");
 const http = require("http");
 const path = require("path");
 
+// الأحدث أولًا حتى تظهر آخر التطورات، مع إبقاء كل العناوين القديمة.
+// NAWAT_URL يسمح باختيار نسخة معينة دون تعديل الملف.
 const TARGETS = [
+  "https://hn-ai.site/workspace",
+  "https://nawat.groupe-hn.com/workspace",
   "http://127.0.0.1:3120/workspace",
   "http://192.168.100.67:8084/workspace",
-  "https://nawat.groupe-hn.com/workspace",
-  "https://hn-ai.site/workspace",
 ];
 const L = {
   ar: { file: "ملف", view: "عرض", lang: "اللغة", reload: "إعادة التحميل", tools: "أدوات المطوّر", full: "ملء الشاشة", quit: "خروج", home: "البداية" },
@@ -29,6 +31,8 @@ const reachable = (u) => new Promise((ok) => {
 });
 
 async function openStudio() {
+  const preferred = (process.env.NAWAT_URL || "").trim();
+  if (preferred) return win.loadURL(preferred + (preferred.includes("?") ? "&" : "?") + "lang=" + lang);
   for (const u of TARGETS) if (await reachable(u)) return win.loadURL(u + (u.includes("?") ? "&" : "?") + "lang=" + lang);
   win.loadFile(path.join(__dirname, "launcher.html"), { query: { lang } });
 }
