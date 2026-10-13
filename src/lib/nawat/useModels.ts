@@ -59,7 +59,8 @@ async function refreshModels() {
   autoScan();
   refreshInFlight = (async () => {
     try {
-      const [models, running] = await Promise.all([listModels(), listRunning(), refreshGhn()]);
+      await refreshGhn();
+      const [models, running] = await Promise.all([listModels(), listRunning()]);
       emit({
         models: availableModels(models),
         running: [
