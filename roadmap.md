@@ -49,4 +49,5 @@
 - [ ] NAWAT Code أوفلاين: تضمين ملفات الواجهة داخل حزمة exe — الجولة القادمة
 - [x] المشاريع: فريق متخصص (منسّق + بناة HTML/CSS/JS بالتوازي + مصحّح + مراجع) يكتب مباشرة في ملفات المشروع
 
-- [ ] Deploy site copy to 213.156.132.166 and enable sync between copies
+- [x] Deploy site copy to 213.156.132.166 (PM2 nawat-studio-web, port 3130, internal only)
+- [ ] Public access + sync for 213.156.132.166 — blocked: needs a domain (IP host is blocked by its nginx catch-all)
