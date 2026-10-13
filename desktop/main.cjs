@@ -2,7 +2,8 @@
 // كل تعديل يُنشر يظهر تلقائيًا لأن الواجهة تُحمَّل من الخادم مباشرة.
 const { app, BrowserWindow, shell } = require("electron");
 const http = require("http");
-const URLS = ["http://192.168.100.67:8084/workspace", "https://nawat.groupe-hn.com/workspace"];
+// الأحدث أولًا: hn-ai.site يحمل آخر التطورات، ثم الموقع الرسمي، ثم نسخة الشبكة المحلية القديمة.
+const URLS = ["https://hn-ai.site/workspace", "https://nawat.groupe-hn.com/workspace", "http://192.168.100.67:8084/workspace"];
 const reachable = (u) => new Promise((ok) => {
   if (!u.startsWith("http://")) return ok(true);
   const r = http.get(u, { timeout: 1500 }, (res) => { res.resume(); ok(true); });
@@ -12,8 +13,11 @@ async function create() {
   const win = new BrowserWindow({ width: 1440, height: 900, title: "NAWAT Studio", autoHideMenuBar: true,
     webPreferences: { contextIsolation: true, nodeIntegration: false } });
   win.webContents.setWindowOpenHandler(({ url }) => { shell.openExternal(url); return { action: "deny" }; });
+  // NAWAT_URL يسمح باختيار نسخة معينة دون تعديل الملف.
+  const preferred = (process.env.NAWAT_URL || "").trim();
+  if (preferred) return win.loadURL(preferred);
   for (const u of URLS) if (await reachable(u)) return win.loadURL(u);
-  win.loadURL(URLS[1]);
+  win.loadURL(URLS[0]);
 }
 app.whenReady().then(create);
 app.on("window-all-closed", () => app.quit());
