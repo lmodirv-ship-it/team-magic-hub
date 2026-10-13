@@ -15,6 +15,8 @@ const LINKS: [string, string, string][] = [
   ["http://192.168.100.66:11434", "Ollama .66", ".66"],
   ["http://127.0.0.1:8188", "ComfyUI حاسوبي", "محلي"],
   ["https://nawat.groupe-hn.com", "المنصة الرسمية", "عام"],
+  ["https://platform.groupe-hn.com", "منصة Groupe-HN (النماذج والمفاتيح)", "عام"],
+  ["https://platform.groupe-hn.com/api/public/v1/models", "منصة Groupe-HN: النماذج الحية", "عام"],
   ["https://hn-ai.site", "نسخة hn-ai.site", "عام"],
   ["https://hn-ai.site/comfy-hn", "ComfyUI السيرفر المحمي", "عام"],
   ["https://www.nawat-group.com/bridge", "جسر nawat-group.com", "عام"],
