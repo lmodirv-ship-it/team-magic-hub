@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { chatStream, listAllModels } from "@/lib/nawat/bridge";
 import { officialModels } from "@/lib/nawat/providers";
-import { ghnChatStream } from "@/lib/nawat/groupe-hn-platform";
+import { ghnChatStream, ghnListModels } from "@/lib/nawat/groupe-hn-platform";
 import {
   DEFAULT_ENVIRONMENT, environmentPrompt, loadEnvironmentOrDefault, saveEnvironment, type AgentEnvironment,
 } from "@/lib/nawat/agent-environment";
@@ -38,7 +38,7 @@ function EnvironmentPage() {
   const [env, setEnv] = useState<AgentEnvironment>(DEFAULT_ENVIRONMENT);
   const [models, setModels] = useState<string[]>(officialModels.map((m) => m.name));
   const [engine, setEngine] = useState<"ghn" | "ollama">("ghn");
-  const [model, setModel] = useState("nawat-chat");
+  const [model, setModel] = useState("nawat-chat:latest");
   const [task, setTask] = useState("");
   const [out, setOut] = useState("");
   const [busy, setBusy] = useState(false);
@@ -46,7 +46,8 @@ function EnvironmentPage() {
 
   useEffect(() => {
     setEnv(loadEnvironmentOrDefault());
-    listAllModels().then((l) => l.length && setModels(l.map((m) => m.name))).catch(() => {});
+    ghnListModels().then((l) => l.length && setModels(l)).catch(() => {});
+    if (false) listAllModels().then((l) => l.length && setModels(l.map((m) => m.name))).catch(() => {});
   }, []);
 
   async function invite() {
@@ -61,7 +62,7 @@ function EnvironmentPage() {
         { role: "user", content: task },
       ], abort.current.signal)) setOut((o) => o + chunk);
     } catch (e) {
-      if (!abort.current?.signal.aborted) setOut((o) => o + (engine === "ghn" ? "\n\n[Plateforme Groupe-HN momentanément indisponible — réessayez dans un instant.]" : "\n\n[Modèle injoignable : vérifiez qu'Ollama tourne (port 11434) sur votre ordinateur.]"));
+      if (!abort.current?.signal.aborted) setOut((o) => o + ((e as Error).message === "GHN_KEY" ? "\n\n[Clé Groupe-HN requise : ajoutez votre clé ghn_ dans la page Fournisseurs (/providers).]" : engine === "ghn" ? "\n\n[Plateforme Groupe-HN momentanément indisponible — réessayez dans un instant.]" : "\n\n[Modèle injoignable : vérifiez qu'Ollama tourne (port 11434) sur votre ordinateur.]"));
     } finally { setBusy(false); }
   }
 
@@ -91,7 +92,7 @@ function EnvironmentPage() {
           </div>
           <label className="text-xs font-medium">Moteur</label>
           <div className="mb-2 mt-1 grid grid-cols-2 gap-1">
-            <Button size="sm" variant={engine === "ghn" ? "default" : "outline"} onClick={() => { setEngine("ghn"); setModel("nawat-chat"); }}>Groupe-HN</Button>
+            <Button size="sm" variant={engine === "ghn" ? "default" : "outline"} onClick={() => { setEngine("ghn"); setModel("nawat-chat:latest"); }}>Groupe-HN</Button>
             <Button size="sm" variant={engine === "ollama" ? "default" : "outline"} onClick={() => { setEngine("ollama"); setModel("nawat-coder:latest"); }}>Ollama local</Button>
           </div>
           <label className="text-xs font-medium">Agent (modèle)</label>

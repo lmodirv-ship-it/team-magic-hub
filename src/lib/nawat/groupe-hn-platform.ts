@@ -6,7 +6,19 @@ export const GHN_PLATFORM = {
   baseUrl: "https://platform.hnchat.net/api/public/v1",
   model: "nawat-chat",
   endpoint: "https://platform.hnchat.net/api/public/v1/chat/completions",
+  /** Official platform address (primary); hnchat.net kept as fallback. */
+  officialBaseUrl: "https://platform.groupe-hn.com/api/public/v1",
 };
+
+export async function ghnListModels(): Promise<string[]> {
+  for (const base of [GHN_PLATFORM.officialBaseUrl, GHN_PLATFORM.baseUrl]) {
+    try {
+      const r = await fetch(`${base}/models`);
+      if (r.ok) { const j = (await r.json()) as { data?: { id: string }[] }; if (j.data?.length) return j.data.map((m) => m.id); }
+    } catch { /* try next */ }
+  }
+  return [];
+}
 
 const KEY = "nawat.ghn.key";
 const FREE_KEY = "nawat.ghn.freeUntil";
@@ -54,12 +66,19 @@ export function useGhn(): GhnState {
 /** Stream a chat from the Groupe-HN platform (OpenAI-compatible SSE); key optional during the free period. */
 export async function* ghnChatStream(model: string, messages: { role: string; content: string }[], signal?: AbortSignal): AsyncGenerator<string> {
   const key = typeof window === "undefined" ? "" : (localStorage.getItem(KEY) ?? "");
-  const res = await fetch(GHN_PLATFORM.endpoint, {
+  let res: Response | null = null;
+  for (const base of [GHN_PLATFORM.officialBaseUrl, GHN_PLATFORM.baseUrl]) {
+    try {
+      res = await fetch(`${base}/chat/completions`, {
     method: "POST", signal: signal ?? null,
     headers: (key ? { "content-type": "application/json", authorization: `Bearer ${key}` } : { "content-type": "application/json" }) as Record<string, string>,
     body: JSON.stringify({ model, messages, stream: true }),
-  });
-  if (!res.ok || !res.body) throw new Error(`Groupe-HN ${res.status}`);
+      });
+      if (res.ok || res.status === 401) break;
+    } catch (e) { if (signal?.aborted) throw e; }
+  }
+  if (res?.status === 401) throw new Error("GHN_KEY");
+  if (!res?.ok || !res.body) throw new Error(`Groupe-HN ${res?.status ?? "offline"}`);
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let buf = "";

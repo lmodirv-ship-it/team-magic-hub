@@ -31,7 +31,7 @@ export const DEFAULT_ENVIRONMENT: AgentEnvironment = {
 3. Écrire le code fichier par fichier (HTML, CSS, JS séparés).
 4. Vérifier : erreurs, liens entre fichiers, responsive.
 5. Rendre un résumé court + le code final.`,
-  connections: `- Moteur principal : plateforme Groupe-HN (platform.hnchat.net), Ollama local en secours.
+  connections: `- Moteur principal : plateforme Groupe-HN (platform.groupe-hn.com), Ollama local en secours.
 - Pont NAWAT : 192.168.100.67:8788 (optionnel, pour le terminal).
 - Serveur public : hn-ai.site / nawat.groupe-hn.com.
 - Dossier de travail : un dossier par projet (PROJECTS_DIR).
