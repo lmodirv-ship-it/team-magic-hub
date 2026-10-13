@@ -15,9 +15,9 @@ export const getDbOverview = createServerFn({ method: "GET" }).handler(async () 
   if (!hasDb()) {
     try {
       const r = await fetch(MIRROR, { signal: AbortSignal.timeout(8000) });
-      if (r.ok) return { ...(await r.json()), mirror: MIRROR };
+      if (r.ok) return (await r.json()) as { counts: { table: string; rows: number; ok: boolean }[]; roles: never[]; pages: never[]; perms: never[] };
     } catch { /* below */ }
-    return { counts: [], roles: [], pages: [], perms: [], mirror: "unreachable" };
+    return { counts: [] as { table: string; rows: number; ok: boolean }[], roles: [] as never[], pages: [] as never[], perms: [] as never[] };
   }
   const db = await admin();
   const counts = await Promise.all(
