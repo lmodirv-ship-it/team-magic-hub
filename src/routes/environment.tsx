@@ -32,7 +32,7 @@ function EnvironmentPage() {
   useEffect(() => setEnv(loadEnvironment()), []);
   const preview = environmentPrompt(env);
   return (
-    <Page title="Environnement central" description="On construit l'environnement, puis on y invite l'agent : chaque agent (coordinateur, bâtisseurs, correcteur, réviseur) le lit avant de commencer.">
+    <Page eyebrow="Agents" title="Environnement central" description="On construit l'environnement, puis on y invite l'agent : chaque agent (coordinateur, bâtisseurs, correcteur, réviseur) le lit avant de commencer.">
       <div className="grid gap-4 lg:grid-cols-3">
         {FIELDS.map((f) => (
           <Panel key={f.key} title={f.title}>
