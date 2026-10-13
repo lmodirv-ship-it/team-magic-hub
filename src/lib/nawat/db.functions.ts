@@ -2,11 +2,23 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 // Development mode: no sign-in. All access goes through these server functions.
-const admin = async () => (await import("@/integrations/supabase/client.server")).supabaseAdmin;
+const hasDb = () => Boolean(process.env["SUPABASE_URL"] && process.env["SUPABASE_SERVICE_ROLE_KEY"]);
+const MIRROR = "https://hn-ai.site/api/public/db-mirror";
+const admin = async () => {
+  if (!hasDb()) throw new Error("Base de données du serveur non liée à cette copie — lecture via hn-ai.site. Les modifications se font sur hn-ai.site.");
+  return (await import("@/integrations/supabase/client.server")).supabaseAdmin;
+};
 
 const TABLES = ["app_roles", "app_pages", "app_role_permissions", "app_store", "api_keys", "usage_events"] as const;
 
 export const getDbOverview = createServerFn({ method: "GET" }).handler(async () => {
+  if (!hasDb()) {
+    try {
+      const r = await fetch(MIRROR, { signal: AbortSignal.timeout(8000) });
+      if (r.ok) return (await r.json()) as { counts: { table: string; rows: number; ok: boolean }[]; roles: never[]; pages: never[]; perms: never[] };
+    } catch { /* below */ }
+    return { counts: [] as { table: string; rows: number; ok: boolean }[], roles: [] as never[], pages: [] as never[], perms: [] as never[] };
+  }
   const db = await admin();
   const counts = await Promise.all(
     TABLES.map(async (t) => {
