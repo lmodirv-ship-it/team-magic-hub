@@ -197,6 +197,7 @@ export async function* chatStream(
   assertAi();
   // Groupe-HN bridge first (user choice); local Ollama stays available as option/fallback.
   const engine = typeof window !== "undefined" ? localStorage.getItem("nawat.chatEngine") ?? "ghn" : "ghn";
+  let ghnError = "";
   if (engine === "ghn" && host === ollamaHost()) {
     let produced = false;
     try {
@@ -205,6 +206,7 @@ export async function* chatStream(
       return;
     } catch (e) {
       if (signal?.aborted || produced) throw e;
+      ghnError = e instanceof Error ? e.message : String(e);
       // Groupe-HN unreachable: continue with local Ollama below.
     }
   }
@@ -224,9 +226,17 @@ export async function* chatStream(
     if (res.status === 400) res = await send(false); // older Ollama / model without think support
   } catch (e) {
     if (signal?.aborted) throw e;
+    if (ghnError) throw new Error(`Groupe-HN: ${ghnError}. Local Ollama is not reachable either.`);
     throw new EngineUnreachable(host);
   }
-  if (!res.ok || !res.body) throw new Error(`Ollama ${res.status}: ${shortBody(await res.text())}`);
+  if (!res.ok || !res.body) {
+    const body = shortBody(await res.text());
+    if (ghnError) {
+      const local = /llama-server/i.test(body) ? "local Ollama is installed incompletely (llama-server missing) — reinstall Ollama or choose a Groupe-HN model" : `local Ollama ${res.status}`;
+      throw new Error(`Groupe-HN: ${ghnError}. Fallback failed: ${local}.`);
+    }
+    throw new Error(`Ollama ${res.status}: ${body}`);
+  }
   record("رد النموذج (أول استجابة)", performance.now() - t0);
   const reader = res.body.getReader();
   const dec = new TextDecoder();
