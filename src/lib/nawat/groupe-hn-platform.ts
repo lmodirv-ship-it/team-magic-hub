@@ -18,7 +18,7 @@ export async function ghnListModels(): Promise<string[]> {
       const r = await fetch(u, { cache: "no-store" });
       if (r.ok) {
         const j = (await r.json()) as { models?: (string | { id?: string; name?: string })[]; data?: { id: string }[] };
-        const list = (j.models ?? j.data ?? []).map((m) => (typeof m === "string" ? m : m.id ?? m.name ?? "")).filter(Boolean);
+        const list = ((j.models ?? j.data ?? []) as (string | { id?: string; name?: string })[]).map((m) => (typeof m === "string" ? m : m.id ?? m.name ?? "")).filter(Boolean);
         if (list.length) return list;
       }
     } catch { /* try next */ }
