@@ -195,6 +195,19 @@ export async function* chatStream(
 ): AsyncGenerator<string> {
   const { assertAi } = await import("./ai-control");
   assertAi();
+  // Groupe-HN bridge first (user choice); local Ollama stays available as option/fallback.
+  const engine = typeof window !== "undefined" ? localStorage.getItem("nawat.chatEngine") ?? "ghn" : "ghn";
+  if (engine === "ghn" && host === ollamaHost()) {
+    let produced = false;
+    try {
+      const { ghnChatStream } = await import("./groupe-hn-platform");
+      for await (const piece of ghnChatStream(model, messages, signal)) { produced = true; yield piece; }
+      return;
+    } catch (e) {
+      if (signal?.aborted || produced) throw e;
+      // Groupe-HN unreachable: continue with local Ollama below.
+    }
+  }
   const { record } = await import("./metrics");
   const t0 = performance.now();
   let res: Response;
