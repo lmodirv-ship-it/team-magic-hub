@@ -4,6 +4,7 @@ import { BarChart3, Play, Save } from "lucide-react";
 import { getProviderForModel, modelChatStream } from "@/lib/nawat/providers";
 import { useModels } from "@/lib/nawat/useModels";
 import { ghnChatStream } from "@/lib/nawat/groupe-hn-platform";
+import { TrainingLivePanel } from "@/components/nawat/TrainingLivePanel";
 import { useWorkspace } from "@/lib/nawat/workspace";
 import { addRun, CATEGORIES, categoryOf, rateRun, type ModelCategory } from "@/lib/nawat/model-catalog";
 
@@ -88,16 +89,19 @@ function TasksPage() {
       ? `${prompt}\n\n--- ${contextFile} ---\n${(vfs[contextFile] ?? "").slice(0, 8000)}`
       : prompt;
     setResults(selected.map((m) => ({ model: m, output: "", ms: 0, done: false })));
+    const round = new Date().toISOString();
     const stream = engine === "ghn" ? ghnChatStream : modelChatStream;
     const previous: { model: string; text: string }[] = [];
     const one = async (m: string) => {
         const t0 = performance.now();
         let acc = "";
+        let ttft: number | null = null;
         try {
           const content = chain && previous.length
             ? `${full}\n\n--- Réponses des modèles précédents (améliore-les) ---\n${previous.map((p) => `[${p.model}]\n${p.text.slice(0, 2000)}`).join("\n\n")}`
             : full;
           for await (const c of stream(m, [{ role: "user", content }])) {
+            if (ttft === null) ttft = performance.now() - t0;
             acc += c;
             setResults((rs) =>
               rs.map((r) =>
@@ -118,6 +122,8 @@ function TasksPage() {
           tps: acc.length / Math.max(ms / 1000, 0.001),
           ok: !acc.includes("⚠️") && acc.length > 0,
           prompt: prompt.slice(0, 200),
+          round,
+          ...(ttft ? { inTps: full.length / Math.max(ttft / 1000, 0.001) } : {}),
         });
         setResults((rs) =>
           rs.map((r) => (r.model === m ? { ...r, output: acc, ms, done: true, at } : r)),
@@ -271,6 +277,8 @@ function TasksPage() {
           </article>
         ))}
       </div>
+
+      <TrainingLivePanel />
 
       <section className="mt-8 rounded-lg border border-border bg-card p-4">
         <h2 className="mb-2 text-sm font-semibold">سجل المهام المحفوظ محليًا</h2>

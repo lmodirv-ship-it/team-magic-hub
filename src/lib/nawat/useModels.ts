@@ -3,9 +3,18 @@ import { listModels, listRunning, type OllamaModel, type RunningModel } from "./
 import { developmentModels, officialModels, providerModels, subscribeProviders } from "./providers";
 import { discoverLocalModels, getDiscovered } from "./local-discovery";
 
+/** Live Groupe-HN platform list (mirrors `nawat models` on the server); refreshed with every poll. */
+let ghnModels: OllamaModel[] = [];
+async function refreshGhn() {
+  const { ghnListModels } = await import("./groupe-hn-platform");
+  const names = await ghnListModels().catch(() => [] as string[]);
+  if (names.length) ghnModels = names.map((name) => ({ name, model: name, size: 0, digest: "groupe-hn", modified_at: "live", providerId: "groupe-hn" }) as OllamaModel);
+}
+
 function availableModels(discovered: OllamaModel[] = []) {
   const models = [
     ...officialModels,
+    ...ghnModels,
     ...developmentModels(),
     ...providerModels(),
     ...getDiscovered(),
@@ -50,6 +59,7 @@ async function refreshModels() {
   autoScan();
   refreshInFlight = (async () => {
     try {
+      await refreshGhn();
       const [models, running] = await Promise.all([listModels(), listRunning()]);
       emit({
         models: availableModels(models),
