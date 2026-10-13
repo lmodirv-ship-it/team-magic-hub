@@ -67,3 +67,5 @@
 - [x] تجهيز مثبت NAWAT Code جديد يحمل ترتيب العناوين الجديد (hn-ai.site أولًا) — النسخة الحالية عندك ما زالت تفتح نسخة الشبكة القديمة.
 - [x] تجهيز مثبت/نسخة محمولة جديدة من NAWAT Code: hn-ai.site أولًا، الفرنسية أساسًا، وإمكانية الاختيار عبر NAWAT_URL.
 - [x] START-STUDIO-ALWAYS: open bridge on a free alternate port when 8788 busy
+- [ ] (blocked: LAN-only, needs .env on LAN copy) /database: connect self-hosted DB 192.168.100.66:8000 (keys given by user; LAN-only address)
+- [ ] Upload new build to hn-ai.site (blocked: server password not stored)
