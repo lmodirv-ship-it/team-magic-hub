@@ -8,6 +8,7 @@ const CORS = {
 
 /** Public read-only sync: current Groupe-HN model list, fetched server-side on every call. */
 export const Route = createFileRoute("/api/public/sync")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
