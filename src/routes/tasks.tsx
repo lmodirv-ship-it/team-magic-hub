@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { BarChart3, Play, Save } from "lucide-react";
 import { getProviderForModel, modelChatStream } from "@/lib/nawat/providers";
 import { useModels } from "@/lib/nawat/useModels";
+import { ghnChatStream } from "@/lib/nawat/groupe-hn-platform";
 import { useWorkspace } from "@/lib/nawat/workspace";
 import { addRun, CATEGORIES, categoryOf, rateRun, type ModelCategory } from "@/lib/nawat/model-catalog";
 
@@ -31,6 +32,22 @@ type Result = { model: string; output: string; ms: number; done: boolean; at?: s
 
 const HISTORY_KEY = "nawat.tasks.v1";
 
+/** Specialised task presets; the original product-card task stays first. */
+const TASK_PRESETS: { label: string; prompt: string }[] = [
+  { label: "Carte produit (React)", prompt: "اكتب مكوّن React لبطاقة منتج مع Tailwind." },
+  { label: "Code — API", prompt: "Écris une petite API REST Node.js (Express) avec CRUD pour des voitures." },
+  { label: "Code — correction", prompt: "Trouve et corrige le bug : function sum(a){ return a.reduce((x,y)=>x+y) } sum([])" },
+  { label: "Chat", prompt: "Explique en 5 phrases ce qu'est un modèle de langage local." },
+  { label: "Shell", prompt: "Donne la commande PowerShell pour lister les 10 plus gros fichiers d'un dossier." },
+  { label: "Outils / JSON", prompt: "Retourne uniquement un JSON {name, price, currency} pour : voiture Clio 2020 à 95000 MAD." },
+  { label: "SQL", prompt: "Écris une table SQL 'cars' et une requête des 5 voitures les moins chères." },
+  { label: "Vision (description)", prompt: "Décris comment tu analyserais une photo de voiture pour estimer son état." },
+  { label: "Darija", prompt: "شرح بالدارجة المغربية كيفاش نبدا مشروع صغير ديال البرمجة." },
+  { label: "Étude", prompt: "Résume la différence entre HTTP et WebSocket pour un étudiant." },
+  { label: "Business", prompt: "Propose un plan marketing en 5 points pour une plateforme de vente de voitures au Maroc." },
+  { label: "Réflexion", prompt: "Un train part à 8h à 80 km/h, un autre à 9h à 120 km/h. Quand le second rattrape-t-il le premier ? Explique." },
+];
+
 function TasksPage() {
   const { models } = useModels();
   const { vfs, createFile, writeFile } = useWorkspace();
@@ -41,6 +58,8 @@ function TasksPage() {
   const [running, setRunning] = useState(false);
   const [history, setHistory] = useState<{ prompt: string; at: string }[]>([]);
   const [cat, setCat] = useState<ModelCategory | "all">("all");
+  const [engine, setEngine] = useState<"ghn" | "local">("ghn");
+  const [chain, setChain] = useState(true);
   const shown = models.filter((m) =>
     cat === "all" ? true : cat === "provider" ? !!getProviderForModel(m.name) : categoryOf(m.name) === cat,
   );
@@ -69,12 +88,16 @@ function TasksPage() {
       ? `${prompt}\n\n--- ${contextFile} ---\n${(vfs[contextFile] ?? "").slice(0, 8000)}`
       : prompt;
     setResults(selected.map((m) => ({ model: m, output: "", ms: 0, done: false })));
-    await Promise.all(
-      selected.map(async (m) => {
+    const stream = engine === "ghn" ? ghnChatStream : modelChatStream;
+    const previous: { model: string; text: string }[] = [];
+    const one = async (m: string) => {
         const t0 = performance.now();
         let acc = "";
         try {
-          for await (const c of modelChatStream(m, [{ role: "user", content: full }])) {
+          const content = chain && previous.length
+            ? `${full}\n\n--- Réponses des modèles précédents (améliore-les) ---\n${previous.map((p) => `[${p.model}]\n${p.text.slice(0, 2000)}`).join("\n\n")}`
+            : full;
+          for await (const c of stream(m, [{ role: "user", content }])) {
             acc += c;
             setResults((rs) =>
               rs.map((r) =>
@@ -99,8 +122,10 @@ function TasksPage() {
         setResults((rs) =>
           rs.map((r) => (r.model === m ? { ...r, output: acc, ms, done: true, at } : r)),
         );
-      }),
-    );
+        if (!acc.includes("⚠️")) previous.push({ model: m, text: acc });
+    };
+    if (chain) { for (const m of selected) await one(m); }
+    else await Promise.all(selected.map(one));
     const next = [{ prompt, at: new Date().toISOString() }, ...history].slice(0, 30);
     setHistory(next);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
@@ -122,7 +147,17 @@ function TasksPage() {
             rows={5}
             className="w-full resize-none rounded-md border border-border bg-background p-3 text-sm outline-none focus:border-nawat"
           />
+          <div className="mt-2 flex flex-wrap gap-1">
+            {TASK_PRESETS.map((t) => (
+              <button key={t.label} onClick={() => setPrompt(t.prompt)} className="rounded border border-border px-2 py-0.5 text-[11px] text-muted-foreground hover:text-foreground">{t.label}</button>
+            ))}
+          </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="flex overflow-hidden rounded border border-border text-xs">
+              <button onClick={() => setEngine("ghn")} className={`px-2 py-1 ${engine === "ghn" ? "bg-nawat text-nawat-foreground" : ""}`}>Groupe-HN</button>
+              <button onClick={() => setEngine("local")} className={`px-2 py-1 ${engine === "local" ? "bg-nawat text-nawat-foreground" : ""}`}>Local</button>
+            </div>
+            <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={chain} onChange={(e) => setChain(e.target.checked)} /> Un par un (chacun voit les précédents)</label>
             <select
               value={contextFile}
               onChange={(e) => setContextFile(e.target.value)}
@@ -165,6 +200,18 @@ function TasksPage() {
               </button>
             ))}
           </div>
+          <label className="mb-1 flex items-center gap-2 text-xs font-medium">
+            <input
+              type="checkbox"
+              aria-label="Tout sélectionner"
+              checked={shown.length > 0 && shown.every((m) => selected.includes(m.name))}
+              onChange={(e) => {
+                const names = shown.map((m) => m.name);
+                setSelected((s) => (e.target.checked ? [...new Set([...s, ...names])] : s.filter((x) => !names.includes(x))));
+              }}
+            />
+            Tout sélectionner ({shown.length})
+          </label>
           <div className="max-h-96 space-y-1 overflow-auto">
             {shown.map((m) => (
               <label key={m.name} className="flex items-center gap-2 text-xs">
