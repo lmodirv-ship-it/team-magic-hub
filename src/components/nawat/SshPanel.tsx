@@ -14,7 +14,7 @@ import {
 type Line = { kind: "cmd" | "out" | "err"; text: string };
 
 export function SshPanel() {
-  const [bridgeUrl, setBridgeUrl] = useState("http://127.0.0.1:8787");
+  const [bridgeUrl, setBridgeUrl] = useState("http://127.0.0.1:8788");
   const [alive, setAlive] = useState<boolean | null>(null);
   const [hosts, setHosts] = useState<SshHost[]>([]);
   const [host, setHost] = useState("");

@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { journalChanges, writeVerified } from "./safety";
+import { cleanInvisibleMarks } from "./clean-text";
 
 
 export type Vfs = Record<string, string>;
@@ -202,7 +203,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       let isNew = false;
       setVfs((v) => {
         isNew = v[p] === undefined;
-        return { ...v, [p]: c };
+        return { ...v, [p]: cleanInvisibleMarks(c) };
       });
       const entry = registerMeta(p, patch);
       if (isNew) emitCreated(p, entry);
@@ -216,7 +217,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       setVfs((v) => {
         if (v[p] !== undefined) return v;
         isNew = true;
-        return { ...v, [p]: content };
+        return { ...v, [p]: cleanInvisibleMarks(content) };
       });
       setTabs((t) => (t.includes(p) ? t : [...t, p]));
       setActiveState(p);

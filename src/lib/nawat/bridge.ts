@@ -360,12 +360,33 @@ export type SshConfig = {
 export type SshFile = { name: string; size: number; dir: boolean };
 export type SshHost = { host: string; user?: string; port?: number; online?: boolean };
 
+// The bridge really listens on :8788; :8787 stays as the older fallback.
+export const SSH_BRIDGE_CANDIDATES = ["http://127.0.0.1:8788", "http://127.0.0.1:8787"];
+const DEFAULT_SSH_BRIDGE = "http://127.0.0.1:8788";
+
 export function sshBridgeUrl(): string {
-  if (typeof window === "undefined") return "http://127.0.0.1:8787";
-  return normalizeHost(localStorage.getItem("nawat.sshBridge") ?? "http://127.0.0.1:8787");
+  if (typeof window === "undefined") return DEFAULT_SSH_BRIDGE;
+  return normalizeHost(localStorage.getItem("nawat.sshBridge") ?? DEFAULT_SSH_BRIDGE);
 }
 export function setSshBridgeUrl(u: string) {
   localStorage.setItem("nawat.sshBridge", normalizeHost(u));
+}
+
+/** Try each known bridge port and keep the first one that answers. */
+export async function probeSshBridge(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  for (const candidate of SSH_BRIDGE_CANDIDATES) {
+    try {
+      const res = await fetch(candidate + "/api/ping", { method: "GET" });
+      if (res.ok) {
+        localStorage.setItem("nawat.sshBridge", normalizeHost(candidate));
+        return candidate;
+      }
+    } catch {
+      // this port isn't listening — try the next one
+    }
+  }
+  return null;
 }
 
 async function bridge<T>(path: string, body?: unknown): Promise<T> {
@@ -402,7 +423,16 @@ function asText(r: unknown): string {
   return JSON.stringify(r, null, 2);
 }
 
-export const bridgePing = () => bridge<unknown>("/api/ping");
+export async function bridgePing(): Promise<unknown> {
+  try {
+    return await bridge<unknown>("/api/ping");
+  } catch (e) {
+    // The saved URL may point at a dead port — fall back to the other known one.
+    const found = await probeSshBridge();
+    if (!found) throw e;
+    return await bridge<unknown>("/api/ping");
+  }
+}
 
 export async function sshHosts(): Promise<SshHost[]> {
   const r = await bridge<unknown>("/api/ssh/hosts");
