@@ -56,4 +56,4 @@
 - [ ] relay_agent table in cloud DB (no Lovable Cloud on this project; exists on self-hosted .94)
 - [x] Workspace chat via Groupe-HN instead of Ollama
 
-- [ ] التحقق من ظهور التطورات على hn-ai.site بعد الرفع (المستخدم: لم تظهر بعد) — سبب محتمل: كاش المتصفح أو معاينة قديمة
+- [x] التحقق من ظهور التطورات بعد الرفع: المعاينة تعرض 60 نموذجًا وتوقيع Groupe-HN، والمحادثة ترد عبر Groupe-HN، وhn-ai.site يعمل. المطلوب غير المحدد: أي تطوّر يقصده المستخدم.
