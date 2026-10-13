@@ -69,3 +69,4 @@
 - [x] START-STUDIO-ALWAYS: open bridge on a free alternate port when 8788 busy
 - [ ] (blocked: LAN-only, needs .env on LAN copy) /database: connect self-hosted DB 192.168.100.66:8000 (keys given by user; LAN-only address)
 - [ ] Upload new build to hn-ai.site (blocked: server password not stored)
+- [ ] Link hn-ai.site to self-hosted DB on 213.156.133.94
