@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
+import { RoundsChart } from "@/components/nawat/RoundsChart";
 import { useModels } from "@/lib/nawat/useModels";
 import { formatBytes } from "@/lib/nawat/bridge";
 import {
@@ -74,6 +75,8 @@ function ResultsPage() {
       <p className="mb-4 text-sm text-muted-foreground">
         كل اختبار في صفحة المهام يُسجَّل هنا تلقائيًا ({runs.length} اختبار). النمو يُحسب بين كل إصدار والذي قبله في نفس العائلة.
       </p>
+
+      <RoundsChart runs={runs} />
 
       <div className="mb-5 flex flex-wrap gap-2">
         {CATEGORIES.map((c) => (

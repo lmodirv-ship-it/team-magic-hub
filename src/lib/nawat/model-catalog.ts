@@ -44,6 +44,10 @@ export type TestRun = {
   ok: boolean;
   score?: number; // تقييم 1-5
   prompt: string;
+  /** Round id shared by every model run of one task launch. */
+  round?: string;
+  /** Input speed: prompt chars / time to first token (only when measured). */
+  inTps?: number;
 };
 
 const RUNS_KEY = "nawat.tasks.runs.v1";
