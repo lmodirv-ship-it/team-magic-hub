@@ -51,3 +51,7 @@
 
 - [x] Deploy site copy to 213.156.132.166 (PM2 nawat-studio-web, port 3130, internal only)
 - [ ] Public access + sync for 213.156.132.166 — blocked: needs a domain (IP host is blocked by its nginx catch-all)
+- [ ] .166: finish import, run platform on local DB + local model bridge (blocked: SSH drops / no public domain)
+- [ ] Platform calls nawat.groupe-hn.com/api/public/sync (separate project)
+- [ ] relay_agent table in cloud DB (no Lovable Cloud on this project; exists on self-hosted .94)
+- [x] Workspace chat via Groupe-HN instead of Ollama
