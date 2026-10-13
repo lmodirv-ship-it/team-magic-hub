@@ -55,7 +55,7 @@ export function useGhn(): GhnState {
 export async function* ghnChatStream(model: string, messages: { role: string; content: string }[], signal?: AbortSignal): AsyncGenerator<string> {
   const key = typeof window === "undefined" ? "" : (localStorage.getItem(KEY) ?? "");
   const res = await fetch(GHN_PLATFORM.endpoint, {
-    method: "POST", signal,
+    method: "POST", signal: signal ?? null,
     headers: (key ? { "content-type": "application/json", authorization: `Bearer ${key}` } : { "content-type": "application/json" }) as Record<string, string>,
     body: JSON.stringify({ model, messages, stream: true }),
   });
