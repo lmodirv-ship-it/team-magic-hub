@@ -26,6 +26,7 @@ import {
   toolConnections,
   useStudioRuntime,
 } from "@/lib/nawat/studio";
+import { useLiveNodes } from "@/lib/nawat/live-nodes";
 
 const toolIcons: Record<string, typeof Server> = {
   SSH: Server,
@@ -44,7 +45,11 @@ const statusTone = {
 
 export function MissionControlView() {
   const runtime = useStudioRuntime();
-  const uptime = ((siteStats.online / siteStats.total) * 100).toFixed(1);
+  const live = useLiveNodes();
+  const onlineNodes = (live.nodes ?? []).filter((n) => n.online);
+  const localModels = new Set(onlineNodes.flatMap((n) => n.models));
+  const totalBytes = onlineNodes.reduce((s, n) => s + n.bytes, 0);
+  void siteStats;
 
   return (
     <Page
@@ -54,15 +59,25 @@ export function MissionControlView() {
       actions={<RuntimeBadge connected={runtime.connected} />}
     >
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Metric label="العقد النشطة" value="2" change="محلي · VPS (66)" tone="success" />
-        <Metric label="النماذج المحلية" value="9" change="~22 GB إجمالي" tone="success" />
         <Metric
-          label="المواقع المتصلة"
-          value={`${siteStats.online}`}
-          change={`من ${siteStats.total} · ${uptime}%`}
-          tone="warning"
+          label="العقد النشطة"
+          value={live.nodes ? `${onlineNodes.length}/${live.nodes.length}` : "…"}
+          change={onlineNodes.map((n) => n.label).join(" · ") || "فحص مباشر"}
+          tone={onlineNodes.length ? "success" : "warning"}
         />
-        <Metric label="الأحداث المسجّلة" value="1,680" change="بث حي عبر :5001" />
+        <Metric
+          label="النماذج المحلية"
+          value={live.nodes ? `${localModels.size}` : "…"}
+          change={`~${(totalBytes / 1e9).toFixed(1)} GB إجمالي`}
+          tone={localModels.size ? "success" : "warning"}
+        />
+        <Metric
+          label="نماذج Groupe-HN"
+          value={live.ghnCount === null ? "…" : `${live.ghnCount}`}
+          change="platform.groupe-hn.com"
+          tone={live.ghnCount ? "success" : "warning"}
+        />
+        <Metric label="آخر فحص" value={live.nodes ? new Date(live.nodes[0]!.checkedAt).toLocaleTimeString() : "…"} change="تحديث كل 15 ثانية" />
       </div>
       <div className="mt-4 flex items-center gap-3 rounded-lg border border-nawat/30 bg-nawat/5 px-4 py-3">
         <ClipboardList className="size-5 text-nawat" />
@@ -77,35 +92,22 @@ export function MissionControlView() {
         </Button>
       </div>
 
-      {/* Nodes */}
-      <div className="mt-4 grid gap-3 lg:grid-cols-2">
-        {infraNodes.map((n) => (
+      {/* Nodes — real reachability and installed models */}
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        {(live.nodes ?? []).map((n) => (
           <Panel
             key={n.id}
             title={n.label}
-            note={`${n.role} · ${n.host}`}
+            note={n.host.replace("http://", "")}
             actions={
-              <span className={`size-2 rounded-full signal-pulse ${statusTone[n.status]}`} />
+              <span className={`size-2 rounded-full signal-pulse ${n.online ? statusTone.online : statusTone.offline}`} />
             }
           >
-            <div className="space-y-3">
-              {[
-                ["CPU", n.cpu],
-                ["RAM", n.ram],
-                ["GPU", n.gpu],
-              ].map(([k, v]) => (
-                <div key={k as string}>
-                  <div className="mb-1 flex justify-between font-mono text-[11px] text-muted-foreground">
-                    <span>{k}</span>
-                    <span>{v}%</span>
-                  </div>
-                  <ProgressBar
-                    value={v as number}
-                    tone={(v as number) > 80 ? "warning" : "success"}
-                  />
-                </div>
-              ))}
-              <div className="flex flex-wrap gap-1.5 pt-1">
+            <div className="space-y-2">
+              <p className="font-mono text-[11px] text-muted-foreground">
+                {n.online ? `${n.models.length} modèles · ${(n.bytes / 1e9).toFixed(1)} GB` : "Hors ligne"}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
                 {n.models.map((m) => (
                   <span
                     key={m}
@@ -119,6 +121,8 @@ export function MissionControlView() {
           </Panel>
         ))}
       </div>
+      {/* kept for reference: configured infra nodes */}
+      {infraNodes.length === 0 && <ProgressBar value={0} tone="success" />}
 
       {/* Agents + Toolchain */}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
