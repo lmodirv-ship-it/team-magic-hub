@@ -29,7 +29,8 @@ export function AnalyzeProjectButton() {
     const out = `logs/plan-${project}.md`;
     const ac = new AbortController();
     setCtrl(ac);
-    let acc = `# خطة عمل: ${project}\n\n> مولدة بـ ${MODEL} — ${new Date().toLocaleString("ar")}\n\n`;
+    const stamp = new Date().toISOString().slice(0, 16).replace("T", " ");
+    let acc = `# خطة عمل: ${project}\n\n> مولدة بـ ${MODEL} — ${stamp}\n\n`;
     writeFile(out, acc, { source: "agent" });
     openFile(out);
     try {
