@@ -1,5 +1,6 @@
 /** Background team build: runs outside any page so builds continue while the user navigates. */
 import { callConfiguredBridge } from "@/lib/nawat/bridge-config";
+import { environmentPrompt } from "./agent-environment";
 import { writeProjectFile } from "@/lib/nawat/projects";
 
 export type BgRole = { role: string; model: string; task: string; status: "wait" | "run" | "done" | "fail"; output?: string };
