@@ -56,7 +56,7 @@ export async function* ghnChatStream(model: string, messages: { role: string; co
   const key = typeof window === "undefined" ? "" : (localStorage.getItem(KEY) ?? "");
   const res = await fetch(GHN_PLATFORM.endpoint, {
     method: "POST", signal,
-    headers: { "content-type": "application/json", ...(key ? { authorization: `Bearer ${key}` } : {}) },
+    headers: (key ? { "content-type": "application/json", authorization: `Bearer ${key}` } : { "content-type": "application/json" }) as Record<string, string>,
     body: JSON.stringify({ model, messages, stream: true }),
   });
   if (!res.ok || !res.body) throw new Error(`Groupe-HN ${res.status}`);
