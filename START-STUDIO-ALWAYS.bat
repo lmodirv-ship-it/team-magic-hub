@@ -13,7 +13,7 @@ echo [NAWAT] Registering autostart task "NAWAT-Studio-Always"...
 schtasks /Create /F /SC ONLOGON /RL LIMITED /TN "NAWAT-Studio-Always" /TR "cmd /c \"\"%ROOT%START-STUDIO-ALWAYS.bat\" run\"" >nul
 if errorlevel 1 (echo [NAWAT] Could not register task. Run as administrator.) else (echo [NAWAT] Autostart enabled.)
 start "NAWAT Studio" /min cmd /c ""%ROOT%START-STUDIO-ALWAYS.bat" run"
-echo [NAWAT] Studio started in background. Bridge: http://127.0.0.1:8788
+echo [NAWAT] Studio started in background. Bridge port saved in bridge-port.txt (8788 or next free).
 exit /b 0
 
 :merge
@@ -61,7 +61,15 @@ if exist "deploy\factory\factory_server.py" (
   start "NAWAT Factory" /min cmd /c "for /l %%i in (0,0,1) do (python deploy\factory\factory_server.py & timeout /t 5 >nul)"
 )
 :loop
-echo [NAWAT] Starting bridge on 8788...
+REM Pick a free port: NAWAT_PORT if set, else 8788, else next free (8790-8799). Old instance keeps its port.
+set "BRIDGE_PORT="
+for %%P in (%NAWAT_PORT% 8788 8790 8791 8792 8793 8794 8795 8796 8797 8798 8799) do if not defined BRIDGE_PORT (
+  netstat -ano | findstr /r /c:":%%P .*LISTENING" >nul || set "BRIDGE_PORT=%%P"
+)
+if not defined BRIDGE_PORT set "BRIDGE_PORT=8800"
+echo %BRIDGE_PORT%> "%ROOT%bridge-port.txt"
+echo [NAWAT] Starting bridge on %BRIDGE_PORT%...  (http://127.0.0.1:%BRIDGE_PORT%)
+start "" "http://127.0.0.1:%BRIDGE_PORT%/api/health"
 node bridge\server.mjs
 echo [NAWAT] Bridge stopped. Merging updates, restarting in 5 seconds...
 timeout /t 5 >nul
