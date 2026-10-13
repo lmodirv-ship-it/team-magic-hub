@@ -6,7 +6,7 @@ import { Page, Panel } from "@/components/nawat/StudioUI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { chatStream, listAllModels } from "@/lib/nawat/bridge";
+import { chatStream } from "@/lib/nawat/bridge";
 import { officialModels } from "@/lib/nawat/providers";
 import { ghnChatStream, ghnListModels } from "@/lib/nawat/groupe-hn-platform";
 import {
@@ -47,7 +47,7 @@ function EnvironmentPage() {
   useEffect(() => {
     setEnv(loadEnvironmentOrDefault());
     ghnListModels().then((l) => l.length && setModels(l)).catch(() => {});
-    if (false) listAllModels().then((l) => l.length && setModels(l.map((m) => m.name))).catch(() => {});
+
   }, []);
 
   async function invite() {
