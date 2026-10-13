@@ -3,8 +3,8 @@ const BRIDGE_KEY = "nawat.configBridge";
 const SECRET = /(key|token|secret|password|pass)/i;
 
 export function configBridgeUrl(): string {
-  if (typeof window === "undefined") return "http://192.168.100.67:8788";
-  return localStorage.getItem(BRIDGE_KEY) || "http://192.168.100.67:8788";
+  if (typeof window === "undefined") return "http://127.0.0.1:8788";
+  return localStorage.getItem(BRIDGE_KEY) || "http://127.0.0.1:8788";
 }
 export function setConfigBridgeUrl(u: string) {
   localStorage.setItem(BRIDGE_KEY, u.replace(/\/+$/, ""));

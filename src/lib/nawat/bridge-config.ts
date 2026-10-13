@@ -36,7 +36,7 @@ const CHANGE_EVENT = "nawat:bridge-config";
 export const DEFAULT_BRIDGE_CONFIG: BridgeConfig = {
   version: 1,
   mode: "auto",
-  localUrl: "http://192.168.100.66:8788",
+  localUrl: "http://127.0.0.1:8788",
   publicUrl: "https://nawat.groupe-hn.com",
   bridges: BUILTIN_BRIDGES,
   activeBridge: "hnchat",

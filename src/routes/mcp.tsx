@@ -21,14 +21,17 @@ export const Route = createFileRoute("/mcp")({
   component: McpPage,
 });
 
-const KEY = "nawat.mcp.settings.v1";
-type S = { path: string; bridge: string; factory: string; ollama: string };
+const KEY = "nawat.mcp.settings.v2";
+type S = { path: string; bridge: string; factory: string; ollama: string; ghn: string };
 const DEF: S = {
   path: "C:/nawat",
-  bridge: "http://192.168.100.67:8788",
-  factory: "http://192.168.100.67:8789",
-  ollama: "http://192.168.100.67:11434",
+  bridge: "http://127.0.0.1:8788",
+  factory: "http://127.0.0.1:8789",
+  ollama: "http://127.0.0.1:11434",
+  ghn: "https://platform.groupe-hn.com/api/public/v1",
 };
+/** Previous LAN defaults kept as an option (add, never remove). */
+const LAN67: Partial<S> = { bridge: "http://192.168.100.67:8788", factory: "http://192.168.100.67:8789", ollama: "http://192.168.100.67:11434" };
 
 const COMMANDS: [string, string][] = [
   ["nawat status", "حالة الجسر والمصنع وOllama"],
@@ -80,7 +83,7 @@ function McpPage() {
     if (ready) localStorage.setItem(KEY, JSON.stringify(s));
   }, [ready, s]);
 
-  const env = { NAWAT_BRIDGE: s.bridge, NAWAT_FACTORY: s.factory, NAWAT_OLLAMA: s.ollama };
+  const env = { GHN_API_BASE: s.ghn, GHN_API_KEY: "ghn_…", NAWAT_BRIDGE: s.bridge, NAWAT_FACTORY: s.factory, NAWAT_OLLAMA: s.ollama };
   const server = { command: "node", args: [`${s.path.replace(/\/$/, "")}/cli/mcp-server.mjs`], env };
   const claude = JSON.stringify({ mcpServers: { nawat: server } }, null, 2);
   const cursor = JSON.stringify({ mcpServers: { nawat: server } }, null, 2);
@@ -92,12 +95,16 @@ function McpPage() {
       <div className="grid gap-4">
         <Panel title="الإعدادات">
           <div className="grid gap-2 md:grid-cols-2">
-            {(["path", "bridge", "factory", "ollama"] as const).map((k) => (
+            {(["path", "ghn", "bridge", "factory", "ollama"] as const).map((k) => (
               <label key={k} className="grid gap-1 text-xs">
-                {{ path: "مجلد NAWAT على جهازك", bridge: "الجسر", factory: "المصنع", ollama: "Ollama" }[k]}
+                {{ path: "مجلد NAWAT على جهازك", bridge: "الجسر", factory: "المصنع", ollama: "Ollama", ghn: "Groupe-HN" }[k]}
                 <input dir="ltr" value={s[k]} onChange={(e) => setS({ ...s, [k]: e.target.value })} className="control font-mono" />
               </label>
             ))}
+          </div>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => setS({ ...DEF, path: s.path })}>Groupe-HN + 127.0.0.1</Button>
+            <Button size="sm" variant="outline" onClick={() => setS({ ...s, ...LAN67 })}>LAN 192.168.100.67</Button>
           </div>
         </Panel>
 
