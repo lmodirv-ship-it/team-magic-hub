@@ -54,21 +54,21 @@ export function MissionControlView() {
   return (
     <Page
       eyebrow="Mission Control / NAWAT Studio"
-      title="مركز القيادة الموزّع"
-      description="عقدتان، تسعة نماذج محلية، ثمانية عشر وكيلاً متعاوناً، ومراقبة حية — كل شيء دون سحابة."
+      title="Centre de commande distribué"
+      description="Nœuds, modèles locaux et catalogue Groupe-HN mesurés en direct — sans cloud imposé."
       actions={<RuntimeBadge connected={runtime.connected} />}
     >
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Metric
-          label="العقد النشطة"
+          label="Nœuds actifs"
           value={live.nodes ? `${onlineNodes.length}/${live.nodes.length}` : "…"}
           change={onlineNodes.map((n) => n.label).join(" · ") || "Vérification en direct"}
           tone={onlineNodes.length ? "success" : "warning"}
         />
         <Metric
-          label="النماذج المحلية"
+          label="Modèles locaux"
           value={live.nodes ? `${localModels.size}` : "…"}
-          change={`~${(totalBytes / 1e9).toFixed(1)} GB إجمالي`}
+          change={`~${(totalBytes / 1e9).toFixed(1)} GB au total`}
           tone={localModels.size ? "success" : "warning"}
         />
         <Metric
@@ -82,13 +82,13 @@ export function MissionControlView() {
       <div className="mt-4 flex items-center gap-3 rounded-lg border border-nawat/30 bg-nawat/5 px-4 py-3">
         <ClipboardList className="size-5 text-nawat" />
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold">خطة إضافات هذا الأسبوع</p>
+          <p className="text-sm font-semibold">Plan des ajouts de la semaine</p>
           <p className="truncate text-xs text-muted-foreground">
-            5 نماذج · 5 وكلاء · 3 خدمات · تفعيل عند الجاهزية
+            5 modèles · 5 agents · 3 services · activation quand prêt
           </p>
         </div>
         <Button asChild size="sm" variant="outline">
-          <Link to="/plan">فتح الخطة</Link>
+          <Link to="/plan">Ouvrir le plan</Link>
         </Button>
       </div>
 
@@ -127,11 +127,11 @@ export function MissionControlView() {
       {/* Agents + Toolchain */}
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Panel
-          title="الوكلاء"
-          note="منسق واحد + 17 متخصصاً"
+          title="Agents"
+          note="Un coordinateur + 17 spécialistes"
           actions={
             <Button asChild variant="ghost" size="sm">
-              <Link to="/agents">تفاصيل</Link>
+              <Link to="/agents">Détails</Link>
             </Button>
           }
         >
@@ -167,11 +167,11 @@ export function MissionControlView() {
         </Panel>
 
         <Panel
-          title="سلسلة الأدوات"
+          title="Chaîne d'outils"
           note="SSH · SFTP · Terminal · Monaco"
           actions={
             <Button asChild variant="ghost" size="sm">
-              <Link to="/tools">فتح</Link>
+              <Link to="/tools">Ouvrir</Link>
             </Button>
           }
         >
@@ -198,13 +198,13 @@ export function MissionControlView() {
 
       {/* Model x Node matrix + pipeline */}
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.3fr_.7fr]">
-        <Panel title="مصفوفة النماذج × العقد" note="توزيع ملفات GGUF على البنية">
+        <Panel title="Matrice modèles × nœuds" note="Répartition des fichiers GGUF">
           <div className="nawat-table overflow-x-auto">
             <table className="w-full min-w-[520px] text-xs">
               <thead>
                 <tr className="text-muted-foreground">
-                  <th className="p-2 text-start font-normal">النموذج</th>
-                  <th className="p-2 text-start font-normal">الحجم</th>
+                  <th className="p-2 text-start font-normal">Modèle</th>
+                  <th className="p-2 text-start font-normal">Taille</th>
                   {infraNodes.map((n) => (
                     <th key={n.id} className="p-2 text-center font-normal">
                       {n.label}
@@ -232,7 +232,7 @@ export function MissionControlView() {
             </table>
           </div>
         </Panel>
-        <Panel title="خط النشر" note="تقسيم · SFTP · SHA256 · ollama create">
+        <Panel title="Pipeline de déploiement" note="Découpage · SFTP · SHA256 · ollama create">
           <div className="space-y-2">
             {deployPipeline.map((p) => (
               <div key={p.step} className="flex items-center gap-2 text-xs">
@@ -248,25 +248,25 @@ export function MissionControlView() {
       {/* Spy + Settings */}
       <div className="mt-4 grid gap-4 xl:grid-cols-[1.3fr_.7fr]">
         <Panel
-          title="المراقبة الحية"
-          note={`${siteStats.online} متصل · ${siteStats.offline} معطل · ${siteStats.pending} قيد الانتظار`}
+          title="Surveillance en direct"
+          note={live.nodes ? `${onlineNodes.length} en ligne · ${live.nodes.length - onlineNodes.length} hors ligne` : "Vérification…"}
           actions={
             <Button asChild variant="ghost" size="sm">
-              <Link to="/spy">السجل الكامل</Link>
+              <Link to="/spy">Journal complet</Link>
             </Button>
           }
         >
           <div className="mb-3 grid gap-2 sm:grid-cols-3">
             <MiniStat
               icon={Globe2}
-              label="متصل"
-              value={`${siteStats.online}`}
+              label="En ligne"
+              value={live.nodes ? `${onlineNodes.length}` : "…"}
               tone="text-success"
             />
             <MiniStat
               icon={Globe2}
-              label="معطل"
-              value={`${siteStats.offline}`}
+              label="Hors ligne"
+              value={live.nodes ? `${live.nodes.length - onlineNodes.length}` : "…"}
               tone="text-warning"
             />
             <MiniStat
@@ -280,19 +280,19 @@ export function MissionControlView() {
         </Panel>
 
         <Panel
-          title="الإعدادات"
+          title="Paramètres"
           actions={
             <Button asChild variant="ghost" size="sm">
-              <Link to="/settings">تعديل</Link>
+              <Link to="/settings">Modifier</Link>
             </Button>
           }
         >
           <div className="space-y-3 text-xs">
-            <SettingLine icon={Bot} label="نموذج لكل وكيل" value="حسب الدور" />
-            <SettingLine icon={ShieldCheck} label="صلاحيات الوكلاء" value="مقيدة" />
-            <SettingLine icon={MonitorCog} label="نقاط API" value="192.168.100.66:5001" />
-            <SettingLine icon={Languages} label="اللغة والسمة" value="عربي RTL · داكن" />
-            <SettingLine icon={HardDrive} label="النسخ الاحتياطي" value="محلي" />
+            <SettingLine icon={Bot} label="Modèle par agent" value="Selon le rôle" />
+            <SettingLine icon={ShieldCheck} label="Permissions des agents" value="Restreintes" />
+            <SettingLine icon={MonitorCog} label="Points API" value="192.168.100.66:5001" />
+            <SettingLine icon={Languages} label="Langue et thème" value="FR · AR · EN · sombre" />
+            <SettingLine icon={HardDrive} label="Sauvegarde" value="Locale" />
           </div>
         </Panel>
       </div>
