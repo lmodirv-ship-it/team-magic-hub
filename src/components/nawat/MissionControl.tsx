@@ -62,7 +62,7 @@ export function MissionControlView() {
         <Metric
           label="العقد النشطة"
           value={live.nodes ? `${onlineNodes.length}/${live.nodes.length}` : "…"}
-          change={onlineNodes.map((n) => n.label).join(" · ") || "فحص مباشر"}
+          change={onlineNodes.map((n) => n.label).join(" · ") || "Vérification en direct"}
           tone={onlineNodes.length ? "success" : "warning"}
         />
         <Metric
@@ -72,12 +72,12 @@ export function MissionControlView() {
           tone={localModels.size ? "success" : "warning"}
         />
         <Metric
-          label="نماذج Groupe-HN"
+          label="Modèles Groupe-HN"
           value={live.ghnCount === null ? "…" : `${live.ghnCount}`}
           change="platform.groupe-hn.com"
           tone={live.ghnCount ? "success" : "warning"}
         />
-        <Metric label="آخر فحص" value={live.nodes ? new Date(live.nodes[0]!.checkedAt).toLocaleTimeString() : "…"} change="تحديث كل 15 ثانية" />
+        <Metric label="Dernière vérification" value={live.nodes ? new Date(live.nodes[0]!.checkedAt).toLocaleTimeString() : "…"} change="Actualisé toutes les 15 s" />
       </div>
       <div className="mt-4 flex items-center gap-3 rounded-lg border border-nawat/30 bg-nawat/5 px-4 py-3">
         <ClipboardList className="size-5 text-nawat" />
