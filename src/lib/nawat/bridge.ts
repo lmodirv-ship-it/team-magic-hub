@@ -362,7 +362,7 @@ export type SshHost = { host: string; user?: string; port?: number; online?: boo
 
 // The bridge really listens on :8788; :8787 stays as the older fallback.
 export const SSH_BRIDGE_CANDIDATES = ["http://127.0.0.1:8788", "http://127.0.0.1:8787"];
-const DEFAULT_SSH_BRIDGE = SSH_BRIDGE_CANDIDATES[0];
+const DEFAULT_SSH_BRIDGE = "http://127.0.0.1:8788";
 
 export function sshBridgeUrl(): string {
   if (typeof window === "undefined") return DEFAULT_SSH_BRIDGE;
