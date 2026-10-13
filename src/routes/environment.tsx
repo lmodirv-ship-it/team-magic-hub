@@ -58,7 +58,7 @@ function EnvironmentPage() {
         { role: "user", content: task },
       ], abort.current.signal)) setOut((o) => o + chunk);
     } catch (e) {
-      if (!abort.current?.signal.aborted) setOut((o) => o + `\n\n[Modèle injoignable : vérifiez qu'Ollama tourne (port 11434). ${(e as Error).message}]`);
+      if (!abort.current?.signal.aborted) setOut((o) => o + `\n\n[Modèle injoignable : vérifiez qu'Ollama tourne (port 11434) sur votre ordinateur.]`);
     } finally { setBusy(false); }
   }
 
