@@ -55,3 +55,5 @@
 - [ ] Platform calls nawat.groupe-hn.com/api/public/sync (separate project)
 - [ ] relay_agent table in cloud DB (no Lovable Cloud on this project; exists on self-hosted .94)
 - [x] Workspace chat via Groupe-HN instead of Ollama
+
+- [ ] التحقق من ظهور التطورات على hn-ai.site بعد الرفع (المستخدم: لم تظهر بعد) — سبب محتمل: كاش المتصفح أو معاينة قديمة
