@@ -20,6 +20,7 @@ export const BUILTIN_BRIDGES: PublicBridge[] = [
   { id: "nawat", name: "نواة الرسمي", url: "https://nawat.groupe-hn.com" },
   { id: "hn-ai-site", name: "نواة — نسخة hn-ai.site", url: "https://hn-ai.site" },
   { id: "nawat-group", name: "نواة — نسخة nawat-group.com", url: "https://www.nawat-group.com" },
+  { id: "ghn-platform", name: "Groupe-HN Platform", url: "https://platform.groupe-hn.com" },
 ];
 
 export type BridgeCheck = {
