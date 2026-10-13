@@ -109,7 +109,7 @@ export function SshPanel() {
           dir="ltr"
           type="password"
           placeholder="Clé du pont serveur"
-          defaultValue={typeof window === "undefined" ? "" : bridgeToken()}
+          ref={(el) => { if (el && !el.value) el.value = bridgeToken(); }}
           onBlur={(e) => {
             setBridgeToken(e.target.value);
             void load();
