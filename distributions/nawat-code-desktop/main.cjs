@@ -17,7 +17,7 @@ const L = {
   fr: { file: "Fichier", view: "Affichage", lang: "Langue", reload: "Recharger", tools: "Outils développeur", full: "Plein écran", quit: "Quitter", home: "Accueil" },
   en: { file: "File", view: "View", lang: "Language", reload: "Reload", tools: "Developer tools", full: "Full screen", quit: "Quit", home: "Home" },
 };
-let lang = "ar";
+let lang = "fr";
 let win;
 
 const reachable = (u) => new Promise((ok) => {
