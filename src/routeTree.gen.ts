@@ -45,6 +45,7 @@ import { Route as WatchdogRouteImport } from './routes/watchdog'
 import { Route as WorkspaceRouteImport } from './routes/workspace'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ChatThreadIdRouteImport } from './routes/chat.$threadId'
+import { Route as ApiPublicDbMirrorRouteImport } from './routes/api/public/db-mirror'
 import { Route as ApiPublicSyncRouteImport } from './routes/api/public/sync'
 import { Route as ApiPublicRelaySplatRouteImport } from './routes/api/public/relay/$'
 
@@ -228,6 +229,11 @@ const ChatThreadIdRoute = ChatThreadIdRouteImport.update({
   path: '/chat/$threadId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDbMirrorRoute = ApiPublicDbMirrorRouteImport.update({
+  id: '/api/public/db-mirror',
+  path: '/api/public/db-mirror',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSyncRoute = ApiPublicSyncRouteImport.update({
   id: '/api/public/sync',
   path: '/api/public/sync',
@@ -276,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/db-mirror': typeof ApiPublicDbMirrorRoute
   '/api/public/sync': typeof ApiPublicSyncRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
@@ -316,6 +323,7 @@ export interface FileRoutesByTo {
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/db-mirror': typeof ApiPublicDbMirrorRoute
   '/api/public/sync': typeof ApiPublicSyncRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
@@ -357,6 +365,7 @@ export interface FileRoutesById {
   '/workspace': typeof WorkspaceRoute
   '/api/stats': typeof ApiStatsRoute
   '/chat/$threadId': typeof ChatThreadIdRoute
+  '/api/public/db-mirror': typeof ApiPublicDbMirrorRoute
   '/api/public/sync': typeof ApiPublicSyncRoute
   '/api/public/relay/$': typeof ApiPublicRelaySplatRoute
 }
@@ -399,6 +408,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
+    | '/api/public/db-mirror'
     | '/api/public/sync'
     | '/api/public/relay/$'
   fileRoutesByTo: FileRoutesByTo
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
+    | '/api/public/db-mirror'
     | '/api/public/sync'
     | '/api/public/relay/$'
   id:
@@ -479,6 +490,7 @@ export interface FileRouteTypes {
     | '/workspace'
     | '/api/stats'
     | '/chat/$threadId'
+    | '/api/public/db-mirror'
     | '/api/public/sync'
     | '/api/public/relay/$'
   fileRoutesById: FileRoutesById
@@ -520,6 +532,7 @@ export interface RootRouteChildren {
   WorkspaceRoute: typeof WorkspaceRoute
   ApiStatsRoute: typeof ApiStatsRoute
   ChatThreadIdRoute: typeof ChatThreadIdRoute
+  ApiPublicDbMirrorRoute: typeof ApiPublicDbMirrorRoute
   ApiPublicSyncRoute: typeof ApiPublicSyncRoute
   ApiPublicRelaySplatRoute: typeof ApiPublicRelaySplatRoute
 }
@@ -778,6 +791,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatThreadIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/db-mirror': {
+      id: '/api/public/db-mirror'
+      path: '/api/public/db-mirror'
+      fullPath: '/api/public/db-mirror'
+      preLoaderRoute: typeof ApiPublicDbMirrorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sync': {
       id: '/api/public/sync'
       path: '/api/public/sync'
@@ -832,6 +852,7 @@ const rootRouteChildren: RootRouteChildren = {
   WorkspaceRoute: WorkspaceRoute,
   ApiStatsRoute: ApiStatsRoute,
   ChatThreadIdRoute: ChatThreadIdRoute,
+  ApiPublicDbMirrorRoute: ApiPublicDbMirrorRoute,
   ApiPublicSyncRoute: ApiPublicSyncRoute,
   ApiPublicRelaySplatRoute: ApiPublicRelaySplatRoute,
 }
