@@ -47,7 +47,7 @@ export function StatusBar() {
         {connected ? "التحديث المباشر متصل" : "التحديث المباشر غير متصل"}
       </span>
       <span>{isDesktop() ? "Desktop (Electron)" : "Browser mode"}</span>
-      <span className="border-s border-border ps-3 text-foreground">
+      <span className="ms-auto shrink-0 whitespace-nowrap border-s border-border ps-3 font-semibold text-nawat">
         Groupe-HN · Mouylay Ismail El Hassani
       </span>
     </footer>

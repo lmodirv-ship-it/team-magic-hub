@@ -64,11 +64,34 @@ export function getRuns(): TestRun[] {
 export function addRun(run: TestRun) {
   const next = [run, ...getRuns()].slice(0, 2000);
   localStorage.setItem(RUNS_KEY, JSON.stringify(next));
+  pushRun(run);
 }
 
 export function rateRun(at: string, model: string, score: number) {
   const next = getRuns().map((r) => (r.at === at && r.model === model ? { ...r, score } : r));
   localStorage.setItem(RUNS_KEY, JSON.stringify(next));
+  const r = next.find((x) => x.at === at && x.model === model);
+  if (r) pushRun(r);
+}
+
+/** Mirror a run to the site database (best effort). */
+function pushRun(run: TestRun) {
+  void import("./runs.functions")
+    .then(({ saveTaskRun }) => saveTaskRun({ data: { ...run, prompt: run.prompt.slice(0, 4000) } }))
+    .catch(() => {});
+}
+
+/** Local runs merged with the ones stored in the site database. */
+export async function getAllRuns(): Promise<TestRun[]> {
+  const local = getRuns();
+  try {
+    const { listTaskRuns } = await import("./runs.functions");
+    const remote = (await listTaskRuns()) as TestRun[];
+    const seen = new Set(local.map((r) => r.at + "|" + r.model));
+    return [...local, ...remote.filter((r) => !seen.has(r.at + "|" + r.model))].sort((a, b) => b.at.localeCompare(a.at));
+  } catch {
+    return local;
+  }
 }
 
 export type ModelStats = {
